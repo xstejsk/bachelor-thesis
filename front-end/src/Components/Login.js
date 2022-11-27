@@ -7,7 +7,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 const Login = () => {
   const [username, setusername] = useState("");
   const [password, setPassword] = useState("");
-  const [jwt, setJwt] = useLocalState("", "jwt");
   const loginStatus = "";
   const navigate = useNavigate();
   const location = useLocation();

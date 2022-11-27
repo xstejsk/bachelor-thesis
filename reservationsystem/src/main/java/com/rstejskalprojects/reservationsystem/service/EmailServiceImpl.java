@@ -1,6 +1,7 @@
 package com.rstejskalprojects.reservationsystem.service;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,13 +12,13 @@ import org.springframework.stereotype.Service;
 import javax.mail.internet.MimeMessage;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class EmailServiceImpl implements EmailSender {
 
     private final static Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
     private final JavaMailSender mailSender;
-    @Value("${mail.username}")
-    private String sender;
+
+    private String sender = "myjavatenniscourts@gmail.com";
 
     @Override
     @Async
