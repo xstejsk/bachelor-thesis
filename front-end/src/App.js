@@ -7,6 +7,7 @@ import Login from "./Components/Login";
 import Register from "./Components/Register";
 import Navbar from "./Components/Navbar";
 import CustomScheduler from "./Components/CustomScheduler";
+import ReservationsGrid from "./Components/ReservationsGrid";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/home" element={<Homepage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/events" element={<CustomScheduler />} />
+        <Route path="/reservations" element={<ReservationsGrid />} />
       </Routes>
     </>
   );

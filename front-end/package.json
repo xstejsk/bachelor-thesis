@@ -6,6 +6,7 @@
     "@syncfusion/ej2-data": "^20.3.56",
     "@syncfusion/ej2-react-calendars": "^20.3.56",
     "@syncfusion/ej2-react-dropdowns": "^20.3.58",
+    "@syncfusion/ej2-react-grids": "^20.3.58",
     "@syncfusion/ej2-react-schedule": "^20.3.58",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",

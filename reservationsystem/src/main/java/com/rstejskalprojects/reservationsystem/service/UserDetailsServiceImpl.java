@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final RegistrationTokenService registrationTokenService;
+    private final ConfirmationTokenServiceImpl registrationTokenService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
 
@@ -26,6 +27,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         return userRepository.findUserByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("user with username %s not found", username)));
+    }
+
+    public List<AppUser> findAll() {
+        return userRepository.findAll();
     }
 
     public String saveUser(AppUser appUser){

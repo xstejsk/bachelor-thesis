@@ -5,13 +5,12 @@ import com.rstejskalprojects.reservationsystem.repository.RegistrationTokenRepos
 import com.rstejskalprojects.reservationsystem.util.customexception.UnknownRegistrationTokenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class RegistrationTokenService {
+public class ConfirmationTokenServiceImpl implements ConfirmationTokenService {
 
     private final RegistrationTokenRepository registrationTokenRepository;
 

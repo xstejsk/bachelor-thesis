@@ -8,10 +8,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.Value;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.time.LocalDateTime;
@@ -26,36 +29,29 @@ public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonProperty("id")
     private long id;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @JsonProperty("startTime")
     private LocalDateTime startTime;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @JsonProperty("endTime")
     private LocalDateTime endTime;
-    @NotNull
-    @JsonProperty("capacity")
+    @NotNull //TODO : forbid capacity < 1
     private int capacity;
     @NotNull
-    @JsonProperty("price")
-    private float price;
+    private double price;
     @NotNull
-    @JsonProperty("subject")
     private String subject;
     @NotNull
-    @JsonProperty("description")
     private String description;
     @NotNull
-    @JsonProperty("isAllDay")
     private boolean isAllDay;
     @Transient
-    @JsonIgnore
+    private boolean isFull = false;
+    @Transient
     private RecurrenceRule recurrenceRule;
-    @JsonProperty("recurrenceRule")
-    private String recurrenceRuleString(){
-        return recurrenceRule == null ? "" : recurrenceRule.toString();
-    }
+    @Transient
+    @ManyToOne(optional = false)
+    @NotNull
+    private Location location;
 }

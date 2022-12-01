@@ -1,21 +1,22 @@
-package com.rstejskalprojects.reservationsystem.api;
+package com.rstejskalprojects.reservationsystem.api.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rstejskalprojects.reservationsystem.model.AppUser;
+import com.rstejskalprojects.reservationsystem.model.dto.AppUserDTO;
+import com.rstejskalprojects.reservationsystem.service.UserDetailsServiceImpl;
 import com.rstejskalprojects.reservationsystem.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/user")
@@ -23,27 +24,23 @@ import java.util.Map;
 @Slf4j
 public class UserController {
 
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
     private final JwtUtil jwtUtil;
 
     @GetMapping
-    public void getLoggedInUser(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<AppUserDTO> getLoggedInUser(HttpServletRequest request, HttpServletResponse response) {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         final String refreshToken = header.split(" ")[1].trim();
         // Get user identity and set it on the spring security context
         AppUser user = (AppUser) userDetailsService.loadUserByUsername(jwtUtil.getUserNameFromToken(refreshToken));
-        Map<String, String> tokens = new HashMap<>();
-        tokens.put("name", user.getFirstName());
-        tokens.put("username", user.getUsername());
-        try {
-            new ObjectMapper().writeValue(response.getOutputStream(), tokens);
-            response.setStatus(HttpServletResponse.SC_OK);
-        } catch (IOException e) {
-            response.setHeader("Error", e.getMessage());
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            log.warn("refresh token could not be sent", e);
-        }
+        return new ResponseEntity<>(new AppUserDTO(user), HttpStatus.OK);
     }
 
+    @GetMapping("/all") // only admin
+    public ResponseEntity<List<AppUserDTO>> getAllUsers(HttpServletRequest request, HttpServletResponse response) {
+        List<AppUser> users = userDetailsService.findAll();
+        return new ResponseEntity<>(users.stream().map(AppUserDTO::new).collect(Collectors.toList()),
+                HttpStatus.OK);
+    }
 }

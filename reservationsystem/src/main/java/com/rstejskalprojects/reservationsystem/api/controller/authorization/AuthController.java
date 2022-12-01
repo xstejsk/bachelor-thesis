@@ -1,4 +1,4 @@
-package com.rstejskalprojects.reservationsystem.api.authorization;
+package com.rstejskalprojects.reservationsystem.api.controller.authorization;
 
 import com.rstejskalprojects.reservationsystem.api.model.authorization.AuthCrededentialsRequest;
 import com.rstejskalprojects.reservationsystem.model.AppUser;

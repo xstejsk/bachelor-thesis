@@ -1,17 +1,15 @@
 package com.rstejskalprojects.reservationsystem.service;
 
 import com.rstejskalprojects.reservationsystem.model.Reservation;
-import com.rstejskalprojects.reservationsystem.repository.ReservationRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-@Service
-@RequiredArgsConstructor
-public class ReservationService {
+import java.util.List;
 
-    private final ReservationRepository reservationRepository;
+public interface ReservationService {
+    Reservation findReservationById(Long reservationId);
 
-    public Reservation findReservatonById(Long id) {
-        return reservationRepository.findReservationById(id).get();
-    }
+    List<Reservation> findReservationsByUserId(String username);
+
+    List<Reservation> findReservationsByEventId(Long eventId);
+
+    List<Reservation> findAll();
 }

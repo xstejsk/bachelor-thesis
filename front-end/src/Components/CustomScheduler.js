@@ -10,7 +10,6 @@ import {
   MonthAgenda,
   TimelineViews,
   TimelineMonth,
-  EventSettingsModel,
   ViewDirective,
   ViewsDirective,
 } from "@syncfusion/ej2-react-schedule";
@@ -18,7 +17,7 @@ import { host, mockEventsEndpoint } from "../util/EndpointConfig";
 import addCategoryAndPriceFields from "../util/SchedulerEditorUtil";
 import axios from "axios";
 
-import CustomGridLoader from "./CustomGridLoader";
+import CustomGridLoader from "./CustomLoader";
 
 const CustomScheduler = () => {
   const [events, setEvents] = useState(null);
@@ -65,8 +64,8 @@ const CustomScheduler = () => {
           justifyContent: "center",
           alignItems: "center",
           display: "flex",
-          padding: 5,
-          background: "#FFC823",
+          padding: 3,
+          background: "#c93060",
         }}
       >
         <ScheduleComponent

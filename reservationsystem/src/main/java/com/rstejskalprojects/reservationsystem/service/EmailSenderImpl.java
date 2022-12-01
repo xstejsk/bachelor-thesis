@@ -1,10 +1,8 @@
 package com.rstejskalprojects.reservationsystem.service;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -13,16 +11,16 @@ import javax.mail.internet.MimeMessage;
 
 @Service
 @RequiredArgsConstructor
-public class EmailServiceImpl implements EmailSender {
+public class EmailSenderImpl implements EmailSender {
 
-    private final static Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
+    private final static Logger logger = LoggerFactory.getLogger(EmailSenderImpl.class);
     private final JavaMailSender mailSender;
 
     private String sender = "myjavatenniscourts@gmail.com";
 
     @Override
     @Async
-    public void send(String to, String email) {
+    public void sendEmail(String to, String email) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");

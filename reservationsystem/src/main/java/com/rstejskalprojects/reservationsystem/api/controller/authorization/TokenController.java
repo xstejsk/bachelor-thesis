@@ -1,4 +1,4 @@
-package com.rstejskalprojects.reservationsystem.api.authorization;
+package com.rstejskalprojects.reservationsystem.api.controller.authorization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rstejskalprojects.reservationsystem.util.JwtUtil;

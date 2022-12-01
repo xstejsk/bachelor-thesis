@@ -17,6 +17,11 @@ const Navbar = () => {
                 Domů
               </Link>
             </li>
+            <li>
+              <Link to="/reservations" className="nav-link px-2 text-white">
+                Rezervace
+              </Link>
+            </li>
           </ul>
 
           <div className="text-end">

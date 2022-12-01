@@ -37,7 +37,7 @@ public class AppUser implements UserDetails {
     @NotNull
     @Column(unique = true)
     private String email;
-    @Column(name = "user_name", unique = true)
+    @Column(unique = true)
     private String username;
     @NotNull
     private String password;
