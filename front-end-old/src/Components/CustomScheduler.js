@@ -17,6 +17,7 @@ import {
   Input,
   Container,
 } from "reactstrap";
+import DaysSelector from "./DaysSelector";
 
 import CustomGridLoader from "./CustomLoader";
 
