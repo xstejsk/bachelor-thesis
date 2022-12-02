@@ -15,9 +15,9 @@ public class AppUserDTO {
     @JsonProperty
     private String email;
     @JsonProperty
-    private boolean userIsEnabled;
+    private Boolean userIsEnabled;
     @JsonProperty
-    private boolean userIsLocked;
+    private Boolean userIsLocked;
 
     public AppUserDTO(AppUser appUser) {
         this.userId = appUser.getId();

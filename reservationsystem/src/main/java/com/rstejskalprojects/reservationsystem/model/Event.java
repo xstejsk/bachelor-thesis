@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.Value;
@@ -23,35 +24,52 @@ import java.time.LocalDateTime;
 @Table(name = "event")
 @Getter
 @Setter
-@RequiredArgsConstructor
+@NoArgsConstructor
 @AllArgsConstructor
 public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
+    @ManyToOne(optional = false)
+    @NotNull
+    private Location location;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime startTime;
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime endTime;
-    @NotNull //TODO : forbid capacity < 1
-    private int capacity;
     @NotNull
-    private double price;
+    private Integer capacity;
     @NotNull
-    private String subject;
+    private Double price;
     @NotNull
+    private String title;
     private String description;
     @NotNull
-    private boolean isAllDay;
+    private Boolean isAllDay;
     @Transient
-    private boolean isFull = false;
+    private Boolean isFull = false;
     @Transient
     private RecurrenceRule recurrenceRule;
-    @Transient
-    @ManyToOne(optional = false)
-    @NotNull
-    private Location location;
+
+    public Event(LocalDateTime startTime,
+                 LocalDateTime endTime, Integer capacity,
+                 Double price, String title,
+                 String description, Boolean isAllDay,
+                 Boolean isFull,
+                 RecurrenceRule recurrenceRule,
+                 Location location) {
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.capacity = capacity;
+        this.price = price;
+        this.title = title;
+        this.description = description;
+        this.isAllDay = isAllDay;
+        this.isFull = isFull;
+        this.recurrenceRule = recurrenceRule;
+        this.location = location;
+    }
 }

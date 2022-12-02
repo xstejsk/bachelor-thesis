@@ -30,9 +30,9 @@ public class ReservationDTO {
     @JsonProperty
     private Double price;
     @JsonProperty
-    private boolean canceled;
+    private Boolean canceled;
     @JsonProperty
-    private String subject;
+    private String title;
 
     public ReservationDTO(Reservation reservation) {
         this.userId = reservation.getOwner().getId();
@@ -43,6 +43,6 @@ public class ReservationDTO {
         this.endTime = reservation.getEvent().getEndTime();
         this.price = reservation.getEvent().getPrice();
         this.canceled = reservation.getIsCanceled();
-        this.subject = reservation.getEvent().getSubject();
+        this.title = reservation.getEvent().getTitle();
     }
 }

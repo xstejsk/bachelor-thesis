@@ -4,7 +4,7 @@ const signUpEndpoint = "api/auth/signup";
 const loggedInUserEndpoint = "api/user";
 const mockEventsEndpoint = "api/events/all";
 const mockReservationsEndpoint = "api/reservations/all";
-
+const newEventEndpoint = "api/events/new";
 export {
   host,
   loginEndpoint,
@@ -12,4 +12,5 @@ export {
   loggedInUserEndpoint,
   mockEventsEndpoint,
   mockReservationsEndpoint,
+  newEventEndpoint,
 };

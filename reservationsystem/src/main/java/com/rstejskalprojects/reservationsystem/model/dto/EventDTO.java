@@ -4,32 +4,34 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rstejskalprojects.reservationsystem.model.Event;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
 public class EventDTO {
     @JsonProperty
-    private long eventId;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private Long eventId;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS[XXX]")
     private LocalDateTime startTime;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS[XXX]")
     private LocalDateTime endTime;
     @JsonProperty
-    private int capacity;
+    private Integer capacity;
     @JsonProperty
-    private double price;
+    private Double price;
     @JsonProperty
-    private String subject;
+    private String title;
     @JsonProperty
     private String description;
     @JsonProperty
-    private boolean isAllDay;
+    private Boolean isAllDay = false;
     @JsonProperty
     private String recurrenceRule;
     @JsonProperty
     private String locationName;
     @JsonProperty
-    private boolean isFull;
+    private Boolean isFull;
 
     public EventDTO(Event event) {
         this.eventId = event.getId();
@@ -37,12 +39,12 @@ public class EventDTO {
         this.endTime = event.getEndTime();
         this.capacity = event.getCapacity();
         this.price = event.getPrice();
-        this.subject = event.getSubject();
+        this.title = event.getTitle();
         this.description = event.getDescription();
-        this.isAllDay = event.isAllDay();
+        this.isAllDay = event.getIsAllDay();
         this.recurrenceRule = event.getRecurrenceRule().toString();
         this.locationName = event.getLocation().getName();
-        this.isFull = event.isFull();
+        this.isFull = event.getIsFull();
     }
 }
 

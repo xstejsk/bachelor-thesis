@@ -1,6 +1,7 @@
 package com.rstejskalprojects.reservationsystem.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ public class Location {
     private Long id;
     @JsonProperty
     @Column(unique = true)
+    @NotNull
     private String name;
     @JsonProperty
     private String description;

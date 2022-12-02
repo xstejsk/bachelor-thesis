@@ -13,14 +13,13 @@ import {
 } from "reactstrap";
 import Select from "react-select";
 import DateRangePicker from "react-bootstrap-daterangepicker";
-// import DatePicker from "react-bootstrap-date-picker";
-import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap-daterangepicker/daterangepicker.css";
 import DaysSelector from "../DaysSelector";
+import axios from "axios";
+import { host, newEventEndpoint } from "../../util/EndpointConfig";
 // import createReactClass from "create-react-class";
 
-const NewEventForm = ({ isOpen, setIsOpen, onSubmit }) => {
-  const [subject, setSubject] = useState("");
+const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
+  const [eventTitle, setEvenTitle] = useState("");
   const [startDateTime, setStarDateTime] = useState(new Date());
   const [endDateTime, setEndDateTime] = useState(new Date());
   const [description, setDescription] = useState("");
@@ -44,17 +43,31 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit }) => {
 
   function handleSubmit() {
     // console.log(state.selectInfo.view.calendar);
-    // const newEvent = {
-    //   id: nanoid(),
-    //   title,
-    //   start: state.selectInfo?.startStr || start.toISOString(),
-    //   end: state.selectInfo?.endStr || end.toISOString(),
-    //   allDay: state.selectInfo?.allDay || false,
-    // };
-    // // console.log(newEvent);
+    const newEvent = {
+      title: eventTitle,
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime.toISOString(),
+      allDay: false,
+      capacity: capacity,
+      price: price,
+      description: description,
+      isFull: false,
+      locationName: "Sal 1",
+    };
+    axios
+      .post(host + newEventEndpoint, newEvent)
+      .then((response) => {
+        if (response.status === 201) {
+          console.log(response.data);
+        } else {
+          console.log("fail");
+        }
+      })
+      .catch((err) => console.log(err));
+    // console.log(newEvent);
 
     // let calendarApi = calendarRef.current.getApi();
-    // // let calendarApi = selectInfo.view.calendar
+    // let calendarApi = selectInfo.view.calendar
 
     // calendarApi.addEvent(newEvent);
     handleCancel();
@@ -70,8 +83,8 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit }) => {
             type="text"
             name="title"
             placeholder="Název"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
+            value={eventTitle}
+            onChange={(e) => setEvenTitle(e.target.value)}
           />
         </FormGroup>
 
@@ -110,7 +123,7 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit }) => {
                 initialSettings={{
                   locale: {
                     // format: "H:m",
-                    format: "MM/DD/YYYY HH:mm",
+                    format: "MM/DD HH:mm",
                     separator: " - ",
                     applyLabel: "Použít",
                     cancelLabel: "Zrušit",
@@ -119,7 +132,6 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit }) => {
                     customRangeLabel: "Vlastní",
                     daysOfWeek: ["Ne", "Po", "Út", "St", "Čt", "Pá", "So"],
                     timePicker24Hour: true,
-                    pick12HourFormat: false,
                     monthNames: [
                       "Leden",
                       "Únor",
@@ -141,11 +153,11 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit }) => {
                   timePicker: true,
                 }}
                 onApply={(event, picker) => {
-                  // console.log(
-                  //   "picker",
-                  //   picker.startDate.toISOString(),
-                  //   picker.endDate.toISOString()
-                  // );
+                  console.log(
+                    "picker",
+                    picker.startDate.toISOString(),
+                    picker.endDate.toISOString()
+                  );
                   // setStarDateTime(new Date(picker.startDate));
                   // setEndDateTime(new Date(picker.endDate));
                 }}
@@ -172,21 +184,20 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit }) => {
             <Row>
               <Col>
                 <FormGroup>
+                  <Label for="endRecurrence">Dny</Label>
                   <DaysSelector onChange={(value) => setDays(value)} />
                 </FormGroup>
               </Col>
               <Col>
                 <FormGroup>
                   <Label for="endRecurrence">Do</Label>
-                  <FormGroup>
-                    {/* <DatePicker
-                      disabled={true}
-                      onChange={(element) => setEndReccurenceDate(element)}
-                      placeholder="Placeholder"
-                      value={endRecurrenceDate}
-                      id="endRecurrence"
-                    /> */}
-                  </FormGroup>
+                  <Input
+                    type="date"
+                    name="endRecurrenceDate"
+                    placeholder="endRecurrenceDate"
+                    value={endRecurrenceDate}
+                    onChange={(e) => setEndReccurenceDate(e.target.value)}
+                  />
                 </FormGroup>
               </Col>
             </Row>
@@ -198,8 +209,8 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit }) => {
             type="text"
             name="description"
             placeholder="Popis"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
         </FormGroup>
       </ModalBody>
@@ -211,7 +222,7 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit }) => {
           </Button>
         }
         {
-          <Button color="primary" onClick={onSubmit}>
+          <Button color="primary" onClick={handleSubmit}>
             Uložit
           </Button>
         }

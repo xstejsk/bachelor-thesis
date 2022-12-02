@@ -29,7 +29,7 @@ public class AppUser implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
     @NotNull
     private String firstName;
     @NotNull

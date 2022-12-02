@@ -45,3 +45,4 @@ cors:
   whiteListedOrigins: "http://localhost:3000/"
 host:
   domain: "http://localhost:8080"
+

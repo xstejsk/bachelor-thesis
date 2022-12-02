@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import FullCalendar from "@fullcalendar/react"; // must go before plugins
 import dayGridPlugin from "@fullcalendar/daygrid"; // a plugin!
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -25,6 +25,7 @@ const CustomScheduler = () => {
   const [events, setEvents] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddEventForm, setShowAddEventForm] = useState(false);
+  const calendarRef = useRef(null);
 
   const onPopupOpen = (args) => {
     addCategoryAndPriceFields(args);
@@ -105,6 +106,7 @@ const CustomScheduler = () => {
         </Row>
         <Row>
           <FullCalendar
+            ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             headerToolbar={{
               left: "today prev next",
@@ -118,6 +120,7 @@ const CustomScheduler = () => {
         <NewEventForm
           isOpen={showAddEventForm}
           setIsOpen={setShowAddEventForm}
+          calendarRef={calendarRef}
         ></NewEventForm>
       </div>
     );
