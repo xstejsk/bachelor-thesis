@@ -3,24 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@syncfusion/ej2-data": "^20.3.56",
-    "@syncfusion/ej2-react-calendars": "^20.3.56",
-    "@syncfusion/ej2-react-dropdowns": "^20.3.58",
-    "@syncfusion/ej2-react-grids": "^20.3.58",
-    "@syncfusion/ej2-react-schedule": "^20.3.58",
+    "@date-io/date-fns": "^2.16.0",
+    "@mui/lab": "^5.0.0-alpha.110",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "axios": "^0.24.0",
-    "bootstrap": "^5.2.2",
-    "cldr-data": "^36.0.1",
-    "cookie-parser": "^1.4.6",
-    "js-cookie": "^3.0.1",
+    "bootstrap": "^5.2.3",
+    "date-fns": "^2.29.3",
+    "flatpickr": "^4.6.13",
+    "font-awesome": "^4.7.0",
     "react": "^18.2.0",
+    "react-datetime-picker": "^4.1.1",
+    "react-datetimepicker-syaku": "^1.0.11",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.4.3",
+    "react-flatpickr": "^3.10.13",
     "react-scripts": "5.0.1",
-    "react-spinners": "^0.13.6",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -46,9 +43,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "prettier": "2.7.1",
-    "systemjs-plugin-json": "^0.3.0"
   }
 }
