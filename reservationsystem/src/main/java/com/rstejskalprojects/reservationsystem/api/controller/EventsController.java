@@ -1,5 +1,6 @@
 package com.rstejskalprojects.reservationsystem.api.controller;
 
+import com.rstejskalprojects.reservationsystem.model.Event;
 import com.rstejskalprojects.reservationsystem.model.dto.EventDTO;
 import com.rstejskalprojects.reservationsystem.service.EventServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class EventsController {
     @PostMapping("/new")
     public ResponseEntity<EventDTO> saveEvent(@RequestBody EventDTO eventDTO) {
         System.out.println(eventDTO);
-        eventsService.saveEvent(eventDTO);
-        return new ResponseEntity<>(eventDTO, HttpStatus.CREATED);
+        Event event = eventsService.saveEvent(eventDTO);
+        return new ResponseEntity<>(new EventDTO(event), HttpStatus.CREATED);
     }
 }

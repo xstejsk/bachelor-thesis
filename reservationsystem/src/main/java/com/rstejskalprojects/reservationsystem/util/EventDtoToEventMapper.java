@@ -15,8 +15,8 @@ public class EventDtoToEventMapper {
     //TODO: validation
     public Event mapToEvent(EventDTO eventDTO){
         Location location = locationService.findLocationByName(eventDTO.getLocationName());
-        return new Event(eventDTO.getStartTime(),
-                eventDTO.getEndTime(),
+        return new Event(eventDTO.getStart(),
+                eventDTO.getEnd(),
                 eventDTO.getCapacity(),
                 eventDTO.getPrice(),
                 eventDTO.getTitle(),

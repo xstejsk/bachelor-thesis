@@ -1,3 +1,6 @@
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap-daterangepicker/daterangepicker.css";
+
 import React, { useState } from "react";
 import {
   Modal,
@@ -42,11 +45,10 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
   }
 
   function handleSubmit() {
-    // console.log(state.selectInfo.view.calendar);
     const newEvent = {
       title: eventTitle,
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime.toISOString(),
+      start: startDateTime.toISOString(),
+      end: endDateTime.toISOString(),
       allDay: false,
       capacity: capacity,
       price: price,
@@ -58,7 +60,9 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
       .post(host + newEventEndpoint, newEvent)
       .then((response) => {
         if (response.status === 201) {
-          console.log(response.data);
+          let calendarApi = calendarRef.current.getApi();
+          // let calendarApi = selectInfo.view.calendar
+          calendarApi.addEvent(response.data);
         } else {
           console.log("fail");
         }
@@ -66,15 +70,11 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
       .catch((err) => console.log(err));
     // console.log(newEvent);
 
-    // let calendarApi = calendarRef.current.getApi();
-    // let calendarApi = selectInfo.view.calendar
-
-    // calendarApi.addEvent(newEvent);
     handleCancel();
   }
 
   return (
-    <Modal isOpen={isOpen} backdrop="static" size="md">
+    <Modal isOpen={isOpen} on backdrop="static" size="md">
       <ModalHeader>Nová událost</ModalHeader>
       <ModalBody>
         <FormGroup>
@@ -153,13 +153,8 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
                   timePicker: true,
                 }}
                 onApply={(event, picker) => {
-                  console.log(
-                    "picker",
-                    picker.startDate.toISOString(),
-                    picker.endDate.toISOString()
-                  );
-                  // setStarDateTime(new Date(picker.startDate));
-                  // setEndDateTime(new Date(picker.endDate));
+                  setStarDateTime(new Date(picker.startDate));
+                  setEndDateTime(new Date(picker.endDate));
                 }}
               >
                 <input className="form-control" type="text" />

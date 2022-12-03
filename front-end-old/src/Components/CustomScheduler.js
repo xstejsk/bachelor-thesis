@@ -18,25 +18,36 @@ import {
   Container,
 } from "reactstrap";
 import DaysSelector from "./DaysSelector";
-
+import csLocale from "@fullcalendar/core/locales/cs";
 import CustomGridLoader from "./CustomLoader";
-
+import SignUpModal from "./Forms/SignUpToEventModal";
 const CustomScheduler = () => {
   const [events, setEvents] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddEventForm, setShowAddEventForm] = useState(false);
+  const [showSignUpToEvent, setShowSignUpToEvent] = useState(false);
   const calendarRef = useRef(null);
+  const [state, setState] = useState({});
 
   const onPopupOpen = (args) => {
     addCategoryAndPriceFields(args);
   };
 
+  const handleEventClick = (clickInfo) => {
+    setState({ clickInfo: clickInfo });
+    console.log(state);
+    setShowSignUpToEvent(true);
+  };
+
   useEffect(() => {
+    console.log("useEffect hit");
     axios
       .get(host + mockEventsEndpoint, { timeout: 10000 })
       .then((response) => {
-        setEvents(response.data);
-        console.log(response.data);
+        if (response.status === 200) {
+          setEvents(response.data);
+          console.log(response.data);
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -45,20 +56,7 @@ const CustomScheduler = () => {
       })
       .finally(() => setIsLoading(false));
   }, []);
-  const localData = {
-    dataSource: events,
-    fields: {
-      subject: { name: "subject" },
-      id: { name: "id" },
-      description: { name: "description" },
-      startTime: { name: "startTime" },
-      endTime: { name: "endTime" },
-      capacity: { name: "capacity" },
-      endTime: { name: "endTime" },
-      isAllDay: { name: "isAllDay" },
-      recurrenceRule: { name: "recurrenceRule" },
-    },
-  };
+
   if (isLoading) {
     return <CustomGridLoader isLoading={isLoading} />;
   } else {
@@ -69,6 +67,8 @@ const CustomScheduler = () => {
           //alignItems: "center",
           //display: "flex",
           paddingTop: 3,
+          paddingLeft: 10,
+          paddingRight: 10,
           //height: "100%",
           // background: "#c93060",
         }}
@@ -106,7 +106,22 @@ const CustomScheduler = () => {
         </Row>
         <Row>
           <FullCalendar
+            initialEvents={events}
+            // businessHours={{
+            //   // days of week. an array of zero-based day of week integers (0=Sunday)
+            //   daysOfWeek: [1, 2, 3, 4], // Monday - Thursday
+
+            //   startTime: "10:00", // a start time (10am in this example)
+            //   endTime: "18:00", // an end time (6pm in this example)
+            // }}
+            eventClick={handleEventClick}
+            editable={true}
+            slotMinTime={"8:00"}
+            slotMaxTime={"18:00"}
+            slotDuration={"00:30:00"}
+            locale={csLocale}
             ref={calendarRef}
+            height={"auto"}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             headerToolbar={{
               left: "today prev next",
@@ -121,7 +136,12 @@ const CustomScheduler = () => {
           isOpen={showAddEventForm}
           setIsOpen={setShowAddEventForm}
           calendarRef={calendarRef}
-        ></NewEventForm>
+        />
+        <SignUpModal
+          setIsOpen={setShowSignUpToEvent}
+          isOpen={showSignUpToEvent}
+          clickInfo={state.clickInfo}
+        />
       </div>
     );
   }
