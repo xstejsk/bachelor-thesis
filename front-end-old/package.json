@@ -37,6 +37,7 @@
     "react-bootstrap-date-picker": "^5.1.0",
     "react-bootstrap-daterangepicker": "^8.0.0",
     "react-bootstrap-lib": "^0.0.7",
+    "react-bootstrap-table-next": "^4.0.3",
     "react-bootstrap-validation": "^0.1.11",
     "react-datepicker": "^4.8.0",
     "react-datetime-picker": "^4.1.1",
