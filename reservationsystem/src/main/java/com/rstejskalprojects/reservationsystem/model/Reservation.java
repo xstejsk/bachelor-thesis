@@ -24,7 +24,13 @@ public class Reservation {
     private Long id;
     @ManyToOne(optional = false)
     private AppUser owner;
-    @ManyToOne
+    @ManyToOne(optional = false)
     private Event event;
     private Boolean isCanceled;
+
+    public Reservation(AppUser owner, Event event, Boolean isCanceled) {
+        this.owner = owner;
+        this.event = event;
+        this.isCanceled = isCanceled;
+    }
 }

@@ -2,6 +2,7 @@ package com.rstejskalprojects.reservationsystem.api.controller.authorization;
 
 import com.rstejskalprojects.reservationsystem.api.model.authorization.AuthCrededentialsRequest;
 import com.rstejskalprojects.reservationsystem.model.AppUser;
+import com.rstejskalprojects.reservationsystem.model.dto.AppUserDTO;
 import com.rstejskalprojects.reservationsystem.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
-    @PostMapping("login")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Validated AuthCrededentialsRequest request, HttpServletResponse response) {
         try {
             Authentication authenticate = authenticationManager
@@ -48,6 +49,7 @@ public class AuthController {
             return ResponseEntity.ok()
                     .body(new HashMap<String, Object>(){{
                         put("access_token", accessToken);
+                        put("user", new AppUserDTO(user));
                     }});
 
         } catch (BadCredentialsException ex) {

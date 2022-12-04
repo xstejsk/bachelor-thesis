@@ -2,31 +2,27 @@ package com.rstejskalprojects.reservationsystem.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.rstejskalprojects.reservationsystem.model.AppUser;
-import com.rstejskalprojects.reservationsystem.model.Event;
 import com.rstejskalprojects.reservationsystem.model.Reservation;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
 public class ReservationDTO {
     @JsonProperty
     private Long reservationId;
     @JsonProperty
-    private Long userId;
-    @JsonProperty
-    private String userEmail;
-    @JsonProperty
-    private String userFullName;
+    private AppUserDTO owner;
     @JsonProperty
     private Long eventId;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS[XXX]")
     @JsonProperty
-    private LocalDateTime startTime;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime start;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS[XXX]")
     @JsonProperty
-    private LocalDateTime endTime;
+    private LocalDateTime end;
     @JsonProperty
     private Double price;
     @JsonProperty
@@ -35,12 +31,11 @@ public class ReservationDTO {
     private String title;
 
     public ReservationDTO(Reservation reservation) {
-        this.userId = reservation.getOwner().getId();
-        this.userEmail = reservation.getOwner().getEmail();
-        this.userFullName = reservation.getOwner().getFirstName() + reservation.getOwner().getLastName();
+        this.reservationId = reservation.getId();
+        this.owner = new AppUserDTO(reservation.getOwner());
         this.eventId = reservation.getEvent().getId();
-        this.startTime = reservation.getEvent().getStartTime();
-        this.endTime = reservation.getEvent().getEndTime();
+        this.start = reservation.getEvent().getStartTime();
+        this.end = reservation.getEvent().getEndTime();
         this.price = reservation.getEvent().getPrice();
         this.canceled = reservation.getIsCanceled();
         this.title = reservation.getEvent().getTitle();

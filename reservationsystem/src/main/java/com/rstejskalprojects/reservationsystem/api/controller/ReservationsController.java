@@ -1,4 +1,5 @@
 package com.rstejskalprojects.reservationsystem.api.controller;
+import com.rstejskalprojects.reservationsystem.model.Reservation;
 import com.rstejskalprojects.reservationsystem.model.dto.ReservationDTO;
 import com.rstejskalprojects.reservationsystem.service.ReservationService;
 import lombok.RequiredArgsConstructor;
@@ -6,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
@@ -25,5 +28,12 @@ public class ReservationsController {
     public ResponseEntity<List<ReservationDTO>> getAll(HttpServletRequest request, HttpServletResponse response) {
         List<ReservationDTO> reservationDTOS = reservationService.findAll().stream().map(ReservationDTO::new).collect(Collectors.toList());
         return new ResponseEntity<>(reservationDTOS, HttpStatus.OK);
+    }
+
+    @PostMapping("/new")
+    public ResponseEntity<ReservationDTO> saveReservation(@RequestBody ReservationDTO reservationDTO) {
+        System.out.println(reservationDTO);
+        Reservation reservation = reservationService.save(reservationDTO);
+        return new ResponseEntity<>(new ReservationDTO(reservation), HttpStatus.CREATED);
     }
 }

@@ -9,11 +9,12 @@ import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class EventDtoToEventMapper {
+public class EventDtoToEventMapper implements DtoMapper<EventDTO, Event> {
 
     private final LocationService locationService;
     //TODO: validation
-    public Event mapToEvent(EventDTO eventDTO){
+    @Override
+    public Event map(EventDTO eventDTO){
         Location location = locationService.findLocationByName(eventDTO.getLocationName());
         return new Event(eventDTO.getStart(),
                 eventDTO.getEnd(),

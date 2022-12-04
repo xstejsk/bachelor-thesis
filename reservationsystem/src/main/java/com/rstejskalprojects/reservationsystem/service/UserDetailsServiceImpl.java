@@ -3,6 +3,7 @@ package com.rstejskalprojects.reservationsystem.service;
 import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.RegistrationToken;
 import com.rstejskalprojects.reservationsystem.repository.UserRepository;
+import com.rstejskalprojects.reservationsystem.util.customexception.ReservationNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -31,6 +32,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     public List<AppUser> findAll() {
         return userRepository.findAll();
+    }
+
+    public AppUser findById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new ReservationNotFoundException(
+                String.format("Reservation with id %s not found", id)
+        ));
     }
 
     public String saveUser(AppUser appUser){

@@ -4,6 +4,7 @@ import com.rstejskalprojects.reservationsystem.model.Event;
 import com.rstejskalprojects.reservationsystem.model.dto.EventDTO;
 import com.rstejskalprojects.reservationsystem.repository.EventRepository;
 import com.rstejskalprojects.reservationsystem.util.EventDtoToEventMapper;
+import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +20,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event findEventById(Long id) {
-        return null;
+        return eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(
+                String.format("Event with id %s does not exist", id)));
     }
 
     @Override
@@ -34,7 +36,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event saveEvent(EventDTO eventDTO) {
-        Event event = eventDtoToEventMapper.mapToEvent(eventDTO);
+        Event event = eventDtoToEventMapper.map(eventDTO);
         eventRepository.save(event);
         return event;
     }

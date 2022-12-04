@@ -28,14 +28,18 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
     public void run(String...args){
         Location location = new Location(1L, "Sal 1", "nejvetsi sal");
         locationRepository.save(location);
-        String password = "pw";
+        String password = "admin";
         String encodedPw = bCryptPasswordEncoder.encode(password);
-        AppUser admin = new AppUser("Admin",
-                "Admin",
-                adminEmail,
-                encodedPw,
-                UserRoleEnum.USER);
+//        AppUser admin = new AppUser(1L, "Admin",
+//                "Admin",
+//                adminEmail,
+//                encodedPw,
+//                UserRoleEnum.USER);
+
+        AppUser admin = new AppUser(1L, "admin", "user", "admin", "admin", encodedPw, UserRoleEnum.ADMIN, false, true);
+        AppUser user = new AppUser(2L, "user", "user", "user", "user", bCryptPasswordEncoder.encode("user"), UserRoleEnum.USER, false, true);
         userRepository.save(admin);
+        userRepository.save(user);
         Event event = new Event(LocalDateTime.now(), LocalDateTime.now().plusMinutes(120),
                 5, 100d, "Event z databaze", "popis", false, false, null, location);
         eventRepository.save(event);

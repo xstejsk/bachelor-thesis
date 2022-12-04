@@ -1,7 +1,9 @@
 package com.rstejskalprojects.reservationsystem.service;
 
 import com.rstejskalprojects.reservationsystem.model.Reservation;
+import com.rstejskalprojects.reservationsystem.model.dto.ReservationDTO;
 import com.rstejskalprojects.reservationsystem.repository.ReservationRepository;
+import com.rstejskalprojects.reservationsystem.util.ReservationDtoToReservationMapper;
 import com.rstejskalprojects.reservationsystem.util.customexception.ReservationNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import java.util.List;
 public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final ReservationDtoToReservationMapper mapper;
 
     public Reservation findReservationById(Long reservationId) {
         return reservationRepository.findReservationById(reservationId).orElseThrow(() ->
@@ -33,5 +36,17 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public List<Reservation> findAll() {
         return reservationRepository.findAll();
+    }
+
+    @Override
+    public Reservation save(Reservation reservation) {
+        return reservationRepository.save(reservation);
+    }
+
+    @Override
+    public Reservation save(ReservationDTO reservationDTO) {
+        Reservation reservation = mapper.map(reservationDTO);
+        reservationRepository.save(reservation);
+        return reservation;
     }
 }
