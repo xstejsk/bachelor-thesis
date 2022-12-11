@@ -30,14 +30,14 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
   const [capacity, setCapacity] = useState(1);
   const [location, setLocation] = useState(""); // will be taken from the callendar context - each location has its own callendar
   const recurrenceOptions = [
-    { value: "never", label: "Nikdy" },
-    { value: "daily", label: "Denně" },
-    { value: "weekly", label: "Týdně" },
-    { value: "monthly", label: "Měsíčně" },
+    { value: "NEVER", label: "Nikdy" },
+    //{ value: "DAILY", label: "Denně" },
+    { value: "WEEKLY", label: "Týdně" },
+    { value: "MONTHLY", label: "Měsíčně" },
   ];
   const [recurrence, setRecurrence] = useState(recurrenceOptions[0].value);
   const [endRecurrenceDate, setEndReccurenceDate] = useState(new Date());
-  const [days, setDays] = useState([]); // array mapping days to numbers, monday - 0
+  const [days, setDays] = useState([]);
 
   function handleCancel() {
     console.log(days);
@@ -54,7 +54,12 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
       price: price,
       description: description,
       isFull: false,
-      locationName: "Sal 1",
+      locationName: "Sal 1", // TODO make this dynamic
+      recurrenceGroup: {
+        frequency: recurrence,
+        daysOfWeek: days,
+        endDate: endRecurrenceDate,
+      },
     };
     axios
       .post(host + newEventEndpoint, newEvent)
@@ -62,9 +67,15 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
         if (response.status === 201) {
           let calendarApi = calendarRef.current.getApi();
           // let calendarApi = selectInfo.view.calendar
-          calendarApi.addEvent(response.data);
+          let data = response.data;
+          console.log(data);
+          for (let i = 0; i <= data.length; i++) {
+            console.log(data[i]);
+            calendarApi.addEvent(data[i]);
+          }
         } else {
           console.log("fail");
+          console.log(newEvent);
         }
       })
       .catch((err) => console.log(err));
@@ -174,19 +185,27 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
           </Row>
         </FormGroup>
 
-        {recurrence !== recurrenceOptions[0].value && (
-          <FormGroup>
-            <Row>
+        <FormGroup>
+          <Row>
+            {recurrence === "WEEKLY" && (
               <Col>
                 <FormGroup>
                   <Label for="endRecurrence">Dny</Label>
-                  <DaysSelector onChange={(value) => setDays(value)} />
+                  <DaysSelector
+                    onChange={(value) => {
+                      setDays(value);
+                      console.log(days);
+                    }}
+                  />
                 </FormGroup>
               </Col>
-              <Col>
+            )}
+            <Col>
+              {recurrence !== "NEVER" && (
                 <FormGroup>
                   <Label for="endRecurrence">Do</Label>
                   <Input
+                    required={true}
                     type="date"
                     name="endRecurrenceDate"
                     placeholder="endRecurrenceDate"
@@ -194,10 +213,11 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
                     onChange={(e) => setEndReccurenceDate(e.target.value)}
                   />
                 </FormGroup>
-              </Col>
-            </Row>
-          </FormGroup>
-        )}
+              )}
+            </Col>
+          </Row>
+        </FormGroup>
+
         <FormGroup>
           <Label for="description">Popis</Label>
           <Input

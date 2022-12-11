@@ -2,11 +2,14 @@ package com.rstejskalprojects.reservationsystem.model;
 
 import lombok.AllArgsConstructor;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @AllArgsConstructor
 public class RecurrenceRule {
     private FrequencyEnum frequency;
+    private DayOfWeek[] daysOfWeek;
     private Integer interval;
     private Integer count;
 
@@ -16,6 +19,7 @@ public class RecurrenceRule {
         if (o == null || getClass() != o.getClass()) return false;
         RecurrenceRule that = (RecurrenceRule) o;
         return frequency == that.frequency && Objects.equals(interval, that.interval) && Objects.equals(count, that.count);
+        DayOfWeek.
     }
 
     @Override

@@ -5,31 +5,31 @@ import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 
 const DAYS = [
   {
-    key: "monday",
+    key: "MONDAY",
     label: "Po",
   },
   {
-    key: "tuesday",
+    key: "TUESDAY",
     label: "Út",
   },
   {
-    key: "wednesday",
+    key: "WEDNESDAY",
     label: "St",
   },
   {
-    key: "thursday",
+    key: "THURSDAY",
     label: "Čt",
   },
   {
-    key: "friday",
+    key: "FRIDAY",
     label: "Pá",
   },
   {
-    key: "saturday",
+    key: "SATURDAY",
     label: "So",
   },
   {
-    key: "sunday",
+    key: "SUNDAY",
     label: "Ne",
   },
 ];
@@ -91,7 +91,7 @@ const DaysSelector = (props) => {
         }}
       >
         {DAYS.map((day, index) => (
-          <StyledToggle key={day.key} value={index} aria-label={day.key}>
+          <StyledToggle key={day.key} value={day.key} aria-label={day.key}>
             {day.label}
           </StyledToggle>
         ))}

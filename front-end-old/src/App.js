@@ -5,9 +5,9 @@ import Homepage from "./Components/Homepage";
 import PrivateRoute from "./PrivateRoute";
 import Login from "./Components/Login";
 import Register from "./Components/Register";
-import Navbar from "./Components/Navbar";
+import Navbar from "./Components/Navbar/Navbar";
 import CustomScheduler from "./Components/CustomScheduler";
-import ReservationsTable from "./Components/Tables/ReservationsTable";
+import ReservationsTable from "./Components/Tables/ReservationTable";
 import GlobalState from "./util/GlobalState";
 function App() {
   return (

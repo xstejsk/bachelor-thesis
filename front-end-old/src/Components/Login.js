@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { useLocalState } from "../util/LocalStorageUtil";
 import { host, loginEndpoint } from "../util/EndpointConfig";
@@ -12,6 +12,10 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [globalState, setGlobalState] = useContext(Context);
+
+  useEffect(() => {
+    setGlobalState({});
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();

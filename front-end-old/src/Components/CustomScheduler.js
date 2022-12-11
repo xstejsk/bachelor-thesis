@@ -39,6 +39,16 @@ const CustomScheduler = () => {
   const [globalState, setGlobalState] = useContext(Context);
   const [showEventPopover, setShowEventPopover] = useState(false);
 
+  const recurEvent = [
+    {
+      groupId: "blueEvents", // recurrent events in this group move together
+      daysOfWeek: ["3", "4"],
+      startRecur: "2022-12-09",
+      endRecur: "2023-1-25",
+      startTime: "10:45:00",
+      endTime: "12:45:00",
+    },
+  ];
   const handleEventClick = (clickInfo) => {
     if (globalState?.user?.role === "ROLE_USER") {
       setState({ clickInfo: clickInfo });
@@ -115,7 +125,7 @@ const CustomScheduler = () => {
         </Row>
         <Row>
           <FullCalendar
-            initialEvents={events}
+            events={events}
             // businessHours={{
             //   // days of week. an array of zero-based day of week integers (0=Sunday)
             //   daysOfWeek: [1, 2, 3, 4], // Monday - Thursday
@@ -126,7 +136,7 @@ const CustomScheduler = () => {
             // eventMouseEnter={handleMouseEnter}
             eventClick={handleEventClick}
             editable={true}
-            slotMinTime={"8:00"}
+            slotMinTime={"5:00"}
             // eventStartEditable={false}
             slotMaxTime={"22:00"}
             slotDuration={"00:30:00"}
@@ -141,6 +151,7 @@ const CustomScheduler = () => {
             initialView="timeGridWeek"
             views={["dayGridMonth", "dayGridWeek", "dayGridDay"]}
             themeSystem="bootstrap5"
+            eventOverlap={false}
           />
         </Row>
         <NewEventForm
