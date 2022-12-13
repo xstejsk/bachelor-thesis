@@ -3,7 +3,11 @@ import FullCalendar from "@fullcalendar/react"; // must go before plugins
 import dayGridPlugin from "@fullcalendar/daygrid"; // a plugin!
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { host, mockEventsEndpoint } from "../util/EndpointConfig";
+import {
+  host,
+  eventsEndpoint,
+  locationsEndpoint,
+} from "../util/EndpointConfig";
 import Select from "react-select";
 import axios from "axios";
 import NewEventForm from "./Forms/NewEventForm";
@@ -38,17 +42,11 @@ const CustomScheduler = () => {
   const [state, setState] = useState({});
   const [globalState, setGlobalState] = useContext(Context);
   const [showEventPopover, setShowEventPopover] = useState(false);
+  const [locations, setLocations] = useState([]);
+  const [currentLocationId, setCurrentLocationId] = useState(null);
+  const [locationOptions, setLocationOptions] = useState(null);
+  const [eventsByLocation, setEventsByLocation] = useState(null);
 
-  const recurEvent = [
-    {
-      groupId: "blueEvents", // recurrent events in this group move together
-      daysOfWeek: ["3", "4"],
-      startRecur: "2022-12-09",
-      endRecur: "2023-1-25",
-      startTime: "10:45:00",
-      endTime: "12:45:00",
-    },
-  ];
   const handleEventClick = (clickInfo) => {
     if (globalState?.user?.role === "ROLE_USER") {
       setState({ clickInfo: clickInfo });
@@ -58,14 +56,58 @@ const CustomScheduler = () => {
     }
   };
 
+  const filterEventsByLocation = (events, locationId) => {
+    return events.filter((event) => event.locationId === locationId);
+  };
+
+  const handleLocationChange = (locationId) => {
+    setCurrentLocationId(locationId);
+    setEventsByLocation(filterEventsByLocation(events, locationId));
+  };
+
   useEffect(() => {
     console.log("useEffect hit");
     axios
-      .get(host + mockEventsEndpoint, { timeout: 10000 })
+      .get(host + locationsEndpoint)
       .then((response) => {
         if (response.status === 200) {
-          setEvents(response.data);
-          console.log(response.data);
+          setLocations(response.data);
+          let locationId;
+          if (currentLocationId !== null) {
+            locationId = currentLocationId;
+          } else {
+            locationId = response.data.at(0).id;
+            setCurrentLocationId(locationId);
+          }
+          let locationOptions = response.data.map((location) => ({
+            value: location.id,
+            label: location.name,
+          }));
+          setLocationOptions(locationOptions);
+          console.log(locationOptions);
+          if (locations.size === 0) {
+            setEvents([]);
+            return;
+          }
+          axios
+            .get(host + eventsEndpoint, {
+              timeout: 10000,
+            })
+            .then((response) => {
+              if (response.status === 200) {
+                setEvents(response.data);
+                let filteredEvents = filterEventsByLocation(
+                  response.data,
+                  locationId
+                );
+                setEventsByLocation(filteredEvents);
+                console.log(response.data);
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              // handle timeout
+            });
         }
       })
       .catch((err) => {
@@ -101,10 +143,10 @@ const CustomScheduler = () => {
             }}
           >
             <Select
-            // style={{ float: "left" }}
-            // defaultValue={departments[0]}
-            // options={departments}
-            // onChange={(element) => onFilter(element)}
+              style={{ float: "left" }}
+              defaultValue={locationOptions[0]}
+              options={locationOptions}
+              onChange={(element) => handleLocationChange(element.value)}
             />
           </Col>
           <Col
@@ -125,7 +167,7 @@ const CustomScheduler = () => {
         </Row>
         <Row>
           <FullCalendar
-            events={events}
+            events={eventsByLocation}
             // businessHours={{
             //   // days of week. an array of zero-based day of week integers (0=Sunday)
             //   daysOfWeek: [1, 2, 3, 4], // Monday - Thursday
@@ -158,6 +200,7 @@ const CustomScheduler = () => {
           isOpen={showAddEventForm}
           setIsOpen={setShowAddEventForm}
           calendarRef={calendarRef}
+          locationId={currentLocationId}
         />
         <SignUpModal
           setIsOpen={setShowSignUpToEvent}

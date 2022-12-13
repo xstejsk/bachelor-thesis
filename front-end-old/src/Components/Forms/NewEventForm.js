@@ -21,24 +21,22 @@ import axios from "axios";
 import { host, newEventEndpoint } from "../../util/EndpointConfig";
 // import createReactClass from "create-react-class";
 
-const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
+const NewEventForm = ({ isOpen, setIsOpen, calendarRef, locationId }) => {
   const [eventTitle, setEvenTitle] = useState("");
   const [startDateTime, setStarDateTime] = useState(new Date());
   const [endDateTime, setEndDateTime] = useState(new Date());
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(100);
   const [capacity, setCapacity] = useState(1);
-  const [location, setLocation] = useState(""); // will be taken from the callendar context - each location has its own callendar
+
+  const [endRecurrenceDate, setEndReccurenceDate] = useState(new Date());
+  const [days, setDays] = useState([]);
   const recurrenceOptions = [
     { value: "NEVER", label: "Nikdy" },
-    //{ value: "DAILY", label: "Denně" },
     { value: "WEEKLY", label: "Týdně" },
     { value: "MONTHLY", label: "Měsíčně" },
   ];
   const [recurrence, setRecurrence] = useState(recurrenceOptions[0].value);
-  const [endRecurrenceDate, setEndReccurenceDate] = useState(new Date());
-  const [days, setDays] = useState([]);
-
   function handleCancel() {
     console.log(days);
     setIsOpen(false);
@@ -54,7 +52,7 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
       price: price,
       description: description,
       isFull: false,
-      locationName: "Sal 1", // TODO make this dynamic
+      locationId: locationId,
       recurrenceGroup: {
         frequency: recurrence,
         daysOfWeek: days,
@@ -66,7 +64,6 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
       .then((response) => {
         if (response.status === 201) {
           let calendarApi = calendarRef.current.getApi();
-          // let calendarApi = selectInfo.view.calendar
           let data = response.data;
           console.log(data);
           for (let i = 0; i <= data.length; i++) {
@@ -79,8 +76,6 @@ const NewEventForm = ({ isOpen, setIsOpen, onSubmit, calendarRef }) => {
         }
       })
       .catch((err) => console.log(err));
-    // console.log(newEvent);
-
     handleCancel();
   }
 

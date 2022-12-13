@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import BootstrapTable from "react-bootstrap-table-next";
 import paginationFactory from "react-bootstrap-table2-paginator";
-import { host, mockReservationsEndpoint } from "../../util/EndpointConfig";
+import { host, reservationsEndpoint } from "../../util/EndpointConfig";
 import CustomGridLoader from "../CustomLoader";
 import filterFactory, {
   textFilter,
@@ -71,7 +71,7 @@ const ReservationTable = () => {
 
   useEffect(() => {
     axios
-      .get(host + mockReservationsEndpoint, { timeout: 10000 })
+      .get(host + reservationsEndpoint, { timeout: 10000 })
       .then((response) => {
         setReservations(response.data);
         console.log(response.data);
