@@ -6,6 +6,8 @@ import com.rstejskalprojects.reservationsystem.util.customexception.LocationNotF
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class LocationServiceImpl implements LocationService {
@@ -27,5 +29,10 @@ public class LocationServiceImpl implements LocationService {
     @Override
     public Location saveLocation(Location location) {
         return locationRepository.save(location);
+    }
+
+    @Override
+    public List<Location> findAll() {
+        return locationRepository.findAll();
     }
 }

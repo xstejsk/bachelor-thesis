@@ -15,15 +15,18 @@ public class EventDtoToEventMapper implements DtoMapper<EventDTO, Event> {
     //TODO: validation
     @Override
     public Event map(EventDTO eventDTO){
-        Location location = locationService.findLocationByName(eventDTO.getLocationName());
+        Location location = locationService.findLocationById(eventDTO.getLocationId());
         return new Event(eventDTO.getStart(),
                 eventDTO.getEnd(),
                 eventDTO.getCapacity(),
                 eventDTO.getPrice(),
                 eventDTO.getTitle(),
                 eventDTO.getDescription(),
-                eventDTO.getIsAllDay(),
                 eventDTO.getIsFull(),
-                null, location);
+                eventDTO.getRecurrenceGroup(),
+                location);
+
+
     }
+
 }

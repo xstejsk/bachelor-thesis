@@ -3,6 +3,7 @@ package com.rstejskalprojects.reservationsystem.model.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.rstejskalprojects.reservationsystem.model.Event;
+import com.rstejskalprojects.reservationsystem.model.RecurrenceGroup;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
@@ -27,9 +28,9 @@ public class EventDTO {
     @JsonProperty
     private Boolean isAllDay = false;
     @JsonProperty
-    private String recurrenceRule;
+    private RecurrenceGroup recurrenceGroup;
     @JsonProperty
-    private String locationName;
+    private Long locationId;
     @JsonProperty
     private Boolean isFull;
 
@@ -41,9 +42,8 @@ public class EventDTO {
         this.price = event.getPrice();
         this.title = event.getTitle();
         this.description = event.getDescription();
-        this.isAllDay = event.getIsAllDay();
-        // this.recurrenceRule = event.getRecurrenceRule().toString();
-        this.locationName = event.getLocation().getName();
+        this.recurrenceGroup = event.getRecurrenceGroup();
+        this.locationId = event.getLocation().getId();
         this.isFull = event.getIsFull();
     }
 }

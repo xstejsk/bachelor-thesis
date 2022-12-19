@@ -1,10 +1,9 @@
 package com.rstejskalprojects.reservationsystem.model;
 
 public enum FrequencyEnum {
-    DAILY("DAILY"),
+    NEVER("NEVER"),
     WEEKLY("WEEKLY"),
-    MONTHLY("MONTHLY"),
-    YEARLY("YEARLY");
+    MONTHLY("MONTHLY");
 
     private final String value;
     FrequencyEnum(String value) {

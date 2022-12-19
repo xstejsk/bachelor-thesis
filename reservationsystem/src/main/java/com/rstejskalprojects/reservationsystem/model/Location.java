@@ -28,7 +28,8 @@ public class Location {
     @Column(unique = true)
     @NotNull
     private String name;
-    @JsonProperty
-    private String description;
 
+    public Location(String name, String description) {
+        this.name = name;
+    }
 }

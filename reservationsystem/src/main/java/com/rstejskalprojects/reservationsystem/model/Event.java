@@ -1,20 +1,17 @@
 package com.rstejskalprojects.reservationsystem.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.Value;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -32,6 +29,7 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(optional = false)
+    @JoinColumn(name="locaton_id")
     @NotNull
     private Location location;
     @NotNull
@@ -47,19 +45,18 @@ public class Event {
     @NotNull
     private String title;
     private String description;
-    @NotNull
-    private Boolean isAllDay;
     @Transient
     private Boolean isFull = false;
-    @Transient
-    private RecurrenceRule recurrenceRule;
+    @ManyToOne
+    @JoinColumn(name="recurrence_group_id")
+    private RecurrenceGroup recurrenceGroup;
 
     public Event(LocalDateTime startTime,
                  LocalDateTime endTime, Integer capacity,
                  Double price, String title,
-                 String description, Boolean isAllDay,
+                 String description,
                  Boolean isFull,
-                 RecurrenceRule recurrenceRule,
+                 RecurrenceGroup recurrenceGroup,
                  Location location) {
         this.startTime = startTime;
         this.endTime = endTime;
@@ -67,9 +64,8 @@ public class Event {
         this.price = price;
         this.title = title;
         this.description = description;
-        this.isAllDay = isAllDay;
         this.isFull = isFull;
-        this.recurrenceRule = recurrenceRule;
+        this.recurrenceGroup = recurrenceGroup;
         this.location = location;
     }
 }

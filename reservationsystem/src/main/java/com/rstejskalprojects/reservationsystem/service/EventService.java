@@ -10,7 +10,11 @@ public interface EventService {
 
     List<Event> findAll();
 
-    Event saveEvent(Event event);
+    List<Event> saveEvent(Event event);
 
-    Event saveEvent(EventDTO eventDTO);
+    List<Event> saveEvent(EventDTO eventDTO);
+
+    List<Event> findByLocationName(String name);
+
+    List<Event> findByLocationId(Long id);
 }

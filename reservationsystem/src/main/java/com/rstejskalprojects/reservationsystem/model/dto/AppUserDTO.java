@@ -11,11 +11,7 @@ public class AppUserDTO {
     @JsonProperty
     private Long userId;
     @JsonProperty
-    private String username;
-    @JsonProperty
-    private String firstName;
-    @JsonProperty
-    private String lastName;
+    private String fullName;
     @JsonProperty
     private String email;
     @JsonProperty
@@ -23,9 +19,7 @@ public class AppUserDTO {
 
     public AppUserDTO(AppUser appUser) {
         this.userId = appUser.getId();
-        this.firstName = appUser.getFirstName();
-        this.lastName = appUser.getLastName();
-        this.username= appUser.getUsername();
+        this.fullName = appUser.getFirstName() + " " + appUser.getLastName();
         this.email = appUser.getEmail();
         this.role = appUser.getUserRole().getName();
     }
