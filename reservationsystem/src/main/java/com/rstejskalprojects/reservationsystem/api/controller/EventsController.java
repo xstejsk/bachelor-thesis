@@ -2,14 +2,19 @@ package com.rstejskalprojects.reservationsystem.api.controller;
 
 import com.rstejskalprojects.reservationsystem.model.Event;
 import com.rstejskalprojects.reservationsystem.model.dto.EventDTO;
+import com.rstejskalprojects.reservationsystem.service.EventService;
 import com.rstejskalprojects.reservationsystem.service.EventServiceImpl;
+import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
+import com.rstejskalprojects.reservationsystem.util.customexception.RecurrenceGroupNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UrlParamsEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,7 +32,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EventsController {
 
-    private final EventServiceImpl eventsService;
+    private final EventService eventsService;
     private final Set<String> allowedParams = new HashSet<>(List.of("locationName", "locationId"));
 
     @PostMapping("/new")
@@ -60,5 +65,51 @@ public class EventsController {
         List<EventDTO> eventDTOS = events.stream().map(EventDTO::new).collect(Collectors.toList());
 
         return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<EventDTO>> getNonCanceled(@RequestParam(required=false) Map<String,String> params) {
+        log.info("get all events called with parameters {}", params);
+        if (!allowedParams.containsAll(params.keySet())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        List<Event> events;
+
+        if (params.containsKey(UrlParamsEnum.LOCATION_NAME.getValue())) {
+            events = eventsService.findByLocationName(params.get(UrlParamsEnum.LOCATION_NAME.getValue()));
+        } else if (params.containsKey(UrlParamsEnum.LOCATION_ID.getValue())) {
+            try {
+                events = eventsService.findByLocationId(Long.parseLong(params.get(UrlParamsEnum.LOCATION_ID.getValue())));
+            } catch (Exception e) {
+                log.info("could not parse locationId to long");
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            events = eventsService.findAllNonCanceled();
+        }
+        List<EventDTO> eventDTOS = events.stream().map(EventDTO::new).collect(Collectors.toList());
+
+        return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
+    }
+
+    @PutMapping("/cancel/{id}")
+    public ResponseEntity<String> cancelEvent(@PathVariable("id") Long id) {
+        try {
+            Event event = eventsService.findEventById(id);
+            eventsService.cancelEvent(event);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (EventNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+
+    }
+
+    @PutMapping("/cancel/group/{id}")
+    public ResponseEntity<String> cancelRecurrenceGroup(@PathVariable("id") Long groupId) {
+        List<Event> events = eventsService.cancelRecurrentEvents(groupId);
+        if (events.isEmpty()) {
+            return new ResponseEntity<>("recurrence group with id " + groupId + "does not exist", HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -24,6 +24,7 @@ public class EventDtoToEventMapper implements DtoMapper<EventDTO, Event> {
                 eventDTO.getDescription(),
                 eventDTO.getIsFull(),
                 eventDTO.getRecurrenceGroup(),
+                eventDTO.getIsCanceled(),
                 location);
 
 

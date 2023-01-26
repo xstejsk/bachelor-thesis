@@ -9,5 +9,7 @@ public interface RecurrenceGroupService {
 
     List<RecurrenceGroup> findByFrequency(FrequencyEnum frequency);
 
+    RecurrenceGroup findById(Long id);
+
     RecurrenceGroup saveRecurrenceGroup(RecurrenceGroup recurrenceGroup);
 }

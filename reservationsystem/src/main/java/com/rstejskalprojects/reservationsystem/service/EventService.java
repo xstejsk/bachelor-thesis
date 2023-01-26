@@ -17,4 +17,12 @@ public interface EventService {
     List<Event> findByLocationName(String name);
 
     List<Event> findByLocationId(Long id);
+
+    Event cancelEvent(EventDTO eventDTO);
+
+    Event cancelEvent(Event event);
+
+    List<Event> cancelRecurrentEvents(Long groupId);
+
+    List<Event> findAllNonCanceled();
 }

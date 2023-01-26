@@ -1,5 +1,6 @@
 package com.rstejskalprojects.reservationsystem.api.model.authorization;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.istack.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,12 +14,16 @@ import javax.persistence.Column;
 public class RegistrationRequest {
 
     @NotNull
+    @JsonProperty
     private String firstName;
     @NotNull
+    @JsonProperty
     private String lastName;
     @NotNull
+    @JsonProperty
     private String password;
     @NotNull
+    @JsonProperty
     @Column(unique = true)
     private String email;
 

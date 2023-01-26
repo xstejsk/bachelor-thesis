@@ -17,4 +17,8 @@ public interface ReservationService {
     Reservation save(Reservation reservation);
 
     Reservation save(ReservationDTO reservationDTO);
+
+    List<Reservation> cancelReservationsByEventId(Long id);
+
+    List<Reservation> cancelReservationsByEventGroupId(Long groupId);
 }

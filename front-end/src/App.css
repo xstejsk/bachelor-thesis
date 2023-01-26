@@ -1,38 +1,42 @@
-.App {
-  text-align: center;
+.form-signin,
+.form-signup {
+  max-width: 330px;
+  padding: 15px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.sr-only {
+  /*bootstrap screen reader class that contains labels*/
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.form-signin .form-floating:focus-within,
+.form-signup .form-floating:focus-within {
+  z-index: 2;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.form-signin input[type="email"],
+.form-signup input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
-.App-link {
-  color: #61dafb;
+.form-signin input[type="password"],
+.form-signup input[type="password"] {
+  margin-bottom: -1px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.form-signup input[type="text"] {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  margin-bottom: -1px;
 }

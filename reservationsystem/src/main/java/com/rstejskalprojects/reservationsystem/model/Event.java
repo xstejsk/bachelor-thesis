@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Event {
 
     @Id
@@ -50,6 +52,7 @@ public class Event {
     @ManyToOne
     @JoinColumn(name="recurrence_group_id")
     private RecurrenceGroup recurrenceGroup;
+    private Boolean isCanceled = false;
 
     public Event(LocalDateTime startTime,
                  LocalDateTime endTime, Integer capacity,
@@ -66,6 +69,26 @@ public class Event {
         this.description = description;
         this.isFull = isFull;
         this.recurrenceGroup = recurrenceGroup;
+        this.location = location;
+    }
+
+    public Event(LocalDateTime startTime,
+                 LocalDateTime endTime, Integer capacity,
+                 Double price, String title,
+                 String description,
+                 Boolean isFull,
+                 RecurrenceGroup recurrenceGroup,
+                 Boolean isCanceled,
+                 Location location) {
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.capacity = capacity;
+        this.price = price;
+        this.title = title;
+        this.description = description;
+        this.isFull = isFull;
+        this.recurrenceGroup = recurrenceGroup;
+        this.isCanceled = isCanceled;
         this.location = location;
     }
 }

@@ -32,7 +32,9 @@ public class EventDTO {
     @JsonProperty
     private Long locationId;
     @JsonProperty
-    private Boolean isFull;
+    private Boolean isFull = false;
+    @JsonProperty
+    private Boolean isCanceled = false;
 
     public EventDTO(Event event) {
         this.id = event.getId();
@@ -45,6 +47,7 @@ public class EventDTO {
         this.recurrenceGroup = event.getRecurrenceGroup();
         this.locationId = event.getLocation().getId();
         this.isFull = event.getIsFull();
+        this.isCanceled = event.getIsCanceled();
     }
 }
 

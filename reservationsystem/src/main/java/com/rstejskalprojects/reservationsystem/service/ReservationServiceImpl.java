@@ -6,12 +6,16 @@ import com.rstejskalprojects.reservationsystem.repository.ReservationRepository;
 import com.rstejskalprojects.reservationsystem.util.ReservationDtoToReservationMapper;
 import com.rstejskalprojects.reservationsystem.util.customexception.ReservationNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
@@ -43,10 +47,28 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationRepository.save(reservation);
     }
 
+
+    @Override
+    @Transactional
+    public List<Reservation> cancelReservationsByEventId(Long eventId) {
+        reservationRepository.cancelReservationsByEventId(eventId);
+        log.info("reservations for event of id {} have been cancelled", eventId);
+        return reservationRepository.findReservationByEventId(eventId);
+    }
+
+    @Override
+    @Transactional
+    public List<Reservation> cancelReservationsByEventGroupId(Long groupId) {
+        reservationRepository.cancelReservationsByEventGroupId(groupId);
+        log.info("canceled reservations for group id {}", groupId);
+        return reservationRepository.findReservationByEventGroupId(groupId);
+    }
+
     @Override
     public Reservation save(ReservationDTO reservationDTO) {
         Reservation reservation = mapper.map(reservationDTO);
         reservationRepository.save(reservation);
+        log.info("reservation saved {}", reservation);
         return reservation;
     }
 }

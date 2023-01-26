@@ -4,17 +4,22 @@ import com.rstejskalprojects.reservationsystem.api.model.authorization.Registrat
 import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.UserRoleEnum;
 import com.rstejskalprojects.reservationsystem.model.RegistrationToken;
-import com.rstejskalprojects.reservationsystem.util.customexception.UnknownRegistrationTokenException;
-import com.rstejskalprojects.reservationsystem.util.customexception.UsedRegistrationTokenException;
+import com.rstejskalprojects.reservationsystem.util.customexception.ExpiredTokenException;
+import com.rstejskalprojects.reservationsystem.util.customexception.UnknownTokenException;
+import com.rstejskalprojects.reservationsystem.util.customexception.UsedTokenException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RegistrationServiceImpl implements RegistrationService {
 
     private final UserDetailsServiceImpl userDetailsService;
@@ -23,7 +28,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Value("${host.domain}")
     private String host;
 
-    public void register(RegistrationRequest request){
+    public String register(RegistrationRequest request){
         String token = userDetailsService.saveUser(
                 new AppUser(request.getFirstName(),
                         request.getLastName(),
@@ -31,28 +36,51 @@ public class RegistrationServiceImpl implements RegistrationService {
                         request.getPassword(),
                         UserRoleEnum.USER));
 
-        String link = host + "/registration/confirm?token=" + token;
-        emailSender.sendEmail(request.getEmail(), buildEmail(request.getFirstName(), link));
+        String link = host + "/registration/confirm/?token=" + token;
+        new Thread(() -> emailSender.sendEmail(request.getEmail(), buildEmail(request.getFirstName(), link), "Potvrzení registrace")).start();
+        return token;
+    }
+
+    @Override
+    public String resendRegistrationEmail(String email) {
+        try {
+            AppUser appUser = (AppUser) userDetailsService.loadUserByUsername(email);
+            String token = UUID.randomUUID().toString();
+            RegistrationToken confirmationToken = new RegistrationToken(
+                    token,
+                    LocalDateTime.now(),
+                    LocalDateTime.now().plusMinutes(30),
+                    appUser);
+
+            registrationTokenService.saveToken(confirmationToken);
+            String link = host + "/registration/confirm?token=" + token;
+            new Thread(() -> emailSender.sendEmail(email, buildEmail(appUser.getFirstName(), link), "Potvrzení registrace")).start();
+            log.info("Registration token for user {} was resent", email);
+            return token;
+        } catch (UsernameNotFoundException e) {
+            log.warn("User {} not found", email);
+            throw new UsernameNotFoundException("user with given email does not exist");
+        }
     }
 
     @Transactional
-    public void confirmToken(String token) throws UnknownRegistrationTokenException {
+    public void confirmToken(String token) throws UnknownTokenException {
         RegistrationToken confirmationToken = registrationTokenService
-                .getToken(token)
-                .orElseThrow(() -> new UnknownRegistrationTokenException("Token not found"));
+                .getToken(token);
 
         if (confirmationToken.getConfirmedAt() != null) {
-            throw new UsedRegistrationTokenException("Email is already confirmed");
+            throw new UsedTokenException("Email is already confirmed");
         }
 
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
-            throw new UnknownRegistrationTokenException("Token has expired");
+            throw new ExpiredTokenException("Token has expired");
         }
 
-        registrationTokenService.setConfirmedAt(token);
+        registrationTokenService.setConfirmedAt(confirmationToken);
         userDetailsService.enableUser(confirmationToken.getUser().getEmail());
+        log.info("User {} was enabled", confirmationToken.getUser().getEmail());
     }
 
     private String buildEmail(String name, String link) {
@@ -81,7 +109,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 "Margin-top:4px;padding-left:10px\">\n" +
                 "                      <span style=\"font-family:Helvetica,Arial,sans-serif;" +
                 "font-weight:700;color:#ffffff;text-decoration:none;vertical-align:top;display:" +
-                "inline-block\">Confirm your email</span>\n" +
+                "inline-block\">Potvrďte vaši emailovou adresu</span>\n" +
                 "                    </td>\n" +
                 "                  </tr>\n" +
                 "                </tbody></table>\n" +
@@ -128,13 +156,13 @@ public class RegistrationServiceImpl implements RegistrationService {
                 "line-height:1.315789474;max-width:560px\">\n" +
                 "        \n" +
                 "            <p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;" +
-                "color:#0b0c0c\">Hi " + name + ",</p><p style=\"Margin:0 0 20px 0;font-size:19px;" +
-                "line-height:25px;color:#0b0c0c\"> Thank you for registering." +
-                " Please click on the below link to activate your account: </p><blockquote style=" +
+                "color:#0b0c0c\">Dobrý den " + name + ",</p><p style=\"Margin:0 0 20px 0;font-size:19px;" +
+                "line-height:25px;color:#0b0c0c\"> Děkujeme za Vaši registraci." +
+                " Pro aktivaci účtu, klikněte prosím na odkaz níže: </p><blockquote style=" +
                 "\"Margin:0 0 20px 0;border-left:10px solid #b1b4b6;padding:15px 0 0.1px 15px;" +
                 "font-size:19px;line-height:25px\"><p style=\"Margin:0 0 20px 0;font-size:19px;" +
-                "line-height:25px;color:#0b0c0c\"> <a href=\"" + link + "\">Activate Now</a> " +
-                "</p></blockquote>\n Link will expire in 30 minutes." +
+                "line-height:25px;color:#0b0c0c\"> <a href=\"" + link + "\">Aktivovat</a> " +
+                "</p></blockquote>\n Platnost odkazu vyprší za 30 minut." +
                 "        \n" +
                 "      </td>\n" +
                 "      <td width=\"10\" valign=\"middle\"><br></td>\n" +

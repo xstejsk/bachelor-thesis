@@ -2,7 +2,10 @@ package com.rstejskalprojects.reservationsystem.repository;
 
 import com.rstejskalprojects.reservationsystem.model.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,4 +16,19 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findByLocationName(String name);
 
     List<Event> findByLocationId(Long id);
+
+    List<Event> findEventByRecurrenceGroupId(Long groupId);
+
+    @Query("SELECT e FROM Event e WHERE e.isCanceled = FALSE")
+    List<Event> findAllNonCanceled();
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Event e SET e.isCanceled = TRUE WHERE e.id = ?1")
+    void cancelEventById(Long id);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Event e SET e.isCanceled = TRUE WHERE e.recurrenceGroup.id = ?1")
+    void cancelEventByGroupId(Long groupId);
 }

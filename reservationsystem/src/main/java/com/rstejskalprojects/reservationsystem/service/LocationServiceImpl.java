@@ -2,14 +2,17 @@ package com.rstejskalprojects.reservationsystem.service;
 
 import com.rstejskalprojects.reservationsystem.model.Location;
 import com.rstejskalprojects.reservationsystem.repository.LocationRepository;
+import com.rstejskalprojects.reservationsystem.util.customexception.LocationAlreadyExistsException;
 import com.rstejskalprojects.reservationsystem.util.customexception.LocationNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LocationServiceImpl implements LocationService {
 
     private final LocationRepository locationRepository;
@@ -28,6 +31,10 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     public Location saveLocation(Location location) {
+        locationRepository.findByName(location.getName()).ifPresent(location1 -> {
+            throw new LocationAlreadyExistsException(String.format("location of name %s already exists", location.getName()));
+        });
+        log.info("saving location: {}", location);
         return locationRepository.save(location);
     }
 

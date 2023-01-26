@@ -2,6 +2,7 @@ package com.rstejskalprojects.reservationsystem.api.controller;
 
 import com.rstejskalprojects.reservationsystem.model.Location;
 import com.rstejskalprojects.reservationsystem.service.LocationService;
+import com.rstejskalprojects.reservationsystem.util.customexception.LocationAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,10 @@ public class LocationController {
     @PostMapping("/new")
     public ResponseEntity<Location> saveLocation(@RequestBody Location location) {
         log.info("requested to save eventDTO: {}", location);
-        return new ResponseEntity<>(locationService.saveLocation(location), HttpStatus.CREATED);
+        try {
+            return new ResponseEntity<>(locationService.saveLocation(location), HttpStatus.CREATED);
+        } catch (LocationAlreadyExistsException e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
     }
 }

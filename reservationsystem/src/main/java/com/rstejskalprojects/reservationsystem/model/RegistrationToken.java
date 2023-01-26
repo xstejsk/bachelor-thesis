@@ -23,13 +23,7 @@ import java.time.LocalDateTime;
 public class RegistrationToken {
     @Id
     @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "token_sequence"
-    )
-    @SequenceGenerator(
-            name = "token_sequence",
-            sequenceName = "token_sequence",
-            allocationSize = 1
+            strategy = GenerationType.IDENTITY
     )
     private Long id;
     @Column(nullable = false)

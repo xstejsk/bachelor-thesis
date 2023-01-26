@@ -26,6 +26,7 @@ import java.util.List;
 @Slf4j
 public class EventServiceImpl implements EventService {
 
+    private final ReservationService reservationService;
     private final EventRepository eventRepository;
     private final EventDtoToEventMapper eventDtoToEventMapper;
     private final RecurrenceGroupService recurrenceGroupService;
@@ -43,9 +44,15 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<Event> findAllNonCanceled() {
+        return eventRepository.findAllNonCanceled();
+    }
+
+    @Override
     @Transactional
     public List<Event> saveEvent(Event event) {
         if (event.getEndTime().isBefore(event.getEndTime())) {
+            log.warn("event start time is after event end time");
             throw new InvalidEventException("event start time must be before event end time");
         }
         if (event.getRecurrenceGroup() != null && event.getRecurrenceGroup().getFrequency() != FrequencyEnum.NEVER) {
@@ -79,21 +86,53 @@ public class EventServiceImpl implements EventService {
             recurrenceGroup = recurrenceGroups.get(0);
         }
         event.setRecurrenceGroup(recurrenceGroup);
+        log.info("saved non recurring event");
         return eventRepository.save(event);
     }
 
+    @Override
+    public Event cancelEvent(EventDTO eventDTO) {
+        Event event = eventRepository.findById(eventDTO.getId()).orElseThrow(() -> new EventNotFoundException(
+                String.format("even of id %s not found", eventDTO.getId())));
+        log.info("canceled event with id {}", event.getId());
+        return cancelEvent(event);
+    }
+
+    @Override
+    @Transactional
+    public List<Event> cancelRecurrentEvents(Long groupId) {
+        eventRepository.cancelEventByGroupId(groupId);
+        reservationService.cancelReservationsByEventGroupId(groupId);
+        log.info("events of recurrence group {} have been canceled", groupId);
+        return eventRepository.findEventByRecurrenceGroupId(groupId);
+    }
+
+    @Override
+    @Transactional
+    public Event cancelEvent(Event event) {
+        Event canceledEvent = eventRepository.findById(event.getId()).orElseThrow(() -> new EventNotFoundException(
+                String.format("even of id %s not found", event.getId())));
+        eventRepository.cancelEventById(event.getId());
+        reservationService.cancelReservationsByEventId(event.getId());
+        canceledEvent.setIsCanceled(true);
+        log.info("event {} has been canceled", event);
+        return canceledEvent;
+    }
 
     private List<Event> saveRecurringEvent(Event event) {
         if (event.getRecurrenceGroup().getEndDate() == null || event.getRecurrenceGroup().getEndDate().isBefore(event.getStartTime().toLocalDate())) {
-            log.warn("attempted to save recurrent event with end date before start date: {}", event.getRecurrenceGroup());
+            log.info("attempted to save recurrent event with end date before start date: {}", event.getRecurrenceGroup());
             throw new InvalidRecurrenceException("invalid recurrence end date");
         }
         if (event.getRecurrenceGroup().getFrequency() == FrequencyEnum.WEEKLY) {
+            log.info("attempted to save weekly recurrent event with no days selected: {}", event.getRecurrenceGroup());
             return saveWeeklyRecurringEvent(event);
         }
         if (event.getRecurrenceGroup().getFrequency() == FrequencyEnum.MONTHLY) {
+            log.info("attempted to save monthly recurrent event with no days selected: {}", event.getRecurrenceGroup());
             return saveMonthlyRecurringEvent(event);
         }
+        log.warn("attempted to save event with invalid frequency: {}", event.getRecurrenceGroup());
         throw new IllegalArgumentException(String.format("unsupported event recurrence option %s", event.getRecurrenceGroup().getFrequency()));
     }
 
@@ -105,6 +144,7 @@ public class EventServiceImpl implements EventService {
         for (LocalDate date = start.toLocalDate(); date.isBefore(recurrenceEnd); date = date.plusMonths(1)) {
             occurrences.add(date);
         }
+        log.info("generated {} occurrences for monthly recurring event", occurrences.size());
         return eventRepository.saveAll(createRecurringEvents(event, occurrences));
     }
 
@@ -129,6 +169,7 @@ public class EventServiceImpl implements EventService {
 
         List<LocalDate> occurrences = start.toLocalDate().datesUntil(recurrenceEnd)
                 .parallel().filter(day -> daysOfWeek.contains(day.getDayOfWeek())).toList();
+        log.info("saved weekly recurring event");
         return eventRepository.saveAll(createRecurringEvents(event, occurrences));
     }
 

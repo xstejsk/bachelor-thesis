@@ -1,10 +1,12 @@
 package com.rstejskalprojects.reservationsystem.service;
 
 import com.rstejskalprojects.reservationsystem.model.AppUser;
+import com.rstejskalprojects.reservationsystem.model.PasswordToken;
 import com.rstejskalprojects.reservationsystem.model.RegistrationToken;
 import com.rstejskalprojects.reservationsystem.repository.UserRepository;
 import com.rstejskalprojects.reservationsystem.util.customexception.ReservationNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,16 +20,22 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final ConfirmationTokenServiceImpl registrationTokenService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
+    private final PasswordTokenServiceImpl passwordTokenService;
 
     @Override
     public UserDetails loadUserByUsername(String username) {
         return userRepository.findUserByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("user with username %s not found", username)));
+    }
+
+    public boolean existsByUsername(String username) {
+        return userRepository.findUserByUsername(username).isPresent();
     }
 
     public List<AppUser> findAll() {
@@ -38,6 +46,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return userRepository.findById(id).orElseThrow(() -> new ReservationNotFoundException(
                 String.format("Reservation with id %s not found", id)
         ));
+    }
+
+    public void changeUserPassword(AppUser appUser, String password) {
+        appUser.setPassword(bCryptPasswordEncoder.encode(password));
+        userRepository.save(appUser);
+    }
+
+    public void changeUserEncodedPassword(AppUser appUser, String encodedPassword) {
+        appUser.setPassword(encodedPassword);
+        userRepository.save(appUser);
     }
 
     public String saveUser(AppUser appUser){
@@ -61,7 +79,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 LocalDateTime.now().plusMinutes(30),
                 appUser);
 
-        registrationTokenService.saveRegistrationToken(confirmationToken);
+        registrationTokenService.saveToken(confirmationToken);
+        log.info("new user registered with email: " + appUser.getEmail());
         return token;
     }
 
