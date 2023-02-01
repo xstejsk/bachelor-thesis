@@ -34,13 +34,28 @@ const SignUpModal = ({ clickInfo, isOpen, handleHide }) => {
         console.log(response.status);
       })
       .catch((err) => {
+        let status = err.response.status;
+        let message;
+        if (status === 403) {
+          alert("Na událost se nyní nelze přihlásit kvůli plné kapacitě.");
+        } else if (status === 409) {
+          alert("Na událost již máte vytvořenou rezervaci.");
+        } else if (status === 400) {
+          alert("Na událost se nelze přihlásit.");
+        }
         console.log(err);
       });
     handleCancel();
   }
 
   return (
-    <Modal isOpen={isOpen} size="sm" centered toggle={handleCancel}>
+    <Modal
+      isOpen={isOpen}
+      size="sm"
+      centered
+      toggle={handleCancel}
+      onExit={() => console.log("modal closed")}
+    >
       <ModalHeader toggle={handleCancel}>Rezervace</ModalHeader>
       <ModalBody>
         {"Přejete si přihlásit se na událost " + clickInfo?.event?.title + "?"}

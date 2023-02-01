@@ -2,7 +2,7 @@ const host = "http://localhost:8080/";
 const loginEndpoint = "api/auth/login";
 const loggedInUserEndpoint = "api/user";
 const eventsEndpoint = "api/events/all";
-const reservationsEndpoint = "api/reservations/all";
+const reservationsEndpoint = "api/reservations/";
 const newEventEndpoint = "api/events/new";
 const newReservationEndpoint = "api/reservations/new";
 const newLocationEndpoint = "api/locations/new";
@@ -16,6 +16,8 @@ const resendEmailEndpoint = "api/auth/registration/resend/";
 const logoutEndpoint = "api/auth/logout";
 const forgotPasswordEndpoint = "api/access/{email}/forgot-password";
 const resetPasswordEdnpoint = "api/access/reset-password/";
+const cancelMultipleReservationsEndpoint =
+  reservationsEndpoint + "cancel-multiple";
 
 export {
   host,
@@ -36,4 +38,5 @@ export {
   logoutEndpoint,
   forgotPasswordEndpoint,
   resetPasswordEdnpoint,
+  cancelMultipleReservationsEndpoint,
 };

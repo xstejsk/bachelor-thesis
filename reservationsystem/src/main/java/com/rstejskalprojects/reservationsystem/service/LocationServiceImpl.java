@@ -31,6 +31,9 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     public Location saveLocation(Location location) {
+        if (location.getName().isBlank()) {
+            throw new IllegalArgumentException("location name cannot be blank");
+        }
         locationRepository.findByName(location.getName()).ifPresent(location1 -> {
             throw new LocationAlreadyExistsException(String.format("location of name %s already exists", location.getName()));
         });

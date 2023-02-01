@@ -8,4 +8,3 @@ public class LocationAlreadyExistsException extends RuntimeException {
         super(message);
     }
 }
-

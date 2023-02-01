@@ -1,7 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import { host, logoutEndpoint } from "../../util/EndpointConfig";
 
 const AdminNavbar = () => {
+  const handleLogout = () => {
+    axios
+      .post(host + logoutEndpoint, {}, { withCredentials: true })
+      .then((response) => {
+        console.log(response.status);
+      })
+      .catch((err) => {
+        console.log(err.response.status);
+      });
+  };
+
   return (
     <header className="p-3 text-bg-dark">
       <div className="container">
@@ -25,7 +38,11 @@ const AdminNavbar = () => {
           </ul>
 
           <div className="text-end">
-            <Link to="/login" className="btn btn-warning">
+            <Link
+              to="/login"
+              className="btn btn-warning"
+              onClick={handleLogout}
+            >
               Odhlásit
             </Link>
           </div>

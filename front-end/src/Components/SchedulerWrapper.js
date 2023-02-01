@@ -6,7 +6,6 @@ import {
 } from "../util/EndpointConfig";
 import Select from "react-select";
 import axios from "axios";
-import { Row, Col, Button } from "reactstrap";
 import CustomGridLoader from "./CustomLoader";
 import CustomScheduler from "./CustomScheduler";
 
@@ -48,7 +47,7 @@ const SchedulerWrapper = () => {
     setEvents({ ...events, data: eventsData });
   };
 
-  useEffect(() => {
+  const initialize = () => {
     axios
       .get(host + locationsEndpoint)
       .then((response) => {
@@ -93,6 +92,10 @@ const SchedulerWrapper = () => {
         setEvents([]);
         // handle timeout
       });
+  };
+
+  useEffect(() => {
+    initialize();
   }, []);
 
   if (!events.loaded) {

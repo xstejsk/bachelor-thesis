@@ -51,7 +51,7 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
         AppUser user = new AppUser(2L, "Petr", "Jirák", "user", "user", bCryptPasswordEncoder.encode("user"), UserRoleEnum.USER, false, true);
         userRepository.save(admin);
         userRepository.save(user);
-        Event event = new Event(LocalDateTime.now(), LocalDateTime.now().plusMinutes(120),
+        Event event = new Event(LocalDateTime.now().minusHours(2), LocalDateTime.now().plusMinutes(80),
                 5, 100d, "Event v Salu 1", "popis", false, recurrenceGroup1, location);
         Event event1 = new Event(LocalDateTime.now().minusHours(3), LocalDateTime.now().minusHours(1),
                 5, 100d, "Event v Salu 2", "popis", false, recurrenceGroup1, location2);

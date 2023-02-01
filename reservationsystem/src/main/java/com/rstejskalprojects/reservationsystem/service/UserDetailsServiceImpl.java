@@ -5,6 +5,7 @@ import com.rstejskalprojects.reservationsystem.model.PasswordToken;
 import com.rstejskalprojects.reservationsystem.model.RegistrationToken;
 import com.rstejskalprojects.reservationsystem.repository.UserRepository;
 import com.rstejskalprojects.reservationsystem.util.customexception.ReservationNotFoundException;
+import com.rstejskalprojects.reservationsystem.util.customexception.UserIdNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -43,9 +44,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     public AppUser findById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new ReservationNotFoundException(
-                String.format("Reservation with id %s not found", id)
-        ));
+        return userRepository.findById(id).orElseThrow(() -> new UserIdNotFoundException(String.format("user with id %s not found", id)));
     }
 
     public void changeUserPassword(AppUser appUser, String password) {

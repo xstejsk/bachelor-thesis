@@ -21,20 +21,8 @@ const Login = () => {
   const [wrongPassword, setWrongPassword] = useState(false);
 
   useEffect(() => {
-    handleLogout();
     setGlobalState({});
   }, []);
-
-  const handleLogout = () => {
-    axios
-      .post(host + logoutEndpoint, {}, { withCredentials: true })
-      .then((response) => {
-        console.log(response.status);
-      })
-      .catch((err) => {
-        console.log(err.response.status);
-      });
-  };
 
   const handleResendEmail = () => {
     axios

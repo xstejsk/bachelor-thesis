@@ -7,7 +7,7 @@ import Login from "./Components/Login";
 import Register from "./Components/Forms/Register";
 import Navbar from "./Components/Navbar/Navbar";
 import SchedulerWrapper from "./Components/SchedulerWrapper";
-import ReservationsTable from "./Components/Tables/ReservationTable";
+import ReservationTableWrapper from "./Components/Tables/ReservationTableWrapper";
 import GlobalState from "./util/GlobalState";
 import ConfirmRegistration from "./Components/ConfirmRegistration";
 import ResetPassword from "./Components/Forms/ResetPassword";
@@ -25,7 +25,7 @@ function App() {
           <Route path="/home" element={<Homepage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/events" element={<SchedulerWrapper />} />
-          <Route path="/reservations" element={<ReservationsTable />} />
+          <Route path="/reservations" element={<ReservationTableWrapper />} />
           <Route
             path="/registration/confirm"
             element={<ConfirmRegistration />}

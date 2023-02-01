@@ -16,6 +16,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     Optional<Reservation> findReservationById(Long reservationId);
 
+    Optional<Reservation> findReservationByOwnerIdAndAndEventId(Long ownerId, Long eventId);
+
     @Query("SELECT r FROM Reservation r JOIN AppUser u ON u.id = r.owner.id AND u.username = ?1")
     List<Reservation> findReservationByOwnerUsername(String username);
 
@@ -31,10 +33,19 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Transactional
     @Modifying(clearAutomatically = true)
+    @Query("UPDATE Reservation r SET r.isCanceled = TRUE WHERE r.id = ?1")
+    void cancelReservationsById(Long reservationId);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE Reservation r SET r.isCanceled = TRUE WHERE r.event.id IN (SELECT e.id FROM Event e WHERE e.recurrenceGroup.id = ?1)")
     void cancelReservationsByEventGroupId(Long groupId);
 
     @Query("SELECT r FROM Reservation r WHERE r.isCanceled = FALSE")
     List<Event> findAllNonCanceled();
 
+    List<Reservation> findByOwnerId(Long id);
+
+    @Query("SELECT r FROM Reservation r WHERE r.isCanceled = FALSE AND r.owner.id = ?1")
+    List<Reservation> findActiveReservationsByOwnerId(Long id);
 }

@@ -38,6 +38,8 @@ public class LocationController {
             return new ResponseEntity<>(locationService.saveLocation(location), HttpStatus.CREATED);
         } catch (LocationAlreadyExistsException e) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 }

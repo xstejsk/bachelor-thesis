@@ -1,6 +1,8 @@
 package com.rstejskalprojects.reservationsystem.util;
 
+import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.UserRoleEnum;
+import com.rstejskalprojects.reservationsystem.service.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -36,6 +38,8 @@ public class JwtUtil {
     @Value("${jwt.refreshExpirationDateInMs}")
     private long jwtRefreshExpirationInMs;
 
+    private final UserDetailsServiceImpl userDetailsService;
+
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = getAllClaimsFromToken(token);
         return claimsResolver.apply(claims);
@@ -55,6 +59,11 @@ public class JwtUtil {
 
     public String getUserNameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
+    }
+
+    public Long getUserIdFromToken(String token) {
+        String userName = getUserNameFromToken(token);
+        return ((AppUser) userDetailsService.loadUserByUsername(userName)).getId();
     }
 
     public LocalDateTime getIssuedDateFromToken(String token) {
