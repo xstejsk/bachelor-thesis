@@ -5,10 +5,11 @@ import com.rstejskalprojects.reservationsystem.model.FrequencyEnum;
 import com.rstejskalprojects.reservationsystem.model.RecurrenceGroup;
 import com.rstejskalprojects.reservationsystem.model.dto.EventDTO;
 import com.rstejskalprojects.reservationsystem.repository.EventRepository;
-import com.rstejskalprojects.reservationsystem.util.EventDtoToEventMapper;
+import com.rstejskalprojects.reservationsystem.util.EventDtoEventMapper;
 import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
-import com.rstejskalprojects.reservationsystem.util.customexception.InvalidEventException;
+import com.rstejskalprojects.reservationsystem.util.customexception.InvalidEventTimeException;
 import com.rstejskalprojects.reservationsystem.util.customexception.InvalidRecurrenceException;
+import com.rstejskalprojects.reservationsystem.util.customexception.OverlappingEventException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,7 @@ public class EventServiceImpl implements EventService {
 
     private final ReservationService reservationService;
     private final EventRepository eventRepository;
-    private final EventDtoToEventMapper eventDtoToEventMapper;
+    private final EventDtoEventMapper eventDtoToEventMapper;
     private final RecurrenceGroupService recurrenceGroupService;
 
 
@@ -53,7 +55,7 @@ public class EventServiceImpl implements EventService {
     public List<Event> saveEvent(Event event) {
         if (event.getEndTime().isBefore(event.getEndTime())) {
             log.warn("event start time is after event end time");
-            throw new InvalidEventException("event start time must be before event end time");
+            throw new InvalidEventTimeException("event start time must be before event end time");
         }
         if (event.getRecurrenceGroup() != null && event.getRecurrenceGroup().getFrequency() != FrequencyEnum.NEVER) {
             return saveRecurringEvent(event);
@@ -85,9 +87,20 @@ public class EventServiceImpl implements EventService {
         } else {
             recurrenceGroup = recurrenceGroups.get(0);
         }
+        List<Event> overlappingEvents = findOverlappingEvents(event);
+        if (!overlappingEvents.isEmpty()) {
+            log.warn("event overlaps with another event");
+            throw new InvalidEventTimeException("event overlaps with another event");
+        }
         event.setRecurrenceGroup(recurrenceGroup);
         log.info("saved non recurring event");
         return eventRepository.save(event);
+    }
+
+    @Override
+    public List<Event> findOverlappingEvents(Event event){
+        return eventRepository.findOverlappingEvents(event.getId(), event.getRecurrenceGroup().getId(),
+                event.getLocation().getId(), event.getStartTime(), event.getEndTime());
     }
 
     @Override
@@ -145,24 +158,21 @@ public class EventServiceImpl implements EventService {
             occurrences.add(date);
         }
         log.info("generated {} occurrences for monthly recurring event", occurrences.size());
-        return eventRepository.saveAll(createRecurringEvents(event, occurrences));
+        List<Event> recurringEvents = createRecurringEvents(event, occurrences);
+        recurringEvents.forEach(newEvent -> {
+            List<Event> overlappingEvents = findOverlappingEvents(newEvent);
+            if (!overlappingEvents.isEmpty()) {
+                log.warn("monthly recurrent event overlaps with another event");
+                throw new OverlappingEventException("event overlaps with another event", overlappingEvents.stream().map(
+                        EventDTO::new).toList());
+
+            }
+        });
+        return eventRepository.saveAll(recurringEvents);
     }
 
     //TODO: check collisions
     private List<Event> saveWeeklyRecurringEvent(Event event) {
-        if (event.getRecurrenceGroup() == null && event.getRecurrenceGroup().getFrequency() != FrequencyEnum.WEEKLY) {
-            log.warn("attempted to save weekly recurrent event with invalid recurrence group: {}", event.getRecurrenceGroup());
-            throw new InvalidRecurrenceException("the event recurrence must be on weekly basis");
-        }
-        if (event.getRecurrenceGroup().getEndDate() == null || event.getRecurrenceGroup().getEndDate().isBefore(event.getStartTime().toLocalDate())) {
-            log.warn("attempted to save weekly recurrent event with end date before start date: {}", event.getRecurrenceGroup());
-            throw new InvalidRecurrenceException("invalid recurrence end date");
-        }
-        if (event.getRecurrenceGroup().getDaysOfWeek().isEmpty()) {
-            log.warn("attempted to save weekly recurrent event with empty week days: {}", event.getRecurrenceGroup());
-            throw new InvalidRecurrenceException("days of week must be provided for weekly recurrence");
-        }
-
         LocalDateTime start = event.getStartTime();
         LocalDate recurrenceEnd = event.getRecurrenceGroup().getEndDate();
         List<DayOfWeek> daysOfWeek = event.getRecurrenceGroup().getDaysOfWeek();
@@ -170,6 +180,15 @@ public class EventServiceImpl implements EventService {
         List<LocalDate> occurrences = start.toLocalDate().datesUntil(recurrenceEnd)
                 .parallel().filter(day -> daysOfWeek.contains(day.getDayOfWeek())).toList();
         log.info("saved weekly recurring event");
+        List<Event> recurringEvents = createRecurringEvents(event, occurrences);
+        recurringEvents.forEach(newEvent -> {
+            List<Event> overlappingEvents = findOverlappingEvents(newEvent);
+            if (!overlappingEvents.isEmpty()) {
+                log.warn("weekly recurrent event overlaps with another event");
+                throw new OverlappingEventException("event overlaps with another event", overlappingEvents.stream()
+                        .map(EventDTO::new).toList());
+            }
+        });
         return eventRepository.saveAll(createRecurringEvents(event, occurrences));
     }
 

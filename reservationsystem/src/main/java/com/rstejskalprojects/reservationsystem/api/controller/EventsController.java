@@ -5,6 +5,7 @@ import com.rstejskalprojects.reservationsystem.model.dto.EventDTO;
 import com.rstejskalprojects.reservationsystem.service.EventService;
 import com.rstejskalprojects.reservationsystem.service.EventServiceImpl;
 import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
+import com.rstejskalprojects.reservationsystem.util.customexception.OverlappingEventException;
 import com.rstejskalprojects.reservationsystem.util.customexception.RecurrenceGroupNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UrlParamsEnum;
 import lombok.RequiredArgsConstructor;
@@ -38,8 +39,19 @@ public class EventsController {
     @PostMapping("/new")
     public ResponseEntity<List<EventDTO>> saveEvents(@RequestBody EventDTO eventDTO) {
         log.info("requested to save eventDTO: {}", eventDTO);
-        List<Event> events = eventsService.saveEvent(eventDTO);
-        return new ResponseEntity<>(events.stream().map(EventDTO::new).toList(), HttpStatus.CREATED);
+        try{
+                List<EventDTO> savedEvents = eventsService.saveEvent(eventDTO).stream()
+                .map(EventDTO::new)
+                .collect(Collectors.toList());
+            return new ResponseEntity<>(savedEvents, HttpStatus.CREATED);
+        } catch (OverlappingEventException e) {
+            log.warn("overlapping event exception: {}", e.getMessage());
+            return new ResponseEntity<>(e.getOverlappingEvents(), HttpStatus.CONFLICT);
+        }
+        catch (Exception e) {
+            log.error("error saving eventDTO: {}", eventDTO, e);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/all")

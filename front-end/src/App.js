@@ -12,28 +12,41 @@ import GlobalState from "./util/GlobalState";
 import ConfirmRegistration from "./Components/ConfirmRegistration";
 import ResetPassword from "./Components/Forms/ResetPassword";
 import ConfirmPassword from "./Components/ConfirmPassword";
+import AlertTemplate from "react-alert-template-basic";
+import { positions, Provider } from "react-alert";
+
 function App() {
+  const options = {
+    timeout: 5000,
+    position: positions.TOP_CENTER,
+  };
+
   return (
     <>
-      <GlobalState>
-        <Navbar />
-        <Routes>
-          <Route element={<PrivateRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Route>
-          <Route path="/login" element={<Login />} />
-          <Route path="/home" element={<Homepage />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/events" element={<SchedulerWrapper />} />
-          <Route path="/reservations" element={<ReservationTableWrapper />} />
-          <Route
-            path="/registration/confirm"
-            element={<ConfirmRegistration />}
-          />
-          <Route path="/password/reset" element={<ResetPassword />} />
-          <Route path="/password-reset/confirm" element={<ConfirmPassword />} />
-        </Routes>
-      </GlobalState>
+      <Provider template={AlertTemplate} {...options}>
+        <GlobalState>
+          <Navbar />
+          <Routes>
+            <Route element={<PrivateRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+            </Route>
+            <Route path="/login" element={<Login />} />
+            <Route path="/home" element={<Homepage />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/events" element={<SchedulerWrapper />} />
+            <Route path="/reservations" element={<ReservationTableWrapper />} />
+            <Route
+              path="/registration/confirm"
+              element={<ConfirmRegistration />}
+            />
+            <Route path="/password/reset" element={<ResetPassword />} />
+            <Route
+              path="/password-reset/confirm"
+              element={<ConfirmPassword />}
+            />
+          </Routes>
+        </GlobalState>
+      </Provider>
     </>
   );
 }

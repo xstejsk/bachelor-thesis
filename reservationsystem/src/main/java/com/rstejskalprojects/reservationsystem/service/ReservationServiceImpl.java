@@ -137,7 +137,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     private boolean userIsAlreadyRegisteredForEvent(Long userId, Long eventId) {
-        Optional<Reservation> reservation = reservationRepository.findReservationByOwnerIdAndAndEventId(userId, eventId);
-        return reservation.isPresent() && !reservation.get().getIsCanceled();
+        Optional<Reservation> reservation = reservationRepository.findActiveReservationByEventIdAndUserId(userId, eventId);
+        return reservation.isPresent();
     }
 }

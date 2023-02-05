@@ -5,11 +5,12 @@ import React, { useContext, useState } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import { Context } from "../../util/GlobalState";
 import axios from "axios";
-// import createReactClass from "create-react-class";
 import { host, newReservationEndpoint } from "../../util/EndpointConfig";
+import { useAlert } from "react-alert";
 
 const SignUpModal = ({ clickInfo, isOpen, handleHide }) => {
   const [globalState, setGlobalState] = useContext(Context);
+  const alert = useAlert();
 
   function handleCancel() {
     handleHide();
@@ -31,17 +32,20 @@ const SignUpModal = ({ clickInfo, isOpen, handleHide }) => {
     axios
       .post(host + newReservationEndpoint, newReservation)
       .then((response) => {
+        alert.success("Rezervace byla vytvořena.");
         console.log(response.status);
       })
       .catch((err) => {
         let status = err.response.status;
         let message;
         if (status === 403) {
-          alert("Na událost se nyní nelze přihlásit kvůli plné kapacitě.");
+          alert.error(
+            "Na událost se nyní nelze přihlásit kvůli plné kapacitě."
+          );
         } else if (status === 409) {
-          alert("Na událost již máte vytvořenou rezervaci.");
+          alert.info("Na událost již máte vytvořenou rezervaci.");
         } else if (status === 400) {
-          alert("Na událost se nelze přihlásit.");
+          alert.error("Na událost se nelze přihlásit.");
         }
         console.log(err);
       });

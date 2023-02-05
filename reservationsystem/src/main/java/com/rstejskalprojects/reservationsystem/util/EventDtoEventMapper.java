@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Component
-public class EventDtoToEventMapper implements DtoMapper<EventDTO, Event> {
+public class EventDtoEventMapper implements DtoMapper<EventDTO, Event> {
 
     private final LocationService locationService;
     //TODO: validation
@@ -29,5 +29,7 @@ public class EventDtoToEventMapper implements DtoMapper<EventDTO, Event> {
 
 
     }
+
+
 
 }

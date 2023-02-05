@@ -23,7 +23,7 @@ import {
   cancelEventById,
   cancelEventsByGroupId,
 } from "../util/EndpointConfig";
-import { Grid } from "@material-ui/core";
+import { useAlert } from "react-alert";
 
 const DetailsModal = ({
   handleHide,
@@ -49,6 +49,7 @@ const DetailsModal = ({
   const [days, setDays] = useState(
     event.extendedProps?.recurrenceGroup?.daysOfWeek
   );
+  const alert = useAlert();
 
   const recurrenceOptions = [
     { value: "NEVER", label: "Nikdy" },
@@ -105,6 +106,10 @@ const DetailsModal = ({
         .then((response) => {
           if (response.status === 200) {
             removeEvent(event.id);
+            console.log("canceling :" + event);
+            alert.info(
+              "Událost " + event?.extendedProps?.title + " byla zrušena."
+            );
           }
         })
         .catch((err) => console.log(err));

@@ -16,7 +16,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     Optional<Reservation> findReservationById(Long reservationId);
 
-    Optional<Reservation> findReservationByOwnerIdAndAndEventId(Long ownerId, Long eventId);
+    @Query("SELECT r FROM Reservation r WHERE r.owner.id = ?1 AND r.event.id = ?2 AND r.isCanceled = false")
+    Optional<Reservation> findActiveReservationByEventIdAndUserId(Long userId, Long eventId);
 
     @Query("SELECT r FROM Reservation r JOIN AppUser u ON u.id = r.owner.id AND u.username = ?1")
     List<Reservation> findReservationByOwnerUsername(String username);

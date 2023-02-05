@@ -8,11 +8,13 @@ import {
 import CustomGridLoader from "../CustomLoader";
 import axios from "axios";
 import { Context } from "../../util/GlobalState";
+import { useAlert } from "react-alert";
 
 const ReservationTableWrapper = () => {
   const [reservations, setReservations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [globalState, setGlobalState] = useContext(Context);
+  const alert = useAlert();
 
   const cancelReservations = (ids) => {
     axios
@@ -24,9 +26,9 @@ const ReservationTableWrapper = () => {
           });
           setReservations(filteredReservations);
           if (ids.length > 1) {
-            alert("Rezervace byly zrušeny");
+            alert.info("Rezervace byly zrušeny");
           } else if (ids.length == 1) {
-            alert("Rezervace byla zrušena.");
+            alert.info("Rezervace byla zrušena.");
           }
 
           console.log("reservations have been canceled");
@@ -34,9 +36,9 @@ const ReservationTableWrapper = () => {
       })
       .catch((error) => {
         if (ids.length > 1) {
-          alert("Události nelze zrušit.");
+          alert.error("Události nelze zrušit.");
         } else if (ids.length == 1) {
-          alert("Událost nelze zrušit.");
+          alert.error("Událost nelze zrušit.");
         }
       });
   };

@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -31,4 +31,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Event e SET e.isCanceled = TRUE WHERE e.recurrenceGroup.id = ?1")
     void cancelEventByGroupId(Long groupId);
+
+    // find all events that overlap with the given event (StartA <= EndB) and (EndA >= StartB)
+    @Query("SELECT e FROM Event e WHERE e.isCanceled = FALSE AND e.id <> ?1 AND " +
+            "e.recurrenceGroup.id <> ?2 AND e.location.id = ?3 AND e.startTime <= ?5 AND e.endTime >= ?4")
+    List<Event> findOverlappingEvents(Long eventId, Long groupId, Long locationId, LocalDateTime startTime, LocalDateTime endTime);
 }

@@ -18,6 +18,8 @@ import DateRangePicker from "react-bootstrap-daterangepicker";
 import DaysSelector from "../DaysSelector";
 import axios from "axios";
 import { host, newEventEndpoint } from "../../util/EndpointConfig";
+import { useAlert } from "react-alert";
+import { event } from "jquery";
 
 const NewEventForm = ({ handleHide, isOpen, locationId, addEvents }) => {
   const [eventTitle, setEvenTitle] = useState("");
@@ -26,6 +28,7 @@ const NewEventForm = ({ handleHide, isOpen, locationId, addEvents }) => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(100);
   const [capacity, setCapacity] = useState(1);
+  const alert = useAlert();
 
   const [endRecurrenceDate, setEndReccurenceDate] = useState(new Date());
   const [days, setDays] = useState([]);
@@ -40,11 +43,18 @@ const NewEventForm = ({ handleHide, isOpen, locationId, addEvents }) => {
     handleHide();
   }
 
+  useEffect(() => {
+    console.log("duration ----------");
+    console.log(startDateTime);
+    console.log(endDateTime);
+  }, [startDateTime, endDateTime]);
+
   function handleSubmit() {
     const newEvent = {
       title: eventTitle,
-      start: startDateTime.toISOString(),
-      end: endDateTime.toISOString(),
+      start: startDateTime,
+      end: endDateTime,
+      startString: startDateTime.toISOString(),
       allDay: false,
       capacity: capacity,
       price: price,
@@ -60,7 +70,10 @@ const NewEventForm = ({ handleHide, isOpen, locationId, addEvents }) => {
     axios
       .post(host + newEventEndpoint, newEvent)
       .then((response) => {
-        console.log("posting new events");
+        console.log("posting new event------");
+        console.log(newEvent);
+        console.log(new Date().getTimezoneOffset());
+        console.log("----------");
         let data = [];
         if (response.status === 201) {
           // let calendarApi = calendarRef.current.getApi();
@@ -68,11 +81,19 @@ const NewEventForm = ({ handleHide, isOpen, locationId, addEvents }) => {
           if (data.length !== 0) {
             addEvents(data);
           }
-        } else {
-          console.log("fail");
         }
       })
-      .catch((err) => console.log(err));
+      .catch((error) => {
+        if (error.response.status === 409) {
+          let arrayOfIds = error.response.data;
+          alert.error(
+            "Událost se nepodařilo vytvořit, protože se kryje s událostmi s ID: " +
+              arrayOfIds.join(", ")
+          );
+        } else if (error.status.code === 400) {
+          alert.error("Události se nepodařilo vytvořit.");
+        }
+      });
     handleCancel();
   }
 
@@ -121,7 +142,14 @@ const NewEventForm = ({ handleHide, isOpen, locationId, addEvents }) => {
         <FormGroup>
           <Row>
             <Col>
-              <Label for="range">Od - do</Label>
+              <Label for="startTime">Od - do</Label>
+              {/* <Input
+                type="date"
+                name="startTime"
+                placeholder="1.1.2021"
+                min={new Date().toISOString().substr(0, 10)}
+              />
+            </Col> */}
               <DateRangePicker
                 initialSettings={{
                   locale: {
@@ -156,6 +184,12 @@ const NewEventForm = ({ handleHide, isOpen, locationId, addEvents }) => {
                   timePicker: true,
                 }}
                 onApply={(event, picker) => {
+                  console.log("picker date------------");
+                  console.log(picker.startDate);
+                  console.log("picker date time------------");
+                  console.log(picker.startDateTime);
+                  console.log("picker date from date time------------");
+                  console.log(new Date(picker.startDate));
                   setStarDateTime(new Date(picker.startDate));
                   setEndDateTime(new Date(picker.endDate));
                 }}

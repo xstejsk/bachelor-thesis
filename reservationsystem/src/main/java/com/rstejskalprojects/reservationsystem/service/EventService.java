@@ -25,4 +25,6 @@ public interface EventService {
     List<Event> cancelRecurrentEvents(Long groupId);
 
     List<Event> findAllNonCanceled();
+
+    List<Event> findOverlappingEvents(Event event);
 }

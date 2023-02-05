@@ -44,7 +44,7 @@ const ReservationTable = ({ reservations, cancelReservations }) => {
   };
 
   useEffect(() => {
-    console.log(selected);
+    console.log("reservation table use effect ran");
   }, [selected]);
 
   const selectRow = {
