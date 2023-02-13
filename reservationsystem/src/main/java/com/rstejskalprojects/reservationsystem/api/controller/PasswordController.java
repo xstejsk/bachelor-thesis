@@ -5,6 +5,7 @@ import com.rstejskalprojects.reservationsystem.service.PasswordResetService;
 import com.rstejskalprojects.reservationsystem.service.TokenService;
 import com.rstejskalprojects.reservationsystem.util.customexception.ExpiredTokenException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UnknownTokenException;
+import com.rstejskalprojects.reservationsystem.util.customexception.UsedTokenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,10 @@ public class PasswordController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Token not found");
         } catch (ExpiredTokenException e) {
             return ResponseEntity.status(HttpStatus.GONE).body("Token expired");
+        } catch (UsedTokenException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Token already used");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Provided token is invalid");
         }
         return new ResponseEntity<>("Password reset successfully", HttpStatus.OK);
     }

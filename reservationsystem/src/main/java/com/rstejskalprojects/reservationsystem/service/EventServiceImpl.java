@@ -51,9 +51,9 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional
+   @Transactional
     public List<Event> saveEvent(Event event) {
-        if (event.getEndTime().isBefore(event.getEndTime())) {
+        if (event.getEndTime().isBefore(event.getStartTime()) || event.getStartTime().isBefore(LocalDateTime.now())) {
             log.warn("event start time is after event end time");
             throw new InvalidEventTimeException("event start time must be before event end time");
         }
@@ -65,8 +65,13 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> saveEvent(EventDTO eventDTO) {
-        Event event = eventDtoToEventMapper.map(eventDTO);
-        return saveEvent(event);
+        try {
+            Event event = eventDtoToEventMapper.map(eventDTO);
+            return saveEvent(event);
+        } catch (Exception e) {
+            log.error("error while saving event", e);
+            throw e;
+        }
     }
 
     @Override
@@ -90,7 +95,8 @@ public class EventServiceImpl implements EventService {
         List<Event> overlappingEvents = findOverlappingEvents(event);
         if (!overlappingEvents.isEmpty()) {
             log.warn("event overlaps with another event");
-            throw new InvalidEventTimeException("event overlaps with another event");
+            throw new OverlappingEventException("event overlaps with another event",  overlappingEvents.stream().map(
+                    EventDTO::new).toList());
         }
         event.setRecurrenceGroup(recurrenceGroup);
         log.info("saved non recurring event");
@@ -99,8 +105,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> findOverlappingEvents(Event event){
-        return eventRepository.findOverlappingEvents(event.getId(), event.getRecurrenceGroup().getId(),
-                event.getLocation().getId(), event.getStartTime(), event.getEndTime());
+        return eventRepository.findOverlappingEvents(event.getLocation().getId(), event.getStartTime(), event.getEndTime());
     }
 
     @Override

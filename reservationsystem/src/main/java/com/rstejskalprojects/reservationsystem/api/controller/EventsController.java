@@ -47,8 +47,7 @@ public class EventsController {
         } catch (OverlappingEventException e) {
             log.warn("overlapping event exception: {}", e.getMessage());
             return new ResponseEntity<>(e.getOverlappingEvents(), HttpStatus.CONFLICT);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("error saving eventDTO: {}", eventDTO, e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

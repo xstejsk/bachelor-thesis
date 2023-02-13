@@ -47,6 +47,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     List<Reservation> findByOwnerId(Long id);
 
-    @Query("SELECT r FROM Reservation r WHERE r.isCanceled = FALSE AND r.owner.id = ?1")
-    List<Reservation> findActiveReservationsByOwnerId(Long id);
+    @Query("SELECT r FROM Reservation r WHERE r.isCanceled = FALSE AND r.owner.id = ?1 AND r.event.startTime >= CURRENT_TIMESTAMP")
+    List<Reservation> findActivePresentReservationsByUser(Long id);
 }

@@ -46,7 +46,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 }))
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/auth/**", "/api/**", "/api/token/**", "/api/events/**", "/api/reservations/**", "/api/locations/**", "api/access/**").permitAll() // TODO authorize
+                .antMatchers("/api/auth/**", "/api/users/**","/api/**", "/api/token/**", "/api/events/**", "/api/reservations/**", "/api/locations/**", "api/access/**").permitAll() // TODO authorize
                 .anyRequest().authenticated()
                 .and()
 

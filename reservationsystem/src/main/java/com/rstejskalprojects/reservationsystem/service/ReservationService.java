@@ -11,7 +11,7 @@ public interface ReservationService {
 
     List<Reservation> findReservationsByUserId(Long ownerId);
 
-    List<Reservation> findActiveReservationsByUserId(Long ownerId);
+    List<Reservation> findActivePresentReservationsByUser(Long ownerId);
 
     List<Reservation> findReservationsByEventId(Long eventId);
 

@@ -8,6 +8,7 @@ import com.rstejskalprojects.reservationsystem.util.JwtUtil;
 import com.rstejskalprojects.reservationsystem.util.customexception.AlreadyRegisteredException;
 import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.MaximumCapacityException;
+import com.rstejskalprojects.reservationsystem.util.customexception.PastEventException;
 import com.rstejskalprojects.reservationsystem.util.customexception.ReservationNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UserIdNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -60,7 +61,7 @@ public class ReservationsController {
     public ResponseEntity<List<ReservationDTO>> getActiveByUsername(@PathVariable("userId") Long userId, HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (authorizationUtil.userIdMatchesJWT(userId, bearerToken)) {
-            List<ReservationDTO> reservationDTOS = reservationService.findActiveReservationsByUserId(userId).stream()
+            List<ReservationDTO> reservationDTOS = reservationService.findActivePresentReservationsByUser(userId).stream()
                     .map(ReservationDTO::new).collect(Collectors.toList());
             return new ResponseEntity<>(reservationDTOS, HttpStatus.OK);
         } else {
@@ -81,7 +82,7 @@ public class ReservationsController {
             }
         } catch (EventNotFoundException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (MaximumCapacityException e) {
+        } catch (MaximumCapacityException | PastEventException e) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } catch (AlreadyRegisteredException e) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
@@ -115,11 +116,13 @@ public class ReservationsController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (InvalidDataAccessResourceUsageException | UserIdNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        } catch (PastEventException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 
     @PutMapping("/cancel/{eventId}")
-    public ResponseEntity<String> cancelReservations(@PathVariable("eventId") Long id) {
+    public ResponseEntity<String> cancelReservationsByEvent(@PathVariable("eventId") Long id) {
         try {
             reservationService.cancelReservationsByEventId(id);
             return new ResponseEntity<>(HttpStatus.OK);

@@ -10,6 +10,7 @@ import com.rstejskalprojects.reservationsystem.util.ReservationDtoToReservationM
 import com.rstejskalprojects.reservationsystem.util.customexception.AlreadyRegisteredException;
 import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.MaximumCapacityException;
+import com.rstejskalprojects.reservationsystem.util.customexception.PastEventException;
 import com.rstejskalprojects.reservationsystem.util.customexception.ReservationNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,9 @@ public class ReservationServiceImpl implements ReservationService {
         if (!reservation.getOwner().getId().equals(ownerId)) {
             throw new AccessException("user of id " + ownerId + " does not have access to reservation of id " + reservationId);
         }
+        if (reservation.getEvent().getStartTime().isBefore(java.time.LocalDateTime.now())) {
+            throw new PastEventException("event of id " + reservation.getEvent().getId() + " has already started");
+        }
         reservationRepository.cancelReservationsById(reservationId);
         return reservationRepository.findReservationById(reservationId).orElseThrow(() ->
                 new ReservationNotFoundException(String.format("reservation of id %s not found", reservationId
@@ -60,8 +64,8 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public List<Reservation> findActiveReservationsByUserId(Long ownerId) {
-        return reservationRepository.findActiveReservationsByOwnerId(ownerId);
+    public List<Reservation> findActivePresentReservationsByUser(Long ownerId) {
+        return reservationRepository.findActivePresentReservationsByUser(ownerId);
     }
 
     @Override
@@ -83,6 +87,10 @@ public class ReservationServiceImpl implements ReservationService {
             log.info("user of id {} is already registered for event of id {}", ownerId, eventId);
             throw new AlreadyRegisteredException("user of id " + ownerId + "" +
                     " is already registered for event of id " + eventId);
+        }
+        if (reservation.getEvent().getStartTime().isBefore(java.time.LocalDateTime.now())) {
+            log.info("event of id {} has already started", eventId);
+            throw new PastEventException("event of id " + eventId + " has already started");
         }
         if (eventRepository.findById(eventId).orElseThrow(() ->
                 new EventNotFoundException(String.format("event of id %s not found", eventId
@@ -128,6 +136,9 @@ public class ReservationServiceImpl implements ReservationService {
                     .orElseThrow(() -> new ReservationNotFoundException(String.format("reservation of id %s not found", reservationId)));
             if (appUser.getUserRole() != UserRoleEnum.ADMIN && !Objects.equals(reservation.getOwner().getId(), ownerId)) {
                 throw new InvalidDataAccessResourceUsageException("the user of id " + ownerId + " is not the owner of reservation of id " + reservationId);
+            }
+            if (reservation.getEvent().getStartTime().isBefore(java.time.LocalDateTime.now())) {
+                throw new PastEventException("event of id " + reservation.getEvent().getId() + " has already started");
             }
             reservation.setIsCanceled(true);
             reservationRepository.save(reservation);
