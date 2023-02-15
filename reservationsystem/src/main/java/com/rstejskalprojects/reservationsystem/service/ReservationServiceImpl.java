@@ -95,7 +95,7 @@ public class ReservationServiceImpl implements ReservationService {
         if (eventRepository.findById(eventId).orElseThrow(() ->
                 new EventNotFoundException(String.format("event of id %s not found", eventId
                 ))).getCapacity() <=
-                reservationRepository.findReservationByEventId(eventId).size()) {
+                reservationRepository.findActiveReservationsByEventId(eventId).size()) {
             log.debug("event of id {} is full", eventId);
             throw new MaximumCapacityException("event of id " + eventId + " is full");
         }

@@ -63,32 +63,75 @@ const ReservationTable = ({ reservations, cancelReservations }) => {
     onSelectAll: handleSelectAll,
   };
 
-  const columns = [
+  const adminColumns = [
     {
       dataField: "reservationId",
-      text: "ID",
-      filter: textFilter({ placeholder: "ID rezervace" }),
+      text: "ID rezervace",
+      filter: textFilter({ placeholder: "1" }),
     },
     {
       dataField: "owner.email",
       text: "Email",
-      filter: textFilter({ placeholder: "Email zákazníka" }),
+      filter: textFilter({ placeholder: "josef.halekal@seznam.cz" }),
     },
 
     {
       dataField: "owner.fullName",
-      filter: textFilter({ placeholder: "Jméno zákazníka" }),
+      filter: textFilter({ placeholder: "Petr Pavel" }),
       text: "Jméno",
     },
     {
       dataField: "eventId",
       text: "ID události",
-      filter: textFilter({ placeholder: "ID události" }),
+      filter: textFilter({ placeholder: "1" }),
     },
     {
       dataField: "title",
       text: "Událost",
-      filter: textFilter({ placeholder: "Název události" }),
+      filter: textFilter({ placeholder: "tenis" }),
+    },
+
+    {
+      dataField: "start",
+      text: "Od",
+      sort: true,
+      formatter: dateFormatter,
+    },
+    {
+      dataField: "end",
+      text: "Do",
+      formatter: dateFormatter,
+    },
+    {
+      dataField: "isCanceled",
+      text: "Stav",
+      formatter: canceledFormater,
+      filter: selectFilter({
+        options: {
+          true: "Zrušena",
+          false: "Aktivní",
+        },
+        placeholder: "Stav",
+        defaultValue: false,
+      }),
+    },
+  ];
+
+  const userColumns = [
+    {
+      dataField: "reservationId",
+      text: "ID",
+      filter: textFilter({ placeholder: "1" }),
+    },
+    {
+      dataField: "eventId",
+      text: "ID události",
+      filter: textFilter({ placeholder: "1" }),
+    },
+    {
+      dataField: "title",
+      text: "Událost",
+      filter: textFilter({ placeholder: "lekce jógy" }),
     },
 
     {
@@ -104,20 +147,11 @@ const ReservationTable = ({ reservations, cancelReservations }) => {
     },
   ];
 
+  let columns;
   if (globalState?.user?.role === "ROLE_ADMIN") {
-    columns.push({
-      dataField: "isCanceled",
-      text: "Stav",
-      formatter: canceledFormater,
-      filter: selectFilter({
-        options: {
-          true: "Zrušena",
-          false: "Aktivní",
-        },
-        placeholder: "Stav",
-        defaultValue: false,
-      }),
-    });
+    columns = adminColumns;
+  } else {
+    columns = userColumns;
   }
 
   return (
@@ -134,14 +168,6 @@ const ReservationTable = ({ reservations, cancelReservations }) => {
       }}
     >
       <ButtonGroup>
-        <Button
-          onClick={() => {
-            console.log("hello");
-          }}
-          variant="secondary"
-        >
-          Nová rezervace
-        </Button>
         <Button
           onClick={() => {
             console.log(selected.length);

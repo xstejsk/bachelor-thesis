@@ -30,7 +30,7 @@ public class TokenController {
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
-    @GetMapping("refresh")
+    @GetMapping("/refresh")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 

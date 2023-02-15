@@ -1,16 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Col, Button, Row, Container, Form } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { forgotPasswordEndpoint, host } from "../../util/EndpointConfig";
+import { useAlert } from "react-alert";
 
 const ResetPassword = () => {
   const [email, setEmail] = useState("");
-  const [showMessage, setShowMessage] = useState(false);
+  const [submitButtonEnabled, setSubmitButtonEnabled] = useState(false);
+  const alert = useAlert();
 
   const handlePasswordReset = () => {
+    alert.info("Na uvedenou adresu bylo zasláno nové heslo.");
     axios.post(host + forgotPasswordEndpoint.replace("{email}", email));
-    setShowMessage(true);
   };
+
+  useEffect(() => {
+    setSubmitButtonEnabled(isEmail(email));
+  }, [email]);
+
+  function isEmail(email) {
+    const re =
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+  }
 
   return (
     <div>
@@ -21,36 +34,49 @@ const ResetPassword = () => {
               <h2 className="fw-bold mb-2 text-center  ">Reset hesla</h2>
               <div className="mb-3">
                 <Form>
-                  {showMessage && (
-                    <div className="mt-3">
-                      <p
-                        style={{
-                          color: "green",
-                          fontWeight: "bold",
-                        }}
-                        className="mb-0  text-center"
-                      >
-                        Vaše nové heslo bylo zasláno na uvedenou emailovou
-                        adresu, pokud je adresa platná.
-                      </p>
-                    </div>
-                  )}
-
                   <Form.Group className="mb-3" controlId="Name">
                     <Form.Label className="text-center">Email</Form.Label>
                     <Form.Control
                       type="email"
-                      placeholder="Zadejte email"
+                      placeholder="karel.basta@seznam.cz"
                       onChange={(e) => {
                         setEmail(e.target.value);
                       }}
+                      isInvalid={!isEmail(email)}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      Zadejte prosím platnou emailovou adresu
+                    </Form.Control.Feedback>
                   </Form.Group>
                   <div className="d-grid">
-                    <Button variant="primary" onClick={handlePasswordReset}>
+                    <Button
+                      variant="primary"
+                      onClick={handlePasswordReset}
+                      disabled={!submitButtonEnabled}
+                    >
                       Zaslat nové heslo
                     </Button>
                   </div>
+                  <Form.Group>
+                    <Row>
+                      <Col>
+                        <p style={{ textAlign: "left" }} className="mt-4">
+                          Máte účet?{" "}
+                          <Link to="/login" className="text-primary fw-bold">
+                            Přihlašte se
+                          </Link>
+                        </p>
+                      </Col>
+                      <Col>
+                        <p style={{ textAlign: "right" }} className="mt-4">
+                          Nemáte účet?{" "}
+                          <Link to="/register" className="text-primary fw-bold">
+                            Registrujte se
+                          </Link>
+                        </p>
+                      </Col>
+                    </Row>
+                  </Form.Group>
                 </Form>
               </div>
             </div>

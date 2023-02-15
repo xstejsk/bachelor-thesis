@@ -39,8 +39,9 @@ public class ReservationsController {
     private final AuthorizationUtil authorizationUtil;
     private final JwtUtil jwtUtil;
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<List<ReservationDTO>> getAll(HttpServletRequest request, HttpServletResponse response) {
+        log.info("getting all reservations");
         List<ReservationDTO> reservationDTOS = reservationService.findAll().stream().map(ReservationDTO::new).collect(Collectors.toList());
         return new ResponseEntity<>(reservationDTOS, HttpStatus.OK);
     }
@@ -53,23 +54,26 @@ public class ReservationsController {
                     .map(ReservationDTO::new).collect(Collectors.toList());
             return new ResponseEntity<>(reservationDTOS, HttpStatus.OK);
         } else {
+            log.warn("user id does not match jwt");
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
-    @GetMapping("/active/{userId}")
+    @GetMapping("/{userId}/active")
     public ResponseEntity<List<ReservationDTO>> getActiveByUsername(@PathVariable("userId") Long userId, HttpServletRequest request) {
+        log.info("active reservations for user: " + userId);
         String bearerToken = request.getHeader("Authorization");
         if (authorizationUtil.userIdMatchesJWT(userId, bearerToken)) {
             List<ReservationDTO> reservationDTOS = reservationService.findActivePresentReservationsByUser(userId).stream()
                     .map(ReservationDTO::new).collect(Collectors.toList());
             return new ResponseEntity<>(reservationDTOS, HttpStatus.OK);
         } else {
+            log.warn("user id does not match jwt");
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
-    @PostMapping("/new")
+    @PostMapping("/create")
     public ResponseEntity<ReservationDTO> createReservation(@RequestBody ReservationDTO reservationDTO, HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         try {
@@ -81,31 +85,21 @@ public class ReservationsController {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         } catch (EventNotFoundException e) {
+            log.warn("event not found");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (MaximumCapacityException | PastEventException e) {
+            log.warn("event is full or in the past", e);
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } catch (AlreadyRegisteredException e) {
+            log.warn("user already registered for event", e);
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         } catch (Exception e) {
+            log.warn("something went wrong", e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
-    @PutMapping("/cancel/{reservationId}")
-    public ResponseEntity<String> cancelReservation(@PathVariable("reservationId") Long reservationId, HttpServletRequest request) {
-        try {
-            String bearerToken = request.getHeader("Authorization");
-            Long userId = jwtUtil.getUserIdFromToken(bearerToken.substring(7));
-            reservationService.cancelReservationById(reservationId, userId);
-            return new ResponseEntity<>("Reservation cancelled", HttpStatus.OK);
-        } catch (ReservationNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (AccessException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-        }
-    }
-
-    @PutMapping("/cancel-multiple")
+    @PutMapping("/cancel")
     public ResponseEntity<String> cancelMultipleReservations(@RequestBody CancelReservationsRequest cancelReservationsRequest, HttpServletRequest request) {
         try {
             String bearerToken = request.getHeader("Authorization");
@@ -113,22 +107,14 @@ public class ReservationsController {
             reservationService.cancelMultipleReservations(cancelReservationsRequest.getReservationIds(), id);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (ReservationNotFoundException e) {
+            log.warn("reservation not found", e);
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (InvalidDataAccessResourceUsageException | UserIdNotFoundException e) {
+            log.warn("user not authorized to cancel reservation", e);
             return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
         } catch (PastEventException e) {
+            log.warn("event is in the past", e);
             return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         }
-    }
-
-    @PutMapping("/cancel/{eventId}")
-    public ResponseEntity<String> cancelReservationsByEvent(@PathVariable("eventId") Long id) {
-        try {
-            reservationService.cancelReservationsByEventId(id);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (EventNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
-
     }
 }

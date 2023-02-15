@@ -49,4 +49,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query("SELECT r FROM Reservation r WHERE r.isCanceled = FALSE AND r.owner.id = ?1 AND r.event.startTime >= CURRENT_TIMESTAMP")
     List<Reservation> findActivePresentReservationsByUser(Long id);
+
+    @Query("SELECT r FROM Reservation r WHERE r.isCanceled = FALSE AND r.event.id = ?1")
+    List<Reservation> findActiveReservationsByEventId(Long eventId);
 }

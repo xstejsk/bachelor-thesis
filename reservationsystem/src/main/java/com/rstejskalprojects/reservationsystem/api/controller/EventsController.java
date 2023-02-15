@@ -1,13 +1,19 @@
 package com.rstejskalprojects.reservationsystem.api.controller;
 
+import com.rstejskalprojects.reservationsystem.api.controller.model.UpdateEventRequest;
 import com.rstejskalprojects.reservationsystem.model.Event;
 import com.rstejskalprojects.reservationsystem.model.dto.EventDTO;
 import com.rstejskalprojects.reservationsystem.service.EventService;
-import com.rstejskalprojects.reservationsystem.service.EventServiceImpl;
 import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.OverlappingEventException;
 import com.rstejskalprojects.reservationsystem.util.customexception.RecurrenceGroupNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UrlParamsEnum;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,7 +42,12 @@ public class EventsController {
     private final EventService eventsService;
     private final Set<String> allowedParams = new HashSet<>(List.of("locationName", "locationId"));
 
-    @PostMapping("/new")
+
+    @PostMapping("/create")
+    @Operation(summary = "Get thing", responses = {
+        @ApiResponse(description = "Event was successfully created", responseCode = "201", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "409", description = "Event overlaps with an existing event.", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Authentication Failure", content = @Content(schema = @Schema(hidden = true))) })
     public ResponseEntity<List<EventDTO>> saveEvents(@RequestBody EventDTO eventDTO) {
         log.info("requested to save eventDTO: {}", eventDTO);
         try{
@@ -53,7 +64,7 @@ public class EventsController {
         }
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<List<EventDTO>> getAll(@RequestParam(required=false) Map<String,String> params) {
         log.info("get all events called with parameters {}", params);
         if (!allowedParams.containsAll(params.keySet())) {
@@ -112,7 +123,38 @@ public class EventsController {
         } catch (EventNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
+    }
 
+    @PutMapping("/update/{eventId}")
+    public ResponseEntity<EventDTO> updateEvent(@PathVariable("eventId") Long eventId, @RequestBody UpdateEventRequest updateEventRequest) {
+        try {
+            Event updatedEvent = eventsService.updateEvent(eventId, updateEventRequest);
+            return new ResponseEntity<>(new EventDTO(updatedEvent), HttpStatus.OK);
+        } catch (EventNotFoundException | RecurrenceGroupNotFoundException e) {
+            log.warn("event not found exception: {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (OverlappingEventException e) {
+            log.warn("overlapping event exception: {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            log.warn("error updating event: {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/update/recurrent/{recurrenceGroupId}")
+    public ResponseEntity<List<EventDTO>> updateRecurrenceGroup(@PathVariable("recurrenceGroupId") Long recurrenceGroupId, @RequestBody UpdateEventRequest updateEventRequest) {
+        try {
+            List<Event> updatedEvents = eventsService.updateRecurrentEvents(recurrenceGroupId, updateEventRequest);
+            List<EventDTO> eventDTOS = updatedEvents.stream().map(EventDTO::new).toList();
+            return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
+        } catch (RecurrenceGroupNotFoundException e) {
+            log.warn("recurrence group not found exception: {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (OverlappingEventException e) {
+            log.warn("overlapping event exception: {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
     }
 
     @PutMapping("/cancel/group/{id}")

@@ -15,11 +15,17 @@ public class AppUserDTO {
     @JsonProperty
     private String email;
     @JsonProperty
+    private Boolean enabled = false;
+    @JsonProperty
+    private Boolean locked = false;
+    @JsonProperty
     private String role;
 
     public AppUserDTO(AppUser appUser) {
         this.userId = appUser.getId();
         this.fullName = appUser.getFirstName() + " " + appUser.getLastName();
+        this.enabled = appUser.getEnabled();
+        this.locked = appUser.getLocked();
         this.email = appUser.getEmail();
         this.role = appUser.getUserRole().getName();
     }

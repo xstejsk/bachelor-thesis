@@ -34,6 +34,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     // find all events that overlap with the given event (StartA <= EndB) and (EndA >= StartB)
     @Query("SELECT e FROM Event e WHERE e.isCanceled = FALSE AND " +
-            "e.location.id = ?1 AND ?2 < e.endTime AND e.startTime < ?3")
-    List<Event> findOverlappingEvents(Long locationId, LocalDateTime startTime, LocalDateTime endTime);
+            "e.location.id = ?2 AND ?3 < e.endTime AND e.startTime < ?4 AND e.id <> ?1")
+    List<Event> findOverlappingEvents(Long eventId, Long locationId, LocalDateTime startTime, LocalDateTime endTime);
 }

@@ -11,6 +11,7 @@ import com.rstejskalprojects.reservationsystem.util.customexception.ExpiredToken
 import com.rstejskalprojects.reservationsystem.util.customexception.UnknownTokenException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UsedTokenException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final JwtUtil jwtUtil;
@@ -66,6 +68,7 @@ public class AuthController {
                     }});
 
         } catch (BadCredentialsException ex) {
+            log.warn("Bad credentials for user: " + request.getUsername());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (DisabledException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -87,6 +90,7 @@ public class AuthController {
             String token = registrationService.resendRegistrationEmail(email);
             return new ResponseEntity<>(token, HttpStatus.OK);
         } catch (UsernameNotFoundException ex) {
+            log.warn("User not found: " + email);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -97,12 +101,16 @@ public class AuthController {
             registrationService.confirmToken(token);
             return ResponseEntity.ok().build();
         } catch (UsedTokenException e) {
+            log.warn("Token already used: " + token);
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         } catch (ExpiredTokenException e) {
+            log.warn("Token expired: " + token);
             return ResponseEntity.status(HttpStatus.GONE).build();
         } catch (UnknownTokenException e) {
+            log.warn("Token unknown: " + token);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
+            log.warn("Unknown error: " + token);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }

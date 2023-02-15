@@ -1,16 +1,21 @@
 package com.rstejskalprojects.reservationsystem.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.time.DayOfWeek;
@@ -32,10 +37,11 @@ public class RecurrenceGroup {
     @JsonProperty
     private FrequencyEnum frequency;
     @JsonProperty
-    @Transient
+    @ElementCollection(fetch = FetchType.EAGER, targetClass=DayOfWeek.class)
     private List<DayOfWeek> daysOfWeek;
-    @Transient
     @JsonProperty
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
     public RecurrenceGroup(FrequencyEnum frequency, List<DayOfWeek> daysOfWeek, LocalDate endDate) {

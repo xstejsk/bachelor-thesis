@@ -8,6 +8,7 @@ import Select from "react-select";
 import axios from "axios";
 import CustomGridLoader from "./CustomLoader";
 import CustomScheduler from "./CustomScheduler";
+import { Row, Col } from "reactstrap";
 
 const SchedulerWrapper = () => {
   const [events, setEvents] = useState({ data: [], loaded: false });
@@ -21,30 +22,47 @@ const SchedulerWrapper = () => {
     setCurrentLocationId(locationId);
   };
 
-  const addEvents = (newEvents) => {
-    //  setEvents({ ...events, loaded: false });
-    let eventsData = events.data.concat(newEvents);
-    setEvents({ data: eventsData, loaded: true });
+  useEffect(() => {
+    console.log(events.data);
+  }, [events]);
+
+  const reloadLocations = () => {
+    axios.get(host + locationsEndpoint).then((response) => {
+      if (response.status === 200) {
+        let locationsData = response.data;
+        let locationId;
+        if (currentLocationId !== 0) {
+          locationId = currentLocationId;
+        } else {
+          locationId = response.data.at(0).id;
+          setCurrentLocationId(locationId);
+        }
+        let locationOptions = response.data.map((location) => ({
+          value: location.id,
+          label: location.name,
+        }));
+        setLocations({
+          locationObjects: locationsData,
+          locationOptions: locationOptions,
+        });
+      }
+    });
   };
 
-  const addLocation = (location) => {
-    let locationObjects = locations.locationObjects;
-    locationObjects.push(location);
-    setLocations({ ...locations, locationObjects: locationObjects });
-  };
-
-  const removeEvent = (id) => {
-    console.log(events);
-    //    setEvents({ ...events, loaded: false });
-    let eventsData = events.data.filter((event) => event.id != id);
-    setEvents({ data: eventsData, loaded: true });
-  };
-
-  const removeEventGroup = (id) => {
-    let eventsData = events.data.filter(
-      (event) => event.recurrenceGroup?.id != id
-    );
-    setEvents({ ...events, data: eventsData });
+  const reloadEvents = () => {
+    axios
+      .get(host + activeEventsEndpoint, {
+        timeout: 10000,
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          setEvents({ data: response.data, loaded: true });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        setEvents({ data: [], loaded: true });
+      });
   };
 
   const initialize = () => {
@@ -103,28 +121,61 @@ const SchedulerWrapper = () => {
   } else {
     return (
       <div className="container-fluid">
-        <div className="row">
-          {/* <div className="col-auto min-vh-100 bg-light"> */}
-
+        {/* <div className="row"> */}
+        {/* <div className="col-auto min-vh-100 bg-light"> */}
+        <div id="locations">
+          {/* <Row>
+            <Col> */}
           <Select
             style={{ float: "left" }}
             defaultValue={locations.locationOptions[0]}
             options={locations.locationOptions}
             onChange={(element) => handleLocationChange(element.value)}
           />
-          {/* </div> */}
-          <div className="col ">
-            <CustomScheduler
-              allEvents={events.data}
-              currentLocationId={currentLocationId}
-              addEvents={addEvents}
-              removeEvent={removeEvent}
-              removeEventGroup={removeEventGroup}
-              addLocation={addLocation}
-            />
-          </div>
+          {/* </Col>
+          </Row> */}
         </div>
+        <div id="calendar">
+          {/* <Row>
+            <Col> */}
+          <CustomScheduler
+            allEvents={events.data}
+            currentLocationId={currentLocationId}
+            reloadLocations={reloadLocations}
+            reloadEvents={reloadEvents}
+          />
+          {/* </Col>
+          </Row> */}
+        </div>
+
+        {/* </div> */}
+        {/* <div className="col "> */}
       </div>
+      // </div>
+      // </div>
+
+      // <div className="">
+      //   <div id="locations">
+      //     <Row>
+      //       <Select
+      //         style={{ float: "left" }}
+      //         defaultValue={locations.locationOptions[0]}
+      //         options={locations.locationOptions}
+      //         onChange={(element) => handleLocationChange(element.value)}
+      //       />
+      //     </Row>
+      //   </div>
+
+      //   <div id="calendar"></div>
+      //   <Row>
+      //     <CustomScheduler
+      // allEvents={events.data}
+      // currentLocationId={currentLocationId}
+      // reloadLocations={reloadLocations}
+      // reloadEvents={reloadEvents}
+      //     />
+      //   </Row>
+      // </div>
     );
   }
 };

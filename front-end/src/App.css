@@ -4,6 +4,10 @@
   padding: 15px;
 }
 
+.fc-event {
+  cursor: pointer;
+}
+
 .sr-only {
   /*bootstrap screen reader class that contains labels*/
   position: absolute;
@@ -40,3 +44,52 @@
   border-top-right-radius: 0;
   margin-bottom: -1px;
 }
+
+.fc {
+  background-color: #f7f7f7;
+}
+
+#calendar {
+  position: relative;
+  z-index: 0;
+}
+
+#locations {
+  z-index: 100;
+  position: relative;
+}
+.myWrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.myHeader {
+  flex: 0 0 auto; /* Allows the Header component to grow and shrink as necessary */
+}
+
+.myContent {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  flex: 1 0 auto; /* Allows the Content component to take up all the available space */
+}
+
+.myFooter {
+  flex: 0 0 auto; /* Keeps the Footer component at a fixed height */
+  background: linear-gradient(to bottom, white, rgb(201, 202, 202));
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* .myFooter {
+  position: static;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgb(231, 231, 231),
+    rgb(201, 202, 202)
+  );
+  background-size: cover;
+  background-repeat: no-repeat;
+} */

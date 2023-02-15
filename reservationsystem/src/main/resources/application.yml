@@ -37,6 +37,7 @@ spring:
           connectiontimeout: 5000
           timeout: 3000
           writetimeout: 5000
+
 jwt:
     accessExpirationDateInMs: 6000000 # 100 minute
     refreshExpirationDateInMs: 31536000000 # 1 year
@@ -45,4 +46,5 @@ cors:
   whiteListedOrigins: "http://localhost:3000/"
 host:
   domain: "http://localhost:3000"
+
 

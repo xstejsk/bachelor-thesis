@@ -77,23 +77,55 @@ const StyledToggle = withStyles({
   selected: {},
 })(ToggleButton);
 
+const DisabledToggle = withStyles({
+  root: {
+    color: "#1674f7",
+    "&$selected": {
+      color: "white",
+      background: "#9bc2fa",
+      borderColor: "#9bc2fa",
+    },
+    "&:hover": {
+      color: "1665f7",
+      borderColor: "",
+      background: "white",
+    },
+
+    "&:hover$selected": {
+      color: "1665f7",
+      borderColor: "#9bc2fa",
+      background: "#9bc2fa",
+    },
+    minWidth: 32,
+    maxWidth: 32,
+    height: 32,
+    textTransform: "unset",
+    fontSize: "0.75rem",
+  },
+  selected: {},
+})(ToggleButton);
+
 const DaysSelector = (props) => {
-  const [days, setDays] = useState(props?.defaultValue);
+  const [days, setDays] = useState(props.days);
+  const ButtonToggle = props.isDisabled ? DisabledToggle : StyledToggle;
   return (
     <>
       <StyledToggleButtonGroup
+        aria-disabled
         size="small"
         arial-label="Days of the week"
         value={days}
         onChange={(event, value) => {
-          setDays(value);
-          props.onChange(value);
+          if (!props.isDisabled) {
+            setDays(value);
+            props.onChange(value);
+          }
         }}
       >
         {DAYS.map((day, index) => (
-          <StyledToggle key={day.key} value={day.key} aria-label={day.key}>
+          <ButtonToggle key={day.key} value={day.key} aria-label={day.key}>
             {day.label}
-          </StyledToggle>
+          </ButtonToggle>
         ))}
       </StyledToggleButtonGroup>
     </>

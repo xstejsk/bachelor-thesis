@@ -5,10 +5,12 @@ import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import { Col, Row, Container, Card, Form } from "react-bootstrap";
 import axios from "axios";
 import { host, newLocationEndpoint } from "../../util/EndpointConfig";
+import { useAlert } from "react-alert";
 
-const NewLocationForm = ({ handleHide, isOpen, addLocation }) => {
+const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
   const [locationName, setLocationName] = useState("");
   const [locationExists, setLocationExists] = useState(false);
+  const alert = useAlert();
   function handleCancel() {
     handleHide();
   }
@@ -23,8 +25,9 @@ const NewLocationForm = ({ handleHide, isOpen, addLocation }) => {
       .then((response) => {
         console.log("posting new location");
         if (response.status === 201) {
-          addLocation(response.data);
+          reloadLocations();
           handleCancel();
+          alert.success("Bylo vytvořeno nové místo konání událostí.");
         }
       })
       .catch((err) => {
@@ -62,7 +65,7 @@ const NewLocationForm = ({ handleHide, isOpen, addLocation }) => {
       <ModalFooter>
         {
           <Button color="secondary" onClick={handleCancel}>
-            Zrušit
+            Zavřít
           </Button>
         }
         {

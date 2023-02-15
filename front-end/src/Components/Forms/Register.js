@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { Col, Button, Row, Container, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -8,6 +8,7 @@ import {
   registerEndpoint,
   resendEmailEndpoint,
 } from "../../util/EndpointConfig";
+import { useAlert } from "react-alert";
 
 const Register = () => {
   const [newUser, setNewUser] = useState({
@@ -23,24 +24,34 @@ const Register = () => {
     firstName: "Zadejte prosím své jméno",
     lastName: "Zadejte prosím své příjmení",
   });
-
+  const alert = useAlert();
   const [message, setMessage] = useState({ text: "", color: "" });
   const [submitButtonEnabled, setSubmitButtonEnabled] = useState(false);
   const [controlPassword, setControlPassword] = useState("");
-
+  const [emailAlreadyInUse, setEmailAlreadyInUse] = useState(false);
   const handleResendEmail = () => {
     axios
       .post(host + resendEmailEndpoint + newUser.email)
       .then((response) => {
         if (response.status === 200) {
           console.log("email has been resent");
-          alert(
+          alert.info(
             "Potvrzovací email byl znovu zaslán, zkontrolujte prosím vaši emailovou schránku."
           );
         }
       })
-      .catch((err) => console.log(err));
+      .catch((error) => {});
   };
+  useEffect(() => {
+    setSubmitButtonEnabled(
+      !(
+        errors.email !== "" ||
+        errors.password !== "" ||
+        errors.firstName !== "" ||
+        errors.lastName !== ""
+      ) && newUser.password === controlPassword
+    );
+  }, [newUser, controlPassword]);
 
   const handleRegistration = () => {
     axios
@@ -60,19 +71,25 @@ const Register = () => {
         console.log(error.response.status);
 
         if (error.response.status == 409) {
-          setMessage({
-            text: "Účet s touto emailovou adresou již existuje, prosím, přihlašte se",
-            color: "red",
-          });
+          console.log("error register");
+          if (error.response.status === 409) {
+            alert.error(
+              "Účet se zadaným emailem již existuje, prosím, přihlašte se."
+            );
+            console.log("already in use");
+            setEmailAlreadyInUse(true);
+          }
         }
       });
   };
 
   const handleChange = (field, value) => {
     let errorMessage = "";
+    //let passwordsMatch = newUser.password === controlPassword;
     if (field === "password") {
       if (value.length < 8) {
         errorMessage = "Heslo musí mít alespoň 8 znaků";
+        //  passwordsMatch = value === controlPassword;
       }
     } else if (field === "email") {
       if (!isEmail(value)) {
@@ -87,23 +104,6 @@ const Register = () => {
     }
     setErrors((prev) => ({ ...prev, [field]: errorMessage }));
     setNewUser((prev) => ({ ...prev, [field]: value }));
-    setSubmitButtonEnabled(
-      !(
-        errors.email !== "" ||
-        errors.password !== "" ||
-        errors.firstName !== "" ||
-        errors.lastName !== ""
-      ) && newUser.password === controlPassword
-    );
-    console.log(
-      !(
-        errors.email !== "" ||
-        errors.password !== "" ||
-        errors.firstName !== "" ||
-        errors.lastName !== ""
-      )
-    );
-    console.log(newUser.password === controlPassword);
   };
 
   function isEmail(email) {
@@ -148,7 +148,7 @@ const Register = () => {
                         <Form.Label className="text-center">Jméno</Form.Label>
                         <Form.Control
                           type="text"
-                          placeholder="zadejte jméno"
+                          placeholder="Karel"
                           onChange={(e) => {
                             handleChange(e.target.name, e.target.value);
                           }}
@@ -165,7 +165,7 @@ const Register = () => {
                         </Form.Label>
                         <Form.Control
                           type="text"
-                          placeholder="zadejte příjmení"
+                          placeholder="Janeček"
                           onChange={(e) => {
                             handleChange(e.target.name, e.target.value);
                           }}
@@ -183,12 +183,12 @@ const Register = () => {
                     <Form.Label className="text-center">Email</Form.Label>
                     <Form.Control
                       type="email"
-                      placeholder="zadejte email"
+                      placeholder="karel.janecek@gmail.com"
                       onChange={(e) => {
                         handleChange(e.target.name, e.target.value);
                       }}
                       name="email"
-                      isInvalid={!isEmail(newUser.email)}
+                      isInvalid={!isEmail(newUser.email) || emailAlreadyInUse}
                     />
                     <Form.Control.Feedback type="invalid">
                       {errors.email}
@@ -199,7 +199,7 @@ const Register = () => {
                     <Form.Label>Heslo</Form.Label>
                     <Form.Control
                       type="password"
-                      placeholder="zadejte heslo"
+                      placeholder=""
                       onChange={(e) => {
                         handleChange(e.target.name, e.target.value);
                       }}
@@ -214,18 +214,10 @@ const Register = () => {
                     <Form.Label>Heslo pro kontrolu</Form.Label>
                     <Form.Control
                       type="password"
-                      placeholder="heslo znovu"
+                      placeholder=""
                       isInvalid={newUser.password !== controlPassword}
                       onChange={(e) => {
                         setControlPassword(e.target.value);
-                        setSubmitButtonEnabled(
-                          !(
-                            errors.email !== "" ||
-                            errors.password !== "" ||
-                            errors.firstName !== "" ||
-                            errors.lastName !== ""
-                          ) && newUser.password === e.target.value
-                        );
                       }}
                     />
                     <Form.Control.Feedback type="invalid">
@@ -246,15 +238,30 @@ const Register = () => {
                       Vytvořit účet
                     </Button>
                   </div>
+                  <Form.Group>
+                    <Row>
+                      <Col>
+                        <p style={{ textAlign: "left" }} className="mt-4">
+                          Máte účet?{" "}
+                          <Link to="/login" className="text-primary fw-bold">
+                            Přihlašte se
+                          </Link>
+                        </p>
+                      </Col>
+                      <Col>
+                        <p style={{ textAlign: "right" }} className="mt-4">
+                          Zapomenuté heslo?{" "}
+                          <Link
+                            to="/password/reset"
+                            className="text-primary fw-bold"
+                          >
+                            Obnova hesla
+                          </Link>
+                        </p>
+                      </Col>
+                    </Row>
+                  </Form.Group>
                 </Form>
-                <div className="mt-3">
-                  <p className="mb-0  text-center">
-                    Již máte účet?{" "}
-                    <Link to="/login" className="text-primary fw-bold">
-                      Přihlašte se
-                    </Link>
-                  </p>
-                </div>
               </div>
             </div>
           </Col>

@@ -1,5 +1,4 @@
 import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap-daterangepicker/daterangepicker.css";
 import React, { useEffect, useState } from "react";
 import {
   Modal,
@@ -8,97 +7,115 @@ import {
   ModalFooter,
   Button,
   FormGroup,
+  FormFeedback,
   Label,
   Input,
-  Col,
-  Row,
 } from "reactstrap";
+import { Row, Col } from "react-bootstrap";
 import Select from "react-select";
-import DateRangePicker from "react-bootstrap-daterangepicker";
 import DaysSelector from "../DaysSelector";
 import axios from "axios";
 import { host, newEventEndpoint } from "../../util/EndpointConfig";
 import { useAlert } from "react-alert";
-import { event } from "jquery";
 
-const NewEventForm = ({ handleHide, isOpen, locationId, addEvents }) => {
-  const [eventTitle, setEvenTitle] = useState("");
-  const [startDateTime, setStarDateTime] = useState(new Date());
-  const [endDateTime, setEndDateTime] = useState(new Date());
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState(100);
-  const [capacity, setCapacity] = useState(1);
-  const alert = useAlert();
-
-  const [endRecurrenceDate, setEndReccurenceDate] = useState(new Date());
-  const [days, setDays] = useState([]);
+const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
   const recurrenceOptions = [
     { value: "NEVER", label: "Nikdy" },
     { value: "WEEKLY", label: "Týdně" },
     { value: "MONTHLY", label: "Měsíčně" },
   ];
-  const [recurrence, setRecurrence] = useState(recurrenceOptions[0].value);
-  function handleCancel() {
-    //calendarRef.current.rerenderEvents();
-    handleHide();
-  }
+  const alert = useAlert();
+  const [recurrenceGroup, setRecurrenceGroup] = useState({
+    frequency: recurrenceOptions[0].value,
+    daysOfWeek: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+    endDate: undefined,
+  });
+  const [event, setEvent] = useState({
+    title: "",
+    start: undefined,
+    end: undefined,
+    description: "",
+    locationId: locationId,
+    price: 100,
+    capacity: 1,
+    recurrenceGroup: recurrenceGroup,
+  });
+
+  const handleChangeEvent = (field, value) => {
+    setEvent((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleChangeRecurrenceGroup = (field, value) => {
+    setRecurrenceGroup((prev) => ({ ...prev, [field]: value }));
+  };
 
   useEffect(() => {
-    console.log("duration ----------");
-    console.log(startDateTime);
-    console.log(endDateTime);
-  }, [startDateTime, endDateTime]);
+    setFormHasErrors(
+      event.title === "" ||
+        event.end == undefined ||
+        event.start == undefined ||
+        new Date(event.start) > new Date(event.end) ||
+        (recurrenceGroup.frequency != "NEVER" &&
+          recurrenceGroup.frequency == undefined)
+    );
+  }, [event]);
+
+  useEffect(() => {
+    setEvent((prev) => ({ ...prev, ["recurrenceGroup"]: recurrenceGroup }));
+  }, [recurrenceGroup]);
+
+  const [recurrence, setRecurrence] = useState(recurrenceOptions[0].value);
+  const [formHasErrors, setFormHasErrors] = useState(true);
+
+  function formatDate(date) {
+    return (
+      date.getFullYear() +
+      "-" +
+      (date.getMonth() + 1).toString().padStart(2, "0") +
+      "-" +
+      date.getDate().toString().padStart(2, "0") +
+      "T" +
+      date.getHours().toString().padStart(2, "0") +
+      ":" +
+      date.getMinutes().toString().padStart(2, "0")
+    );
+  }
+  useEffect(() => {
+    setRecurrence("NEVER");
+  }, [isOpen]);
 
   function handleSubmit() {
-    const newEvent = {
-      title: eventTitle,
-      start: startDateTime,
-      end: endDateTime,
-      startString: startDateTime.toISOString(),
-      allDay: false,
-      capacity: capacity,
-      price: price,
-      description: description,
-      isFull: false,
-      locationId: locationId,
-      recurrenceGroup: {
-        frequency: recurrence,
-        daysOfWeek: days,
-        endDate: endRecurrenceDate,
-      },
-    };
     axios
-      .post(host + newEventEndpoint, newEvent)
+      .post(host + newEventEndpoint, event)
       .then((response) => {
-        console.log("posting new event------");
-        console.log(newEvent);
-        console.log(new Date().getTimezoneOffset());
-        console.log("----------");
         let data = [];
         if (response.status === 201) {
-          // let calendarApi = calendarRef.current.getApi();
           data = response.data;
-          if (data.length !== 0) {
-            addEvents(data);
+          if (data.length == 1) {
+            alert.info("Událost byla vytvořena.");
+          } else if (data.length > 1) {
+            alert.info("Série událostí byla vytvořena.");
           }
+          reloadEvents();
         }
       })
       .catch((error) => {
+        console.log(error.response.status);
         if (error.response.status === 409) {
-          let arrayOfIds = error.response.data;
+          let arrayOfIds = error.response.data.map((event) => event.id);
           alert.error(
             "Událost se nepodařilo vytvořit, protože se kryje s událostmi s ID: " +
               arrayOfIds.join(", ")
           );
-        } else if (error.status.code === 400) {
+        } else if (error.response.status === 400) {
           alert.error("Události se nepodařilo vytvořit.");
         }
       });
-    handleCancel();
+    handleHide();
   }
 
   return (
-    <Modal isOpen={isOpen} on backdrop="static" size="md">
+    <Modal isOpen={isOpen} on backdrop="static" size="md" centered>
       <ModalHeader>Nová událost</ModalHeader>
       <ModalBody>
         <FormGroup>
@@ -106,97 +123,57 @@ const NewEventForm = ({ handleHide, isOpen, locationId, addEvents }) => {
           <Input
             type="text"
             name="title"
-            placeholder="Název"
-            value={eventTitle}
-            onChange={(e) => setEvenTitle(e.target.value)}
+            placeholder="Lekce jógy"
+            value={event.title}
+            onChange={(e) => handleChangeEvent(e.target.name, e.target.value)}
+            invalid={event.title === ""}
           />
+          <FormFeedback>Název nesmí být prázdný</FormFeedback>
         </FormGroup>
 
         <FormGroup>
           <Row>
-            <Col>
-              <Label for="price">Cena</Label>
+            <Col sm="6">
+              <Label for="start">Od</Label>
               <Input
-                type="number"
-                step="20"
-                name="price"
-                placeholder="Cena"
-                value={price}
-                min={0}
-                onChange={(e) => setPrice(e.target.value)}
+                type="datetime-local"
+                name="start"
+                placeholder={new Date().toISOString().substr(0, 16)}
+                min={new Date().toISOString().substr(0, 16)}
+                onChange={(e) =>
+                  handleChangeEvent(e.target.name, e.target.value)
+                }
+                invalid={event.start == undefined}
               />
+              <FormFeedback>Vyberte začátek </FormFeedback>
             </Col>
-            <Col>
-              <Label for="capacity">Kapacita</Label>
+
+            <Col sm="6">
+              <Label for="end">Do</Label>
               <Input
-                type="number"
-                name="capacity"
-                placeholder="Kapacita"
-                min={1}
-                value={capacity}
-                onChange={(e) => setCapacity(e.target.value)}
+                type="datetime-local"
+                name="end"
+                placeholder={new Date().toISOString().substr(0, 16)}
+                min={event.start}
+                onChange={(e) =>
+                  handleChangeEvent(e.target.name, e.target.value)
+                }
+                invalid={
+                  event.end == undefined ||
+                  new Date(event.end) < new Date(event.start)
+                }
               />
+              {event.end == undefined && (
+                <FormFeedback>Vyberte konec</FormFeedback>
+              )}
+              {new Date(event.end) < new Date(event.start) && (
+                <FormFeedback>Konec nemůže být před začátkem</FormFeedback>
+              )}
             </Col>
           </Row>
         </FormGroup>
         <FormGroup>
           <Row>
-            <Col>
-              <Label for="startTime">Od - do</Label>
-              {/* <Input
-                type="date"
-                name="startTime"
-                placeholder="1.1.2021"
-                min={new Date().toISOString().substr(0, 10)}
-              />
-            </Col> */}
-              <DateRangePicker
-                initialSettings={{
-                  locale: {
-                    // format: "H:m",
-                    format: "MM/DD HH:mm",
-                    separator: " - ",
-                    applyLabel: "Použít",
-                    cancelLabel: "Zrušit",
-                    fromLabel: "Od",
-                    toLabel: "Do",
-                    customRangeLabel: "Vlastní",
-                    daysOfWeek: ["Ne", "Po", "Út", "St", "Čt", "Pá", "So"],
-                    timePicker24Hour: true,
-                    monthNames: [
-                      "Leden",
-                      "Únor",
-                      "Březen",
-                      "Duben",
-                      "Květen",
-                      "Červen",
-                      "Červenec",
-                      "Srpen",
-                      "Září",
-                      "Říjen",
-                      "Listopad",
-                      "Prosinec",
-                    ],
-                    firstDay: 1,
-                  },
-                  startDate: startDateTime,
-                  endDate: endDateTime,
-                  timePicker: true,
-                }}
-                onApply={(event, picker) => {
-                  console.log("picker date------------");
-                  console.log(picker.startDate);
-                  console.log("picker date time------------");
-                  console.log(picker.startDateTime);
-                  console.log("picker date from date time------------");
-                  console.log(new Date(picker.startDate));
-                  setStarDateTime(new Date(picker.startDate));
-                  setEndDateTime(new Date(picker.endDate));
-                }}
-              >
-                <input className="form-control" type="text" />
-              </DateRangePicker>
-            </Col>
             <Col>
               <FormGroup>
                 <Label for="recurence">Opakovat</Label>
@@ -204,39 +181,79 @@ const NewEventForm = ({ handleHide, isOpen, locationId, addEvents }) => {
                   isSearchable={false}
                   defaultValue={recurrenceOptions[0]}
                   options={recurrenceOptions}
-                  onChange={(element) => setRecurrence(element.value)}
+                  name="frequency"
+                  onChange={(e) => {
+                    handleChangeRecurrenceGroup("frequency", e.value);
+                  }}
                 />
               </FormGroup>
+            </Col>
+            <Col>
+              <Label for="price">Cena</Label>
+              <Input
+                type="number"
+                step="20"
+                name="price"
+                placeholder="200"
+                value={event.price}
+                min={0}
+                onChange={(e) =>
+                  handleChangeEvent(e.target.name, e.target.value)
+                }
+              />
+            </Col>
+            <Col>
+              <Label for="capacity">Kapacita</Label>
+              <Input
+                type="number"
+                name="capacity"
+                placeholder="4"
+                min={1}
+                value={event.capacity}
+                onChange={(e) =>
+                  handleChangeEvent(e.target.name, e.target.value)
+                }
+              />
             </Col>
           </Row>
         </FormGroup>
 
         <FormGroup>
           <Row>
-            {recurrence === "WEEKLY" && (
+            {recurrenceGroup.frequency === "WEEKLY" && (
               <Col>
                 <FormGroup>
                   <Label for="endRecurrence">Dny</Label>
+
                   <DaysSelector
                     onChange={(value) => {
-                      setDays(value);
+                      setRecurrenceGroup((prev) => ({
+                        ...prev,
+                        ["daysOfWeek"]: value,
+                      }));
                     }}
+                    days={recurrenceGroup.daysOfWeek}
                   />
                 </FormGroup>
               </Col>
             )}
             <Col>
-              {recurrence !== "NEVER" && (
+              {recurrenceGroup.frequency !== "NEVER" && (
                 <FormGroup>
-                  <Label for="endRecurrence">Do</Label>
+                  <Label for="endRecurrence">Opakovat do</Label>
                   <Input
                     required={true}
                     type="date"
-                    name="endRecurrenceDate"
-                    placeholder="endRecurrenceDate"
-                    value={endRecurrenceDate}
-                    onChange={(e) => setEndReccurenceDate(e.target.value)}
+                    name="endDate"
+                    placeholder=""
+                    value={recurrenceGroup.endDate}
+                    min={new Date().toISOString().substr(0, 10)}
+                    onChange={(e) =>
+                      handleChangeRecurrenceGroup(e.target.name, e.target.value)
+                    }
+                    invalid={recurrenceGroup.endDate == undefined}
                   />
+                  <FormFeedback>Vyberte konec</FormFeedback>
                 </FormGroup>
               )}
             </Col>
@@ -248,21 +265,25 @@ const NewEventForm = ({ handleHide, isOpen, locationId, addEvents }) => {
           <Input
             type="text"
             name="description"
-            placeholder="Popis"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Lekce jógy pod vedením Jaroslava Bašty."
+            value={event.description}
+            onChange={(e) => handleChangeEvent(e.target.name, e.target.value)}
           />
         </FormGroup>
       </ModalBody>
 
       <ModalFooter>
         {
-          <Button color="secondary" onClick={handleCancel}>
-            Zrušit
+          <Button color="secondary" onClick={handleHide}>
+            Zavřít
           </Button>
         }
         {
-          <Button color="primary" onClick={handleSubmit}>
+          <Button
+            color="primary"
+            onClick={handleSubmit}
+            disabled={formHasErrors}
+          >
             Uložit
           </Button>
         }

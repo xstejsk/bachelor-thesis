@@ -21,10 +21,15 @@ const Login = () => {
   const location = useLocation();
   const [globalState, setGlobalState] = useContext(Context);
   const alert = useAlert();
+  const [submitButtonEnabled, setSubmitButtonEnabled] = useState(false);
 
   useEffect(() => {
     setGlobalState({});
   }, []);
+
+  useEffect(() => {
+    setSubmitButtonEnabled(password != "" && username != "");
+  }, [username, password]);
 
   const handleResendEmail = () => {
     axios
@@ -89,7 +94,7 @@ const Login = () => {
                     <Form.Label className="text-center">Email</Form.Label>
                     <Form.Control
                       type="email"
-                      placeholder="Zadejte email"
+                      placeholder="karel.divis@gmail.com"
                       onChange={(e) => {
                         setUsername(e.target.value);
                       }}
@@ -98,7 +103,7 @@ const Login = () => {
                     <Form.Label className="text-left">Heslo</Form.Label>
                     <Form.Control
                       type="password"
-                      placeholder="Zadejte heslo"
+                      placeholder=""
                       onChange={(e) => {
                         setPassword(e.target.value);
                       }}
@@ -109,6 +114,7 @@ const Login = () => {
                       variant="primary"
                       type="submit"
                       onClick={handleLogin}
+                      disabled={!submitButtonEnabled}
                     >
                       Přihlásit
                     </Button>

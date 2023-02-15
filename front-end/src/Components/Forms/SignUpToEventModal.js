@@ -39,9 +39,7 @@ const SignUpModal = ({ clickInfo, isOpen, handleHide }) => {
         let status = err.response.status;
         let message;
         if (status === 403) {
-          alert.error(
-            "Na událost se nyní nelze přihlásit kvůli plné kapacitě."
-          );
+          alert.error("Na událost se již nelze přihlásit.");
         } else if (status === 409) {
           alert.info("Na událost již máte vytvořenou rezervaci.");
         } else if (status === 400) {
@@ -67,13 +65,13 @@ const SignUpModal = ({ clickInfo, isOpen, handleHide }) => {
 
       <ModalFooter>
         {
-          <Button color="secondary" onClick={handleSignUp}>
-            Přihlásit
+          <Button color="secondary" onClick={handleCancel}>
+            Zrušit
           </Button>
         }
         {
-          <Button color="primary" onClick={handleCancel}>
-            Zrušit
+          <Button color="primary" onClick={handleSignUp}>
+            Přihlásit
           </Button>
         }
       </ModalFooter>

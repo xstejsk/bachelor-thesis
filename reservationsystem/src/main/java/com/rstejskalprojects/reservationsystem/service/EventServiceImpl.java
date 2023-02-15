@@ -1,5 +1,6 @@
 package com.rstejskalprojects.reservationsystem.service;
 
+import com.rstejskalprojects.reservationsystem.api.controller.model.UpdateEventRequest;
 import com.rstejskalprojects.reservationsystem.model.Event;
 import com.rstejskalprojects.reservationsystem.model.FrequencyEnum;
 import com.rstejskalprojects.reservationsystem.model.RecurrenceGroup;
@@ -21,7 +22,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +32,7 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final EventDtoEventMapper eventDtoToEventMapper;
     private final RecurrenceGroupService recurrenceGroupService;
+    private final LocationService locationService;
 
 
     @Override
@@ -105,7 +106,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> findOverlappingEvents(Event event){
-        return eventRepository.findOverlappingEvents(event.getLocation().getId(), event.getStartTime(), event.getEndTime());
+        return eventRepository.findOverlappingEvents(event.getId() == null ? -1 : event.getId(), event.getLocation().getId(), event.getStartTime(), event.getEndTime());
     }
 
     @Override
@@ -154,7 +155,6 @@ public class EventServiceImpl implements EventService {
         throw new IllegalArgumentException(String.format("unsupported event recurrence option %s", event.getRecurrenceGroup().getFrequency()));
     }
 
-    //TODO: check collisions
     private List<Event> saveMonthlyRecurringEvent(Event event) {
         LocalDateTime start = event.getStartTime();
         LocalDate recurrenceEnd = event.getRecurrenceGroup().getEndDate();
@@ -176,7 +176,6 @@ public class EventServiceImpl implements EventService {
         return eventRepository.saveAll(recurringEvents);
     }
 
-    //TODO: check collisions
     private List<Event> saveWeeklyRecurringEvent(Event event) {
         LocalDateTime start = event.getStartTime();
         LocalDate recurrenceEnd = event.getRecurrenceGroup().getEndDate();
@@ -195,6 +194,34 @@ public class EventServiceImpl implements EventService {
             }
         });
         return eventRepository.saveAll(createRecurringEvents(event, occurrences));
+    }
+
+    @Override
+    public Event updateEvent(Long eventId, UpdateEventRequest updateEventRequest) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(
+                String.format("event of id %s not found", eventId)));
+        return updateNonRecurringEvent(event, updateEventRequest);
+    }
+
+    private Event updateNonRecurringEvent(Event event, UpdateEventRequest updateEventRequest) {
+        event.setTitle(updateEventRequest.getTitle());
+        event.setDescription(updateEventRequest.getDescription());
+        event.setCapacity(updateEventRequest.getCapacity());
+        event.setPrice(updateEventRequest.getPrice());
+        event.setLocation(updateEventRequest.getLocationId() == null ? event.getLocation() : locationService.findLocationById(updateEventRequest.getLocationId()));
+        if (!findOverlappingEvents(event).isEmpty()) {
+            log.warn("attempted to update event with overlapping events");
+            throw new OverlappingEventException("event overlaps with another event", findOverlappingEvents(event).stream().map(EventDTO::new).toList());
+        }
+        log.info("updated event with id {}", event.getId());
+        return eventRepository.save(event);
+    }
+
+    @Override
+    public List<Event> updateRecurrentEvents(Long recurrenceGroupId, UpdateEventRequest updateEventRequest) {
+        List<Event> events = eventRepository.findEventByRecurrenceGroupId(recurrenceGroupId);
+        events.forEach(event -> updateNonRecurringEvent(event, updateEventRequest));
+        return events;
     }
 
     private List<Event> createRecurringEvents(Event event, List<LocalDate> occurrences) {

@@ -4,6 +4,7 @@ import {
   host,
   reservationsEndpoint,
   cancelMultipleReservationsEndpoint,
+  activeReservationsByUser,
 } from "../../util/EndpointConfig";
 import CustomGridLoader from "../CustomLoader";
 import axios from "axios";
@@ -21,34 +22,60 @@ const ReservationTableWrapper = () => {
       .put(host + cancelMultipleReservationsEndpoint, { reservationIds: ids })
       .then((response) => {
         if (response.status === 200) {
-          let filteredReservations = reservations.filter((reservation) => {
-            return !ids.includes(reservation.reservationId);
-          });
-          setReservations(filteredReservations);
+          // fetchReservations();
           if (ids.length > 1) {
             alert.info("Rezervace byly zrušeny");
           } else if (ids.length == 1) {
             alert.info("Rezervace byla zrušena.");
           }
 
-          console.log("reservations have been canceled");
+          fetchReservations();
         }
       })
       .catch((error) => {
         if (ids.length > 1) {
-          alert.error("Události nelze zrušit.");
+          alert.error("Rezervace nelze zrušit.");
         } else if (ids.length == 1) {
-          alert.error("Událost nelze zrušit.");
+          alert.error("Rezervaci nelze zrušit.");
         }
       });
   };
 
-  useEffect(() => {
-    let endpoint = host + reservationsEndpoint;
+  function fetchReservations() {
+    let endpoint = host;
     if (globalState?.user?.role === "ROLE_USER") {
-      endpoint += "active/" + globalState.user.userId;
+      endpoint += activeReservationsByUser.replace(
+        "{userId}",
+        globalState.user.userId
+      );
     } else if (globalState?.user?.role === "ROLE_ADMIN") {
-      endpoint += "all";
+      endpoint += reservationsEndpoint;
+    }
+
+    axios
+      .get(endpoint, { timeout: 10000 })
+      .then((response) => {
+        setReservations(response.data);
+        console.log("reservations -----------");
+        console.log(response.data);
+      })
+      .catch((err) => {
+        console.log(err);
+        setReservations([]);
+        // handle timeout
+      })
+      .finally(() => setIsLoading(false));
+  }
+
+  useEffect(() => {
+    let endpoint = host;
+    if (globalState?.user?.role === "ROLE_USER") {
+      endpoint += activeReservationsByUser.replace(
+        "{userId}",
+        globalState.user.userId
+      );
+    } else {
+      endpoint += reservationsEndpoint;
     }
 
     axios
@@ -69,7 +96,7 @@ const ReservationTableWrapper = () => {
     return <CustomGridLoader isLoading={isLoading} />;
   } else {
     return (
-      <div>
+      <div className="container-xxl">
         <ReservationTable
           reservations={reservations}
           cancelReservations={cancelReservations}

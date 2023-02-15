@@ -35,6 +35,11 @@ const AdminNavbar = () => {
                 Rezervace
               </Link>
             </li>
+            <li>
+              <Link to="/users" className="nav-link px-2 text-white">
+                Uživatelé
+              </Link>
+            </li>
           </ul>
 
           <div className="text-end">

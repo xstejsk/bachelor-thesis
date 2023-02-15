@@ -30,13 +30,9 @@ public class EventDTO {
     @JsonProperty
     private String description;
     @JsonProperty
-    private Boolean isAllDay = false;
-    @JsonProperty
     private RecurrenceGroup recurrenceGroup;
     @JsonProperty
     private Long locationId;
-    @JsonProperty
-    private Boolean isFull = false;
     @JsonProperty
     private Boolean isCanceled = false;
 

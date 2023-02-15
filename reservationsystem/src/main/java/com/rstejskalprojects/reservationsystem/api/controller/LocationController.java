@@ -24,21 +24,23 @@ public class LocationController {
 
     private final LocationService locationService;
 
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<List<Location>> getAll(HttpServletRequest request, HttpServletResponse response) {
         List<Location> locations = locationService.findAll().stream().toList();
 
         return new ResponseEntity<>(locations, HttpStatus.OK);
     }
 
-    @PostMapping("/new")
+    @PostMapping("/create")
     public ResponseEntity<Location> saveLocation(@RequestBody Location location) {
         log.info("requested to save eventDTO: {}", location);
         try {
             return new ResponseEntity<>(locationService.saveLocation(location), HttpStatus.CREATED);
         } catch (LocationAlreadyExistsException e) {
+            log.warn("location already exists exception: {}", e.getMessage());
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         } catch (Exception e) {
+            log.warn("error saving location: {}", location, e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

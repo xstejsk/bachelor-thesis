@@ -8,16 +8,15 @@ import { Context } from "../util/GlobalState";
 import { Row, Col, Button } from "reactstrap";
 import csLocale from "@fullcalendar/core/locales/cs";
 import SignUpModal from "./Forms/SignUpToEventModal";
-import DetailsModal from "./DetailsModal";
+import DetailsModal from "./Forms/DetailsModal";
 import NewLocationForm from "./Forms/NewLocationForm";
+import { Select } from "@material-ui/core";
 
 const CustomScheduler = ({
   allEvents,
   currentLocationId,
-  addEvents,
-  removeEvent,
-  removeEventGroup,
-  addLocation,
+  reloadLocations,
+  reloadEvents,
 }) => {
   const [showAddEventForm, setShowAddEventForm] = useState(false);
   const [showSignUpToEvent, setShowSignUpToEvent] = useState(false);
@@ -27,6 +26,7 @@ const CustomScheduler = ({
   const [state, setState] = useState({ clickInfo: null });
   const [globalState, setGlobalState] = useContext(Context);
   const [eventsByLocation, setEventsByLocation] = useState(null);
+  const options = [{ value: 4, label: "sal 1" }];
 
   const filterEventsByLocation = () => {
     setEventsByLocation(
@@ -116,7 +116,7 @@ const CustomScheduler = ({
           // }}
           // eventMouseEnter={handleMouseEnter}
           eventClick={handleEventClick}
-          editable={true}
+          editable={false}
           slotMinTime={"5:00"}
           // eventStartEditable={false}
           slotMaxTime={"22:00"}
@@ -157,29 +157,28 @@ const CustomScheduler = ({
         />
       </Row>
 
-      {state.clickInfo?.event && (
+      {state.clickInfo?.event && showDetailsModal && (
         <DetailsModal
           locationId={currentLocationId}
-          addEvents={addEvents}
-          event={state.clickInfo.event}
+          eventObj={state.clickInfo.event}
           handleHide={handleHideDetailsModal}
           isOpen={showDetailsModal}
-          removeEvent={removeEvent}
-          removeEventGroup={removeEventGroup}
+          reloadEvents={reloadEvents}
         />
       )}
-
-      <NewEventForm
-        locationId={currentLocationId}
-        addEvents={addEvents}
-        handleHide={handleHideNewEventModal}
-        isOpen={showAddEventForm}
-      />
+      {showAddEventForm && (
+        <NewEventForm
+          locationId={currentLocationId}
+          reloadEvents={reloadEvents}
+          handleHide={handleHideNewEventModal}
+          isOpen={showAddEventForm}
+        />
+      )}
 
       <NewLocationForm
         handleHide={handleHideNewLocationModal}
         isOpen={showAddLocationFrom}
-        addLocation={addLocation}
+        reloadLocations={reloadLocations}
       />
 
       {state.clickInfo && (

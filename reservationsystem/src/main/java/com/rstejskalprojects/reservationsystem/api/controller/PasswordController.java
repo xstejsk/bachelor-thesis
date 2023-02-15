@@ -7,6 +7,7 @@ import com.rstejskalprojects.reservationsystem.util.customexception.ExpiredToken
 import com.rstejskalprojects.reservationsystem.util.customexception.UnknownTokenException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UsedTokenException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/access")
 @RequiredArgsConstructor
+@Slf4j
 public class PasswordController {
 
     private final PasswordResetService passwordResetService;
@@ -40,12 +42,16 @@ public class PasswordController {
             PasswordToken resetToken = passwordTokenService.getToken(token);
             passwordResetService.confirmToken(resetToken);
         } catch (UnknownTokenException e) {
+            log.warn("Unknown token: {}", token);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Token not found");
         } catch (ExpiredTokenException e) {
+            log.warn("Expired token: {}", token);
             return ResponseEntity.status(HttpStatus.GONE).body("Token expired");
         } catch (UsedTokenException e) {
+            log.warn("Used token: {}", token);
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Token already used");
         } catch (Exception e) {
+            log.warn("Unknown error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Provided token is invalid");
         }
         return new ResponseEntity<>("Password reset successfully", HttpStatus.OK);

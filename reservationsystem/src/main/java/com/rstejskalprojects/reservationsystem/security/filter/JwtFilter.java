@@ -37,7 +37,9 @@ public class JwtFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
         return path.startsWith("/api/auth") || path.startsWith("/api/events") || path.startsWith("/api/reservations")
-        || path.startsWith("/api/locations") || path.startsWith("/api/events") || path.startsWith("/api/access") || path.startsWith("/api/users");
+        || path.startsWith("/api/locations") || path.startsWith("/api/events") || path.startsWith("/api/access") || path.startsWith("/api/users")
+                || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs");
+
     }
 
     @Override
@@ -48,7 +50,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if (!StringUtils.hasText(header) || !header.startsWith("Bearer ")) {
             response.setHeader("Error", "Missing bearer token.");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            log.warn("request does not contain header with bearer");
+            log.warn("request does not contain header with bearer, path: {}", request.getServletPath());
             return;
         }
         final String token = header.split(" ")[1].trim();

@@ -4,6 +4,8 @@ import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.dto.AppUserDTO;
 import com.rstejskalprojects.reservationsystem.service.UserDetailsServiceImpl;
 import com.rstejskalprojects.reservationsystem.util.JwtUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -21,12 +23,13 @@ import java.util.stream.Collectors;
 @RequestMapping("api/users")
 @RequiredArgsConstructor
 @Slf4j
+@Api(value = "User Management System", description = "Operations pertaining to user in User Management System")
 public class UserController {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtUtil jwtUtil;
 
-    @GetMapping
+    @GetMapping("/logged-user")
     public ResponseEntity<AppUserDTO> getLoggedInUser(HttpServletRequest request, HttpServletResponse response) {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
@@ -36,7 +39,8 @@ public class UserController {
         return new ResponseEntity<>(new AppUserDTO(user), HttpStatus.OK);
     }
 
-    @GetMapping("/all") // only admin
+    @GetMapping // only admin
+    @ApiOperation(value = "View a list of all users", response = List.class)
     public ResponseEntity<List<AppUserDTO>> getAllUsers(HttpServletRequest request, HttpServletResponse response) {
         List<AppUser> users = userDetailsService.findAll();
         return new ResponseEntity<>(users.stream().map(AppUserDTO::new).collect(Collectors.toList()),

@@ -1,12 +1,12 @@
 const host = "http://localhost:8080/";
 const loginEndpoint = "api/auth/login";
 const loggedInUserEndpoint = "api/user";
-const eventsEndpoint = "api/events/all";
-const reservationsEndpoint = "api/reservations/";
-const newEventEndpoint = "api/events/new";
-const newReservationEndpoint = "api/reservations/new";
-const newLocationEndpoint = "api/locations/new";
-const locationsEndpoint = "api/locations/all";
+const eventsEndpoint = "api/events";
+const reservationsEndpoint = "api/reservations";
+const newEventEndpoint = "api/events/create";
+const newReservationEndpoint = "api/reservations/create";
+const newLocationEndpoint = "api/locations/create";
+const locationsEndpoint = "api/locations";
 const activeEventsEndpoint = "api/events/active";
 const cancelEventById = "api/events/cancel/";
 const cancelEventsByGroupId = "api/events/cancel/group/";
@@ -16,8 +16,11 @@ const resendEmailEndpoint = "api/auth/registration/resend/";
 const logoutEndpoint = "api/auth/logout";
 const forgotPasswordEndpoint = "api/access/{email}/forgot-password";
 const resetPasswordEdnpoint = "api/access/reset-password/";
-const cancelMultipleReservationsEndpoint =
-  reservationsEndpoint + "cancel-multiple";
+const activeReservationsByUser = "api/reservations/{userId}/active";
+const cancelMultipleReservationsEndpoint = reservationsEndpoint + "/cancel";
+const getAllUsersEndpoint = "api/users";
+const updateEventEndpoint = "api/events/update/";
+const updateRecurrenceGroup = "api/events/update/recurrent/";
 
 export {
   host,
@@ -39,4 +42,8 @@ export {
   forgotPasswordEndpoint,
   resetPasswordEdnpoint,
   cancelMultipleReservationsEndpoint,
+  getAllUsersEndpoint,
+  updateEventEndpoint,
+  updateRecurrenceGroup,
+  activeReservationsByUser,
 };
