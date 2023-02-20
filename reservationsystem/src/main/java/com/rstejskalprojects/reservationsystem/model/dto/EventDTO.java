@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.persistence.PostLoad;
+import javax.persistence.Transient;
 import java.time.LocalDateTime;
 
 @Data
@@ -22,7 +24,7 @@ public class EventDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime end;
     @JsonProperty
-    private Integer capacity;
+    private Integer maximumCapacity;
     @JsonProperty
     private Double price;
     @JsonProperty
@@ -35,19 +37,21 @@ public class EventDTO {
     private Long locationId;
     @JsonProperty
     private Boolean isCanceled = false;
+    @JsonProperty
+    private Integer availableCapacity;
 
     public EventDTO(Event event) {
         this.id = event.getId();
         this.start = event.getStartTime();
         this.end = event.getEndTime();
-        this.capacity = event.getCapacity();
+        this.maximumCapacity = event.getMaximumCapacity();
         this.price = event.getPrice();
         this.title = event.getTitle();
         this.description = event.getDescription();
         this.recurrenceGroup = event.getRecurrenceGroup();
         this.locationId = event.getLocation().getId();
-        this.isFull = event.getIsFull();
         this.isCanceled = event.getIsCanceled();
+        this.availableCapacity = event.getAvailableCapacity();
     }
 }
 

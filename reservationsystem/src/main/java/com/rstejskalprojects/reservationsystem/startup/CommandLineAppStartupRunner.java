@@ -43,18 +43,18 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
         locationRepository.save(location2);
         String password = "admin";
         String encodedPw = bCryptPasswordEncoder.encode(password);
-        RecurrenceGroup recurrenceGroup = new RecurrenceGroup(FrequencyEnum.NEVER, List.of(), LocalDate.now());
-        recurrenceGroupRepository.save(recurrenceGroup);
-        RecurrenceGroup recurrenceGroup1 = recurrenceGroupRepository.findById(1L).get();
+        RecurrenceGroup recurrenceGroup = null;
+        //recurrenceGroupRepository.save(recurrenceGroup);
+        //RecurrenceGroup recurrenceGroup1 = recurrenceGroupRepository.findById(1L).get();
 
         AppUser admin = new AppUser(1L, "Vlastimil", "Novák", "admin", "admin", encodedPw, UserRoleEnum.ADMIN, false, true);
         AppUser user = new AppUser(2L, "Petr", "Jirák", "user", "user", bCryptPasswordEncoder.encode("user"), UserRoleEnum.USER, false, true);
         userRepository.save(admin);
         userRepository.save(user);
         Event event = new Event(LocalDateTime.now().minusHours(2), LocalDateTime.now().plusMinutes(80),
-                5, 100d, "Event v Salu 1", "popis", false, recurrenceGroup1, location);
+                5, 100d, "Event v Salu 1", "popis",  null, location);
         Event event1 = new Event(LocalDateTime.now().minusHours(3), LocalDateTime.now().minusHours(1),
-                5, 100d, "Event v Salu 2", "popis", false, recurrenceGroup1, location2);
+                5, 100d, "Event v Salu 2", "popis",  null, location2);
         eventRepository.save(event);
         eventRepository.save(event1);
 

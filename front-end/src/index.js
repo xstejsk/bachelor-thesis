@@ -4,10 +4,10 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import { registerLicense } from "@syncfusion/ej2-base";
-registerLicense(
-  "ORg4AjUWIQA/Gnt2VVhjQlFaclhJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxRd0RhX39dcHFWRWhbVUI="
-);
+// import { registerLicense } from "@syncfusion/ej2-base";
+// registerLicense(
+//   "ORg4AjUWIQA/Gnt2VVhjQlFaclhJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxRd0RhX39dcHFWRWhbVUI="
+// );
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

@@ -37,8 +37,8 @@ const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
     description: "",
     locationId: locationId,
     price: 100,
-    capacity: 1,
-    recurrenceGroup: recurrenceGroup,
+    maximumCapacity: 1,
+    recurrenceGroup: null,
   });
 
   const handleChangeEvent = (field, value) => {
@@ -56,12 +56,16 @@ const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
         event.start == undefined ||
         new Date(event.start) > new Date(event.end) ||
         (recurrenceGroup.frequency != "NEVER" &&
-          recurrenceGroup.frequency == undefined)
+          recurrenceGroup.endDate == undefined)
     );
   }, [event]);
 
   useEffect(() => {
-    setEvent((prev) => ({ ...prev, ["recurrenceGroup"]: recurrenceGroup }));
+    if (recurrenceGroup.frequency === "NEVER") {
+      setEvent((prev) => ({ ...prev, ["recurrenceGroup"]: null }));
+    } else {
+      setEvent((prev) => ({ ...prev, ["recurrenceGroup"]: recurrenceGroup }));
+    }
   }, [recurrenceGroup]);
 
   const [recurrence, setRecurrence] = useState(recurrenceOptions[0].value);
@@ -81,31 +85,24 @@ const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
     );
   }
   useEffect(() => {
-    setRecurrence("NEVER");
+    handleChangeRecurrenceGroup("frequency", "NEVER");
   }, [isOpen]);
 
   function handleSubmit() {
     axios
       .post(host + newEventEndpoint, event)
       .then((response) => {
-        let data = [];
         if (response.status === 201) {
-          data = response.data;
-          if (data.length == 1) {
-            alert.info("Událost byla vytvořena.");
-          } else if (data.length > 1) {
-            alert.info("Série událostí byla vytvořena.");
-          }
+          alert.info("Událost byla vytvořena.");
+
           reloadEvents();
         }
       })
       .catch((error) => {
         console.log(error.response.status);
         if (error.response.status === 409) {
-          let arrayOfIds = error.response.data.map((event) => event.id);
           alert.error(
-            "Událost se nepodařilo vytvořit, protože se kryje s událostmi s ID: " +
-              arrayOfIds.join(", ")
+            "Událost se nepodařilo vytvořit, protože se kryje s jinými událostmi"
           );
         } else if (error.response.status === 400) {
           alert.error("Události se nepodařilo vytvořit.");
@@ -206,10 +203,10 @@ const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
               <Label for="capacity">Kapacita</Label>
               <Input
                 type="number"
-                name="capacity"
+                name="maximumCapacity"
                 placeholder="4"
                 min={1}
-                value={event.capacity}
+                value={event.maximumCapacity}
                 onChange={(e) =>
                   handleChangeEvent(e.target.name, e.target.value)
                 }
@@ -238,7 +235,7 @@ const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
               </Col>
             )}
             <Col>
-              {recurrenceGroup.frequency !== "NEVER" && (
+              {recurrenceGroup.frequency != "NEVER" && (
                 <FormGroup>
                   <Label for="endRecurrence">Opakovat do</Label>
                   <Input

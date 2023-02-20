@@ -7,9 +7,6 @@ import com.rstejskalprojects.reservationsystem.service.EventService;
 import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.OverlappingEventException;
 import com.rstejskalprojects.reservationsystem.util.customexception.RecurrenceGroupNotFoundException;
-import com.rstejskalprojects.reservationsystem.util.customexception.UrlParamsEnum;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponses;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,10 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -40,82 +34,73 @@ import java.util.stream.Collectors;
 public class EventsController {
 
     private final EventService eventsService;
-    private final Set<String> allowedParams = new HashSet<>(List.of("locationName", "locationId"));
-
 
     @PostMapping("/create")
-    @Operation(summary = "Get thing", responses = {
+    @Operation(summary = "Create a new event", responses = {
         @ApiResponse(description = "Event was successfully created", responseCode = "201", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "409", description = "Event overlaps with an existing event.", content = @Content),
         @ApiResponse(responseCode = "401", description = "Authentication Failure", content = @Content(schema = @Schema(hidden = true))) })
-    public ResponseEntity<List<EventDTO>> saveEvents(@RequestBody EventDTO eventDTO) {
+    public ResponseEntity<String> saveEvents(@RequestBody EventDTO eventDTO) {
         log.info("requested to save eventDTO: {}", eventDTO);
         try{
                 List<EventDTO> savedEvents = eventsService.saveEvent(eventDTO).stream()
-                .map(EventDTO::new)
-                .collect(Collectors.toList());
-            return new ResponseEntity<>(savedEvents, HttpStatus.CREATED);
+                        .map(EventDTO::new).toList();
+                String message;
+                if (savedEvents.size() == 1){
+                    message = "Event was successfully created";
+                } else {
+                    message = "Recurrent event was successfully created";
+                }
+                return new ResponseEntity<>(message, HttpStatus.CREATED);
         } catch (OverlappingEventException e) {
             log.warn("overlapping event exception: {}", e.getMessage());
-            return new ResponseEntity<>(e.getOverlappingEvents(), HttpStatus.CONFLICT);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         } catch (Exception e) {
             log.error("error saving eventDTO: {}", eventDTO, e);
+            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<EventDTO>> getNonCanceled(@RequestParam(required=false) Long locationId) {
+        log.info("requested to get non canceled events with locationId: {}", locationId);
+        try {
+            if (locationId != null) {
+                return new ResponseEntity<>(eventsService.findActiveByLocationId(locationId).stream()
+                        .map(EventDTO::new)
+                        .collect(Collectors.toList()), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(eventsService.findAllNonCanceled().stream()
+                        .map(EventDTO::new)
+                        .collect(Collectors.toList()), HttpStatus.OK);
+            }
+        }catch (Exception e){
+            log.error("error getting non canceled events", e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<EventDTO>> getAll(@RequestParam(required=false) Map<String,String> params) {
-        log.info("get all events called with parameters {}", params);
-        if (!allowedParams.containsAll(params.keySet())) {
+    public ResponseEntity<List<EventDTO>> getAllEvents(@RequestParam(required=false) Long locationId) {
+        log.info("requested to get all events");
+        try {
+            if (locationId != null) {
+                return new ResponseEntity<>(eventsService.findByLocationId(locationId).stream()
+                        .map(EventDTO::new)
+                        .collect(Collectors.toList()), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(eventsService.findAll().stream()
+                        .map(EventDTO::new)
+                        .collect(Collectors.toList()), HttpStatus.OK);
+            }
+        }catch (Exception e){
+            log.error("error getting all events", e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        List<Event> events;
-
-        if (params.containsKey(UrlParamsEnum.LOCATION_NAME.getValue())) {
-            events = eventsService.findByLocationName(params.get(UrlParamsEnum.LOCATION_NAME.getValue()));
-        } else if (params.containsKey(UrlParamsEnum.LOCATION_ID.getValue())) {
-            try {
-                events = eventsService.findByLocationId(Long.parseLong(params.get(UrlParamsEnum.LOCATION_ID.getValue())));
-            } catch (Exception e) {
-                log.info("could not parse locationId to long");
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-        } else {
-            events = eventsService.findAll();
-        }
-        List<EventDTO> eventDTOS = events.stream().map(EventDTO::new).collect(Collectors.toList());
-
-        return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
     }
 
-    @GetMapping("/active")
-    public ResponseEntity<List<EventDTO>> getNonCanceled(@RequestParam(required=false) Map<String,String> params) {
-        log.info("get all events called with parameters {}", params);
-        if (!allowedParams.containsAll(params.keySet())) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        List<Event> events;
-
-        if (params.containsKey(UrlParamsEnum.LOCATION_NAME.getValue())) {
-            events = eventsService.findByLocationName(params.get(UrlParamsEnum.LOCATION_NAME.getValue()));
-        } else if (params.containsKey(UrlParamsEnum.LOCATION_ID.getValue())) {
-            try {
-                events = eventsService.findByLocationId(Long.parseLong(params.get(UrlParamsEnum.LOCATION_ID.getValue())));
-            } catch (Exception e) {
-                log.info("could not parse locationId to long");
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-        } else {
-            events = eventsService.findAllNonCanceled();
-        }
-        List<EventDTO> eventDTOS = events.stream().map(EventDTO::new).collect(Collectors.toList());
-
-        return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
-    }
-
-    @PutMapping("/cancel/{id}")
-    public ResponseEntity<String> cancelEvent(@PathVariable("id") Long id) {
+    @PutMapping("/cancel/{eventId}")
+    public ResponseEntity<String> cancelEvent(@PathVariable("eventId") Long id) {
         try {
             Event event = eventsService.findEventById(id);
             eventsService.cancelEvent(event);
@@ -126,39 +111,38 @@ public class EventsController {
     }
 
     @PutMapping("/update/{eventId}")
-    public ResponseEntity<EventDTO> updateEvent(@PathVariable("eventId") Long eventId, @RequestBody UpdateEventRequest updateEventRequest) {
+    public ResponseEntity<String> updateEvent(@PathVariable("eventId") Long eventId, @RequestBody UpdateEventRequest updateEventRequest) {
         try {
-            Event updatedEvent = eventsService.updateEvent(eventId, updateEventRequest);
-            return new ResponseEntity<>(new EventDTO(updatedEvent), HttpStatus.OK);
+            eventsService.updateEvent(eventId, updateEventRequest);
+            return new ResponseEntity<>("Event was successfully updated", HttpStatus.OK);
         } catch (EventNotFoundException | RecurrenceGroupNotFoundException e) {
             log.warn("event not found exception: {}", e.getMessage());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (OverlappingEventException e) {
             log.warn("overlapping event exception: {}", e.getMessage());
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         } catch (Exception e) {
             log.warn("error updating event: {}", e.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
-    @PutMapping("/update/recurrent/{recurrenceGroupId}")
-    public ResponseEntity<List<EventDTO>> updateRecurrenceGroup(@PathVariable("recurrenceGroupId") Long recurrenceGroupId, @RequestBody UpdateEventRequest updateEventRequest) {
+    @PutMapping("/update-recurrent/{groupId}")
+    public ResponseEntity<String> updateRecurrenceGroup(@PathVariable("groupId") Long groupId, @RequestBody UpdateEventRequest updateEventRequest) {
         try {
-            List<Event> updatedEvents = eventsService.updateRecurrentEvents(recurrenceGroupId, updateEventRequest);
-            List<EventDTO> eventDTOS = updatedEvents.stream().map(EventDTO::new).toList();
-            return new ResponseEntity<>(eventDTOS, HttpStatus.OK);
+            eventsService.updateRecurrentEvents(groupId, updateEventRequest);
+            return new ResponseEntity<>("Recurrent event was successfully updated", HttpStatus.OK);
         } catch (RecurrenceGroupNotFoundException e) {
             log.warn("recurrence group not found exception: {}", e.getMessage());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (OverlappingEventException e) {
             log.warn("overlapping event exception: {}", e.getMessage());
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
     }
 
-    @PutMapping("/cancel/group/{id}")
-    public ResponseEntity<String> cancelRecurrenceGroup(@PathVariable("id") Long groupId) {
+    @PutMapping("/cancel-recurrent/{groupId}")
+    public ResponseEntity<String> cancelRecurrenceGroup(@PathVariable("groupId") Long groupId) {
         List<Event> events = eventsService.cancelRecurrentEvents(groupId);
         if (events.isEmpty()) {
             return new ResponseEntity<>("recurrence group with id " + groupId + "does not exist", HttpStatus.NOT_FOUND);

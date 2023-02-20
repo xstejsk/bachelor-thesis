@@ -8,7 +8,7 @@ import axios from "axios";
 import { host, newReservationEndpoint } from "../../util/EndpointConfig";
 import { useAlert } from "react-alert";
 
-const SignUpModal = ({ clickInfo, isOpen, handleHide }) => {
+const SignUpModal = ({ clickInfo, isOpen, handleHide, reloadEvents }) => {
   const [globalState, setGlobalState] = useContext(Context);
   const alert = useAlert();
 
@@ -33,7 +33,7 @@ const SignUpModal = ({ clickInfo, isOpen, handleHide }) => {
       .post(host + newReservationEndpoint, newReservation)
       .then((response) => {
         alert.success("Rezervace byla vytvořena.");
-        console.log(response.status);
+        reloadEvents();
       })
       .catch((err) => {
         let status = err.response.status;

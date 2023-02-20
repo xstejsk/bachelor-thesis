@@ -18,11 +18,10 @@ public class EventDtoEventMapper implements DtoMapper<EventDTO, Event> {
         Location location = locationService.findLocationById(eventDTO.getLocationId());
         return new Event(eventDTO.getStart(),
                 eventDTO.getEnd(),
-                eventDTO.getCapacity(),
+                eventDTO.getMaximumCapacity(),
                 eventDTO.getPrice(),
                 eventDTO.getTitle(),
                 eventDTO.getDescription(),
-                eventDTO.getIsFull(),
                 eventDTO.getRecurrenceGroup(),
                 eventDTO.getIsCanceled(),
                 location);

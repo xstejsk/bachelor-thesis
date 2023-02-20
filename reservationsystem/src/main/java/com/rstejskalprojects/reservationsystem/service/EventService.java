@@ -16,9 +16,11 @@ public interface EventService {
 
     List<Event> saveEvent(EventDTO eventDTO);
 
-    List<Event> findByLocationName(String name);
-
     List<Event> findByLocationId(Long id);
+
+    List<Event> findActiveByLocationId(Long id);
+
+    List<Event> findByLocationName(String name);
 
     Event cancelEvent(EventDTO eventDTO);
 

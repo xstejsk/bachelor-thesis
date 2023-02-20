@@ -1,3 +1,4 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css");
 .form-signin,
 .form-signup {
   max-width: 330px;
@@ -80,7 +81,11 @@
   background-size: cover;
   background-repeat: no-repeat;
 }
-
+.label-with-select {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+}
 /* .myFooter {
   position: static;
   bottom: 0;

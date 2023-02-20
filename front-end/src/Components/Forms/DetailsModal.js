@@ -33,7 +33,6 @@ const DetailsModal = ({
   isOpen,
   locationId,
   eventObj,
-  updateEvents,
   reloadEvents,
 }) => {
   const [readOnly, setReadOnly] = useState(true);
@@ -49,19 +48,19 @@ const DetailsModal = ({
     id: eventObj.id,
     title: eventObj.title,
     price: eventObj.extendedProps.price,
-    capacity: eventObj.extendedProps.capacity,
+    maximumCapacity: eventObj.extendedProps.maximumCapacity,
     description: eventObj.extendedProps.description,
     locationId: locationId,
-    recurrenceGroupId: eventObj.extendedProps.recurrenceGroup.id,
+    recurrenceGroupId: eventObj.extendedProps.recurrenceGroup?.id,
   });
   const originalEvent = {
     id: eventObj.id,
     title: eventObj.title,
     price: eventObj.extendedProps.price,
-    capacity: eventObj.extendedProps.capacity,
+    maximumCapacity: eventObj.extendedProps.maximumCapacity,
     description: eventObj.extendedProps.description,
     locationId: locationId,
-    recurrenceGroupId: eventObj.extendedProps.recurrenceGroup.id,
+    recurrenceGroupId: eventObj.extendedProps.recurrenceGroup?.id,
   };
 
   function areObjectsEqual(obj1, obj2) {
@@ -84,6 +83,7 @@ const DetailsModal = ({
   const [showCancelOptions, setShowCancelOptions] = useState(false);
 
   useEffect(() => {
+    console.log(eventObj);
     fetchLocations();
 
     async function resetModal() {
@@ -106,10 +106,16 @@ const DetailsModal = ({
   };
 
   const alert = useAlert();
-  const frequency = recurrenceOptions.find(
-    (option) =>
-      option.value === eventObj.extendedProps.recurrenceGroup.frequency
-  );
+  const frequency = recurrenceOptions.find((option) => {
+    if (eventObj.extendedProps.recurrenceGroup == null) {
+      console.log("neni rec");
+      return option.value == "NEVER";
+    } else {
+      console.log("je rec");
+      console.log(eventObj.extendedProps.recurrenceGroup);
+      return option?.value === eventObj.extendedProps.recurrenceGroup.frequency;
+    }
+  });
 
   function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -123,6 +129,7 @@ const DetailsModal = ({
       )
       .then((response) => {
         if (response.status === 200) {
+          reloadEvents();
           alert.success("Série byla aktualizována.");
         }
       })
@@ -135,6 +142,8 @@ const DetailsModal = ({
           alert.error("Sérii nebylo možné aktualizovat.");
         }
       });
+    console.log("reload events fired");
+
     handleHide();
   }
 
@@ -146,8 +155,8 @@ const DetailsModal = ({
       )
       .then((response) => {
         if (response.status === 200) {
-          alert.success("Událost byla aktualizována.");
           reloadEvents();
+          alert.success("Událost byla aktualizována.");
         }
       })
       .catch((error) => {
@@ -157,6 +166,7 @@ const DetailsModal = ({
           alert.error("Událost se nepodařilo aktualizovat.");
         }
       });
+
     handleHide();
   }
 
@@ -166,10 +176,6 @@ const DetailsModal = ({
       handleHide();
       alert.info("Nebyly provedeny žádné změny.");
       return;
-    } else {
-      console.log(originalEvent);
-      console.log("non equal");
-      console.log(changeEventRequest);
     }
     if (eventObj.extendedProps.recurrenceGroup.frequency != "NEVER") {
       setShowFrequencyOptions(true);
@@ -231,7 +237,7 @@ const DetailsModal = ({
   }
 
   function handleDelete() {
-    if (eventObj?.extendedProps?.recurrenceGroup.frequency !== "NEVER") {
+    if (eventObj?.extendedProps?.recurrenceGroup.frequency != "NEVER") {
       setShowCancelOptions(true);
     } else {
       cancelSingleEvent();
@@ -254,7 +260,7 @@ const DetailsModal = ({
                     placeholder="Lekce jógy"
                     defaultValue={eventObj.title}
                     onChange={(e) =>
-                      handleChangeEventRequest(e.target.name, e.target.value)
+                      handleChangeEventRequest(e.target.name, e.target?.value)
                     }
                     invalid={changeEventRequest.title === ""}
                     disabled={readOnly}
@@ -267,11 +273,11 @@ const DetailsModal = ({
                       <Select
                         name="locationId"
                         defaultValue={locationsOptions.find(
-                          (location) => location.value == locationId
+                          (location) => location?.value == locationId
                         )}
                         options={locationsOptions}
                         onChange={(element) =>
-                          handleChangeEventRequest("locationId", element.value)
+                          handleChangeEventRequest("locationId", element?.value)
                         }
                       />
                     </FormGroup>
@@ -330,7 +336,7 @@ const DetailsModal = ({
                     min={0}
                     disabled={readOnly}
                     onChange={(e) =>
-                      handleChangeEventRequest(e.target.name, e.target.value)
+                      handleChangeEventRequest(e.target.name, e.target?.value)
                     }
                   />
                 </Col>
@@ -338,13 +344,13 @@ const DetailsModal = ({
                   <Label for="capacity">Kapacita</Label>
                   <Input
                     type="number"
-                    name="capacity"
+                    name="maximumCapacity"
                     placeholder="4"
                     min={1}
-                    defaultValue={eventObj.extendedProps.capacity}
+                    defaultValue={eventObj.extendedProps.maximumCapacity}
                     disabled={readOnly}
                     onChange={(e) =>
-                      handleChangeEventRequest(e.target.name, e.target.value)
+                      handleChangeEventRequest(e.target.name, e.target?.value)
                     }
                   />
                 </Col>
@@ -353,7 +359,7 @@ const DetailsModal = ({
 
             <FormGroup>
               <Row>
-                {frequency.value === "WEEKLY" && (
+                {frequency?.value === "WEEKLY" && (
                   <Col>
                     <FormGroup>
                       <Label for="endRecurrence">Dny</Label>
@@ -369,7 +375,7 @@ const DetailsModal = ({
                   </Col>
                 )}
                 <Col>
-                  {frequency.value !== "NEVER" && (
+                  {frequency?.value !== "NEVER" && (
                     <FormGroup>
                       <Label for="endRecurrence">Opakovat do</Label>
                       <Input

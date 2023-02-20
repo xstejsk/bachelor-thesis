@@ -87,7 +87,7 @@ const UserTable = ({ users }) => {
         paddingRight: 10,
       }}
     >
-      <ButtonGroup>
+      <ButtonGroup className="mb-3">
         <Button
           onClick={() => {
             //console.log(selected.length);

@@ -31,7 +31,7 @@ const Register = () => {
   const [emailAlreadyInUse, setEmailAlreadyInUse] = useState(false);
   const handleResendEmail = () => {
     axios
-      .post(host + resendEmailEndpoint + newUser.email)
+      .post(host + resendEmailEndpoint.replace("{emailAddress}", newUser.email))
       .then((response) => {
         if (response.status === 200) {
           console.log("email has been resent");

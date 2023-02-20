@@ -27,17 +27,17 @@ const AdminNavbar = () => {
           <ul className="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
             <li>
               <Link to="/events" className="nav-link px-2 text-white">
-                Události
+                <i class="bi bi-calendar-event"></i> Události
               </Link>
             </li>
             <li>
               <Link to="/reservations" className="nav-link px-2 text-white">
-                Rezervace
+                <i class="bi bi-book"></i> Rezervace
               </Link>
             </li>
             <li>
               <Link to="/users" className="nav-link px-2 text-white">
-                Uživatelé
+                <i class="bi bi-people"></i> Uživatelé
               </Link>
             </li>
           </ul>
@@ -48,7 +48,7 @@ const AdminNavbar = () => {
               className="btn btn-warning"
               onClick={handleLogout}
             >
-              Odhlásit
+              <i class="bi bi-box-arrow-right"></i> Odhlásit
             </Link>
           </div>
         </div>

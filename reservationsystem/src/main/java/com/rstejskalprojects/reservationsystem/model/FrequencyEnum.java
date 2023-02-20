@@ -1,7 +1,6 @@
 package com.rstejskalprojects.reservationsystem.model;
 
 public enum FrequencyEnum {
-    NEVER("NEVER"),
     WEEKLY("WEEKLY"),
     MONTHLY("MONTHLY");
 

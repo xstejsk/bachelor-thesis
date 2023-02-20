@@ -34,7 +34,6 @@ public class EventServiceImpl implements EventService {
     private final RecurrenceGroupService recurrenceGroupService;
     private final LocationService locationService;
 
-
     @Override
     public Event findEventById(Long id) {
         return eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(
@@ -52,13 +51,18 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<Event> findActiveByLocationId(Long id) {
+        return eventRepository.findActiveByLocationId(id);
+    }
+
+    @Override
    @Transactional
     public List<Event> saveEvent(Event event) {
         if (event.getEndTime().isBefore(event.getStartTime()) || event.getStartTime().isBefore(LocalDateTime.now())) {
             log.warn("event start time is after event end time");
             throw new InvalidEventTimeException("event start time must be before event end time");
         }
-        if (event.getRecurrenceGroup() != null && event.getRecurrenceGroup().getFrequency() != FrequencyEnum.NEVER) {
+        if (event.getRecurrenceGroup() != null) {
             return saveRecurringEvent(event);
         }
         return List.of(saveNonRecurringEvent(event));
@@ -86,20 +90,20 @@ public class EventServiceImpl implements EventService {
     }
 
     private Event saveNonRecurringEvent(Event event) {
-        List<RecurrenceGroup> recurrenceGroups = recurrenceGroupService.findByFrequency(FrequencyEnum.NEVER);
-        RecurrenceGroup recurrenceGroup;
-        if (recurrenceGroups.isEmpty()) {
-            recurrenceGroup = new RecurrenceGroup(FrequencyEnum.NEVER);
-        } else {
-            recurrenceGroup = recurrenceGroups.get(0);
-        }
+//        List<RecurrenceGroup> recurrenceGroups = recurrenceGroupService.findByFrequency(FrequencyEnum.NEVER);
+//        RecurrenceGroup recurrenceGroup;
+//        if (recurrenceGroups.isEmpty()) {
+//            recurrenceGroup = new RecurrenceGroup(FrequencyEnum.NEVER);
+//        } else {
+//            recurrenceGroup = recurrenceGroups.get(0);
+//        }
+        event.setRecurrenceGroup(null);
         List<Event> overlappingEvents = findOverlappingEvents(event);
         if (!overlappingEvents.isEmpty()) {
             log.warn("event overlaps with another event");
             throw new OverlappingEventException("event overlaps with another event",  overlappingEvents.stream().map(
                     EventDTO::new).toList());
         }
-        event.setRecurrenceGroup(recurrenceGroup);
         log.info("saved non recurring event");
         return eventRepository.save(event);
     }
@@ -206,7 +210,7 @@ public class EventServiceImpl implements EventService {
     private Event updateNonRecurringEvent(Event event, UpdateEventRequest updateEventRequest) {
         event.setTitle(updateEventRequest.getTitle());
         event.setDescription(updateEventRequest.getDescription());
-        event.setCapacity(updateEventRequest.getCapacity());
+        event.setMaximumCapacity(updateEventRequest.getCapacity());
         event.setPrice(updateEventRequest.getPrice());
         event.setLocation(updateEventRequest.getLocationId() == null ? event.getLocation() : locationService.findLocationById(updateEventRequest.getLocationId()));
         if (!findOverlappingEvents(event).isEmpty()) {
@@ -235,11 +239,10 @@ public class EventServiceImpl implements EventService {
         return occurrences.stream().map(day -> new Event(
                 LocalDateTime.of(day, startTime),
                 LocalDateTime.of(day, endTime),
-                event.getCapacity(),
+                event.getMaximumCapacity(),
                 event.getPrice(),
                 event.getTitle(),
                 event.getDescription(),
-                event.getIsFull(),
                 recurrenceGroup,
                 event.getLocation())).toList();
     }

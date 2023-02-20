@@ -163,11 +163,12 @@ const ReservationTable = ({ reservations, cancelReservations }) => {
         paddingTop: 3,
         paddingLeft: 10,
         paddingRight: 10,
+
         //height: "100%",
         // background: "#c93060",
       }}
     >
-      <ButtonGroup>
+      <ButtonGroup className="mb-3">
         <Button
           onClick={() => {
             console.log(selected.length);

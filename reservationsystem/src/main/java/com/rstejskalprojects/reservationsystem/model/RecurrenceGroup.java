@@ -11,6 +11,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -35,6 +37,7 @@ public class RecurrenceGroup {
     @JsonProperty
     private Long id;
     @JsonProperty
+    @Enumerated(value = EnumType.STRING)
     private FrequencyEnum frequency;
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER, targetClass=DayOfWeek.class)

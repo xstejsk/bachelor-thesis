@@ -84,18 +84,18 @@ public class AuthController {
         return new ResponseEntity<>(token, HttpStatus.CREATED);
     }
 
-    @PostMapping("/registration/resend/{email}")
-    public ResponseEntity<String> resendRegistrationToken(@PathVariable String email) {
+    @PostMapping("{emailAddress}/resend-confirmation-email")
+    public ResponseEntity<String> resendRegistrationToken(@PathVariable String emailAddress) {
         try {
-            String token = registrationService.resendRegistrationEmail(email);
+            String token = registrationService.resendRegistrationEmail(emailAddress);
             return new ResponseEntity<>(token, HttpStatus.OK);
         } catch (UsernameNotFoundException ex) {
-            log.warn("User not found: " + email);
+            log.warn("User not found: " + emailAddress);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
-    @PutMapping("/registration/confirm/{token}")
+    @PutMapping("/confirm-registration/{token}")
         public ResponseEntity<String> confirmRegistration(@PathVariable String token) {
         try {
             registrationService.confirmToken(token);

@@ -23,6 +23,7 @@
     "axios": "^0.24.0",
     "bootstrap": "^5.2.3",
     "bootstrap-daterangepicker": "^3.1.0",
+    "bootstrap-icons": "^1.10.3",
     "cldr-data": "^36.0.1",
     "cookie-parser": "^1.4.6",
     "flatpickr": "^4.6.13",

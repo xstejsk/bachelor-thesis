@@ -28,4 +28,10 @@ public interface ReservationService {
     Reservation cancelReservationById(Long reservationId, Long ownerId) throws AccessException;
 
     List<Reservation> cancelMultipleReservations(List<Long> reservationIds, Long ownerId);
+
+    void deleteReservationsByEventId(Long eventId);
+
+    void deleteReservationsById(List<Long> reservationIds, Long ownerId);
+
+    void deleteReservationsByEventGroupId(Long groupId);
 }

@@ -33,7 +33,7 @@ const Login = () => {
 
   const handleResendEmail = () => {
     axios
-      .post(host + resendEmailEndpoint + username)
+      .post(host + resendEmailEndpoint.replace("{emailAddress}", username))
       .then((response) => {
         if (response.status === 200) {
           console.log("email has been resent");

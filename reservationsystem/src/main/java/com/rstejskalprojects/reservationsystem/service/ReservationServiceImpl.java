@@ -94,7 +94,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
         if (eventRepository.findById(eventId).orElseThrow(() ->
                 new EventNotFoundException(String.format("event of id %s not found", eventId
-                ))).getCapacity() <=
+                ))).getMaximumCapacity() <=
                 reservationRepository.findActiveReservationsByEventId(eventId).size()) {
             log.debug("event of id {} is full", eventId);
             throw new MaximumCapacityException("event of id " + eventId + " is full");
@@ -118,6 +118,25 @@ public class ReservationServiceImpl implements ReservationService {
         reservationRepository.cancelReservationsByEventGroupId(groupId);
         log.info("canceled reservations for group id {}", groupId);
         return reservationRepository.findReservationByEventGroupId(groupId);
+    }
+
+
+    @Override
+    @Transactional
+    public void deleteReservationsByEventId(Long eventId) {
+        
+    }
+
+    @Override
+    @Transactional
+    public void deleteReservationsById(List<Long> reservationIds, Long ownerId) {
+
+    }
+
+    @Override
+    @Transactional
+    public void deleteReservationsByEventGroupId(Long groupId) {
+
     }
 
     @Override
