@@ -1,15 +1,23 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
 import { Context } from "../util/GlobalState";
 import { Form, ButtonGroup } from "react-bootstrap";
+import Button from "react-bootstrap/Button";
+import { Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import NewLocationForm from "./Forms/NewLocationForm";
 
 const CalendarHeader = ({
   calendarRef,
   handleLocationChange,
   locationOptions,
   showAddEventForm,
+  deleteCalendar,
+  reloadLocations,
 }) => {
   const [title, settitle] = useState(undefined);
   const [globalState, setGlobalState] = useContext(Context);
+  const [openDeleteCalendarModal, setOpenDeleteCalendarModal] = useState(false);
+  const [openLocationFrom, setOpenLocationForm] = useState(false);
+
   useEffect(() => {
     todayHandle();
   }, []);
@@ -19,6 +27,12 @@ const CalendarHeader = ({
       calendarRef.current._calendarApi.currentDataManager.data.viewTitle
     );
   };
+
+  const handleDeleteCalendar = () => {
+    deleteCalendar();
+    hideDeleteCalendarModal();
+  };
+
   const prevHandle = () => {
     calendarRef.current._calendarApi.prev();
     settitle(
@@ -49,6 +63,29 @@ const CalendarHeader = ({
       calendarRef.current._calendarApi.currentDataManager.data.viewTitle
     );
   };
+
+  const hideDeleteCalendarModal = () => {
+    setOpenDeleteCalendarModal(false);
+  };
+
+  const showDeleteCalendarModal = () => {
+    setOpenDeleteCalendarModal(true);
+  };
+
+  useEffect(() => {
+    console.log("location option size");
+    console.log(locationOptions.length);
+  }, []);
+
+  function handleHideNewLocationModal() {
+    console.log("handle hide new location modal");
+    setOpenLocationForm(false);
+  }
+
+  function showAddLocationFrom() {
+    setOpenLocationForm(true);
+  }
+
   return (
     <>
       <div
@@ -82,45 +119,45 @@ const CalendarHeader = ({
         </div>
 
         <div
-          class="btn-group"
+          className="btn-group"
           role="group"
           aria-label="Basic radio toggle button group"
           id="intervalViewOptions"
         >
           <input
             type="radio"
-            class="btn-check"
+            className="btn-check"
             name="btnradio"
             id="btnradio1"
-            autocomplete="off"
+            autoComplete="off"
             onClick={dayHandle}
           />
-          <label class="btn btn-outline-primary" for="btnradio1">
+          <label className="btn btn-outline-primary" htmlFor="btnradio1">
             Den
           </label>
 
           <input
             type="radio"
-            class="btn-check"
+            className="btn-check"
             name="btnradio"
             id="btnradio2"
-            autocomplete="off"
+            autoComplete="off"
             onClick={weekHandle}
             defaultChecked
           />
-          <label class="btn btn-outline-primary" for="btnradio2">
+          <label className="btn btn-outline-primary" htmlFor="btnradio2">
             Týden
           </label>
 
           <input
             type="radio"
-            class="btn-check"
+            className="btn-check"
             name="btnradio"
             id="btnradio3"
-            autocomplete="off"
+            autoComplete="off"
             onClick={monthHandle}
           />
-          <label class="btn btn-outline-primary" for="btnradio3">
+          <label className="btn btn-outline-primary" htmlFor="btnradio3">
             Měsíc
           </label>
         </div>
@@ -137,7 +174,7 @@ const CalendarHeader = ({
       >
         {globalState?.user?.role === "ROLE_ADMIN" && (
           <div
-            class="btn-group"
+            className="btn-group"
             role="group"
             aria-label="Basic radio toggle button group"
             id="eventsViewOptions"
@@ -145,28 +182,31 @@ const CalendarHeader = ({
           >
             <input
               type="radio"
-              class="btn-check"
+              className="btn-check"
               name="viewOption"
               id="calendarButton"
-              autocomplete="off"
+              autoComplete="off"
               //onClick={dayHandle}
               defaultChecked
             />
 
-            <label class="btn btn-outline-secondary" for="calendarButton">
-              <i class="bi bi-calendar-fill"></i>
+            <label
+              className="btn btn-outline-secondary"
+              htmlFor="calendarButton"
+            >
+              <i className="bi bi-calendar-fill"></i>
             </label>
 
             <input
               type="radio"
-              class="btn-check"
+              className="btn-check"
               name="viewOption"
               id="tableButton"
-              autocomplete="off"
+              autoComplete="off"
               //onClick={weekHandle}
             />
-            <label class="btn btn-outline-secondary" for="tableButton">
-              <i class="bi bi-table"></i>
+            <label className="btn btn-outline-secondary" htmlFor="tableButton">
+              <i className="bi bi-table"></i>
             </label>
           </div>
         )}
@@ -187,16 +227,56 @@ const CalendarHeader = ({
         </Form.Select>
         {globalState?.user?.role === "ROLE_ADMIN" && (
           <div className="fc-toolbar-chunk">
+            <button
+              className="btn btn-primary"
+              onClick={showAddEventForm}
+              style={{ marginRight: "20px" }}
+            >
+              Nová událost
+            </button>
             <ButtonGroup id="eventsOperations">
-              <button className="btn btn-primary" onClick={showAddEventForm}>
-                Nová událost
+              <button className="btn btn-primary" onClick={showAddLocationFrom}>
+                Nový kalendář
               </button>
-              <button className="btn btn-danger" onClick={showAddEventForm}>
+              <button
+                className="btn btn-danger"
+                onClick={showDeleteCalendarModal}
+                disabled={locationOptions.length < 2}
+              >
                 Smazat kalendář
               </button>
             </ButtonGroup>
           </div>
         )}
+
+        <Modal
+          isOpen={openDeleteCalendarModal}
+          on
+          backdrop="static"
+          size="sm"
+          centered={true}
+        >
+          <ModalHeader>Smazat kalendář</ModalHeader>
+          <ModalBody>
+            {
+              "Smazáním kalendáře dojde ke zrušení veškerých příslušných událostí, opravdu si přejete pokračovat?"
+            }
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="secondary" onClick={hideDeleteCalendarModal}>
+              Ne
+            </Button>
+            <Button variant="danger" onClick={handleDeleteCalendar}>
+              Ano
+            </Button>
+          </ModalFooter>
+        </Modal>
+
+        <NewLocationForm
+          handleHide={handleHideNewLocationModal}
+          isOpen={openLocationFrom}
+          reloadLocations={reloadLocations}
+        />
       </div>
     </>
   );

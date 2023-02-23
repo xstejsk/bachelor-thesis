@@ -237,7 +237,7 @@ const DetailsModal = ({
   }
 
   function handleDelete() {
-    if (eventObj?.extendedProps?.recurrenceGroup.frequency != "NEVER") {
+    if (eventObj?.extendedProps?.recurrenceGroup != null) {
       setShowCancelOptions(true);
     } else {
       cancelSingleEvent();

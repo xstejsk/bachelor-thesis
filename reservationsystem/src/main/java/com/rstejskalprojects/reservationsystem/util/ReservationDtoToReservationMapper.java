@@ -21,6 +21,6 @@ public class ReservationDtoToReservationMapper implements DtoMapper<ReservationD
     public Reservation map(ReservationDTO reservationDTO){
         Event event = eventRepository.findById(reservationDTO.getEventId()).orElseThrow(() -> new EventNotFoundException(String.format("event of id %s not found", reservationDTO.getEventId())));
         AppUser appUser = userRepository.findById(reservationDTO.getOwner().getUserId()).orElseThrow(() -> new EventNotFoundException(String.format("user of id %s not found", reservationDTO.getOwner().getUserId())));
-        return new Reservation(appUser, event, reservationDTO.getIsCanceled());
+        return new Reservation(appUser, event);
     }
 }

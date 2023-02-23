@@ -18,11 +18,6 @@ const ReservationTable = ({ reservations, cancelReservations }) => {
     useState(false);
   const [globalState, setGlobalState] = useContext(Context);
 
-  const canceledFormater = (data, row) => {
-    console.log("zruseno " + data);
-    return <>{data === false ? "Aktivní" : "Zrušena"}</>;
-  };
-
   const handleSelectAll = (isSelected, rows) => {
     if (isSelected) {
       setSelected(rows.map((row) => row.reservationId));
@@ -43,16 +38,13 @@ const ReservationTable = ({ reservations, cancelReservations }) => {
     return <>{data.substring(0, 16)}</>;
   };
 
-  useEffect(() => {
-    console.log("reservation table use effect ran");
-  }, [selected]);
+  useEffect(() => {}, [selected]);
 
   const selectRow = {
     mode: "checkbox",
     clickToSelect: true,
     onSelect: (row, isSelect) => {
       if (isSelect) {
-        console.log(row);
         setSelected((prevSelected) => [...prevSelected, row.reservationId]);
       } else {
         setSelected((prevSelected) =>
@@ -101,19 +93,6 @@ const ReservationTable = ({ reservations, cancelReservations }) => {
       dataField: "end",
       text: "Do",
       formatter: dateFormatter,
-    },
-    {
-      dataField: "isCanceled",
-      text: "Stav",
-      formatter: canceledFormater,
-      filter: selectFilter({
-        options: {
-          true: "Zrušena",
-          false: "Aktivní",
-        },
-        placeholder: "Stav",
-        defaultValue: false,
-      }),
     },
   ];
 
@@ -171,7 +150,6 @@ const ReservationTable = ({ reservations, cancelReservations }) => {
       <ButtonGroup className="mb-3">
         <Button
           onClick={() => {
-            console.log(selected.length);
             setShowDeleteReservationsModal(selected.length > 0);
           }}
           variant="danger"

@@ -3,9 +3,11 @@ package com.rstejskalprojects.reservationsystem.service;
 import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.PasswordToken;
 import com.rstejskalprojects.reservationsystem.model.RegistrationToken;
+import com.rstejskalprojects.reservationsystem.model.UserRoleEnum;
 import com.rstejskalprojects.reservationsystem.repository.UserRepository;
 import com.rstejskalprojects.reservationsystem.util.customexception.ReservationNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UserIdNotFoundException;
+import com.rstejskalprojects.reservationsystem.util.customexception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -84,11 +86,47 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     public void enableUser(String email) {
+        AppUser appUser = userRepository.findUserByUsername(email).orElseThrow(() -> new ReservationNotFoundException(String.format("user with email %s not found", email)));
         userRepository.enableUser(email);
+    }
+
+    public void promoteUser(Long userId) {
+        AppUser appUser = userRepository.findById(userId).orElseThrow(() ->
+                new ReservationNotFoundException(String.format("user with id %s not found", userId)));
+        appUser.setUserRole(UserRoleEnum.ADMIN);
+        appUser.setLocked(false);
+        userRepository.save(appUser);
+        log.info("user with id: " + userId + " promoted to admin");
+    }
+
+    public void blockUser(Long userId) {
+        AppUser appUser = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(String.format("user with id %s not found", userId)));
+        if (appUser.getUserRole().equals(UserRoleEnum.ADMIN)){
+            throw new IllegalStateException("admin cannot be blocked");
+        }
+        appUser.setLocked(true);
+        userRepository.save(appUser);
+        log.info("user with id: " + userId + " has been blocked");
+    }
+
+    public void unblockUser(Long userId) {
+        AppUser appUser = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(String.format("user with id %s not found", userId)));
+        appUser.setLocked(false);
+        userRepository.save(appUser);
+        log.info("user with id: " + userId + " has been unblocked");
     }
 
     public Optional<AppUser> loadUserById(Long id) {
         return userRepository.findById(id);
+    }
+
+    public void deleteUser(Long userId) {
+        AppUser appUser = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(String.format("user with id %s not found", userId)));
+        if (appUser.getUserRole().equals(UserRoleEnum.ADMIN)){
+            throw new IllegalStateException("admin cannot be deleted");
+        }
+        userRepository.delete(appUser);
+        log.info("user with id: " + userId + " has been deleted");
     }
 
 }

@@ -17,10 +17,15 @@ const logoutEndpoint = "api/auth/logout";
 const forgotPasswordEndpoint = "api/access/{email}/forgot-password";
 const resetPasswordEdnpoint = "api/access/reset-password/";
 const activeReservationsByUser = "api/reservations/{userId}/active";
-const cancelMultipleReservationsEndpoint = reservationsEndpoint + "/cancel";
 const getAllUsersEndpoint = "api/users";
 const updateEventEndpoint = "api/events/update/";
 const updateRecurrenceGroup = "api/events/update-recurrent/";
+const deleteReservations = "api/reservations/delete";
+const promoteUser = "api/users/promote/";
+const banUser = "api/users/ban/";
+const unbanUser = "api/users/unban/";
+const deleteUser = "api/users/delete/";
+const deleteCalendarEndpoint = "api/locations/delete/";
 
 export {
   host,
@@ -41,9 +46,14 @@ export {
   logoutEndpoint,
   forgotPasswordEndpoint,
   resetPasswordEdnpoint,
-  cancelMultipleReservationsEndpoint,
   getAllUsersEndpoint,
   updateEventEndpoint,
   updateRecurrenceGroup,
   activeReservationsByUser,
+  deleteReservations,
+  promoteUser,
+  banUser,
+  unbanUser,
+  deleteUser,
+  deleteCalendarEndpoint,
 };

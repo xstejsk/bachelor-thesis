@@ -17,19 +17,31 @@ const UsersTableWrapper = () => {
       })
       .catch((error) => {
         console.log(error.response.status);
-      })
-      .finally(() => setIsLoading(false));
+      });
   }, []);
+
+  const reloadUsers = () => {
+    setIsLoading(true);
+    axios
+      .get(host + getAllUsersEndpoint)
+      .then((response) => {
+        setUsers(response.data);
+      })
+      .catch((error) => {
+        console.log(error.response.status);
+      });
+  };
+
+  useEffect(() => {
+    setIsLoading(false);
+  }, [users]);
 
   if (isLoading) {
     return <CustomGridLoader isLoading={isLoading} />;
   } else {
     return (
       <div className="container-xxl">
-        <UserTable
-          users={users}
-          // cancelReservations={cancelReservations}
-        />
+        <UserTable users={users} reloadUsers={reloadUsers} />
       </div>
     );
   }

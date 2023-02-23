@@ -1,6 +1,7 @@
 package com.rstejskalprojects.reservationsystem.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -18,6 +20,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.time.DayOfWeek;
@@ -30,7 +33,6 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 public class RecurrenceGroup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,6 +48,9 @@ public class RecurrenceGroup {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate endDate;
+    @JsonIgnore
+    @OneToMany(mappedBy = "recurrenceGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Event> events;
 
     public RecurrenceGroup(FrequencyEnum frequency, List<DayOfWeek> daysOfWeek, LocalDate endDate) {
         this.frequency = frequency;
@@ -55,5 +60,15 @@ public class RecurrenceGroup {
 
     public RecurrenceGroup(FrequencyEnum frequency) {
         this.frequency = frequency;
+    }
+
+    @Override
+    public String toString() {
+        return "RecurrenceGroup{" +
+                "id=" + id +
+                ", frequency=" + frequency +
+                ", daysOfWeek=" + daysOfWeek +
+                ", endDate=" + endDate +
+                '}';
     }
 }

@@ -1,8 +1,5 @@
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
-import Dashboard from "./Components/Dashboard";
-import Homepage from "./Components/Homepage";
-import PrivateRoute from "./PrivateRoute";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./Components/Login";
 import Register from "./Components/Forms/Register";
 import Navbar from "./Components/Navbar/Navbar";
@@ -16,6 +13,8 @@ import AlertTemplate from "react-alert-template-basic";
 import { positions, Provider } from "react-alert";
 import UsersTableWrapper from "./Components/Tables/UsersTableWrapper";
 import Footer from "./Components/footer";
+import ProtectedRoute from "./util/ProtectedRoute";
+import NotFound from "./Components/NotFound";
 
 function App() {
   const options = {
@@ -30,18 +29,26 @@ function App() {
           <Navbar />
           <div className="myContent">
             <Routes>
-              <Route element={<PrivateRoute />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-              </Route>
+              <Route path="/" element={<SchedulerWrapper />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/home" element={<Homepage />} />
               <Route path="/register" element={<Register />} />
               <Route path="/events" element={<SchedulerWrapper />} />
               <Route
                 path="/reservations"
-                element={<ReservationTableWrapper />}
+                element={
+                  <ProtectedRoute requireAdmin={false}>
+                    <ReservationTableWrapper />
+                  </ProtectedRoute>
+                }
               />
-              <Route path="/users" element={<UsersTableWrapper />} />
+              <Route
+                path="/users"
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <UsersTableWrapper />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/registration/confirm"
                 element={<ConfirmRegistration />}
@@ -51,6 +58,7 @@ function App() {
                 path="/password-reset/confirm"
                 element={<ConfirmPassword />}
               />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
           <div className="myFooter">

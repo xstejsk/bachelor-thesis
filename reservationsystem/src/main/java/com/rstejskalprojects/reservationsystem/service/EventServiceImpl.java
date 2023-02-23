@@ -125,7 +125,7 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public List<Event> cancelRecurrentEvents(Long groupId) {
         eventRepository.cancelEventByGroupId(groupId);
-        reservationService.cancelReservationsByEventGroupId(groupId);
+        reservationService.deleteReservationsByEventGroupId(groupId);
         log.info("events of recurrence group {} have been canceled", groupId);
         return eventRepository.findEventByRecurrenceGroupId(groupId);
     }
@@ -136,7 +136,7 @@ public class EventServiceImpl implements EventService {
         Event canceledEvent = eventRepository.findById(event.getId()).orElseThrow(() -> new EventNotFoundException(
                 String.format("even of id %s not found", event.getId())));
         eventRepository.cancelEventById(event.getId());
-        reservationService.cancelReservationsByEventId(event.getId());
+        reservationService.deleteReservationsByEventId(event.getId());
         canceledEvent.setIsCanceled(true);
         log.info("event {} has been canceled", event);
         return canceledEvent;

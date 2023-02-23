@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext, useEffect } from "react";
+import React, { useState, useRef, useContext } from "react";
 import FullCalendar from "@fullcalendar/react"; // must go before plugins
 import dayGridPlugin from "@fullcalendar/daygrid"; // a plugin!
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -9,7 +9,6 @@ import { Row } from "reactstrap";
 import csLocale from "@fullcalendar/core/locales/cs";
 import SignUpModal from "./Forms/SignUpToEventModal";
 import DetailsModal from "./Forms/DetailsModal";
-import NewLocationForm from "./Forms/NewLocationForm";
 import CalendarHeader from "./CalendarHeader";
 
 const CustomScheduler = ({
@@ -19,11 +18,11 @@ const CustomScheduler = ({
   reloadEvents,
   handleLocationChange,
   locationOptions,
+  deleteCalendar,
 }) => {
   const [showAddEventForm, setShowAddEventForm] = useState(false);
   const [showSignUpToEvent, setShowSignUpToEvent] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showAddLocationFrom, setShowAddLocationForm] = useState(false);
   const calendarRef = useRef(null);
   const [state, setState] = useState({ clickInfo: null });
   const [globalState, setGlobalState] = useContext(Context);
@@ -31,7 +30,6 @@ const CustomScheduler = ({
   const handleEventClick = (clickInfo) => {
     if (globalState?.user?.role === "ROLE_USER") {
       setState({ clickInfo: clickInfo });
-      // console.log("user");
       setShowSignUpToEvent(true);
     } else if (globalState?.user?.role === "ROLE_ADMIN") {
       setState({ clickInfo: clickInfo });
@@ -40,7 +38,6 @@ const CustomScheduler = ({
   };
 
   function renderEventContent(eventInfo) {
-    console.log(eventInfo);
     const { availableCapacity, maximumCapacity } =
       eventInfo.event.extendedProps;
     const title = eventInfo.event.title;
@@ -63,30 +60,26 @@ const CustomScheduler = ({
           <div>ID:{eventInfo.event.id}</div>
         )}
         <div style={{ fontSize: "smaller", marginTop: "5px" }}>
-          Obsazeno míst: {maximumCapacity - availableCapacity}/{maximumCapacity}
+          Obsazení: {maximumCapacity - availableCapacity}/{maximumCapacity}
         </div>
       </>
     );
   }
 
   function handleHideSignUpModal() {
-    console.log("handle hide sign up");
     setShowSignUpToEvent(false);
   }
 
   function handleHideDetailsModal() {
-    console.log("handle hide details");
     setShowDetailsModal(false);
   }
 
   function handleHideNewEventModal() {
-    console.log("handle hide new event");
     setShowAddEventForm(false);
   }
 
-  function handleHideNewLocationModal() {
-    console.log("handle hide new location modal");
-    setShowAddLocationForm(false);
+  function handleDeleteCalendar() {
+    deleteCalendar();
   }
 
   return (
@@ -109,6 +102,8 @@ const CustomScheduler = ({
             handleLocationChange={handleLocationChange}
             locationOptions={locationOptions}
             showAddEventForm={() => setShowAddEventForm(true)}
+            deleteCalendar={handleDeleteCalendar}
+            reloadLocations={reloadLocations}
           />
         )}
 
@@ -134,18 +129,18 @@ const CustomScheduler = ({
           ref={calendarRef}
           height={"auto"}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          customButtons={
-            globalState?.user?.role === "ROLE_ADMIN" && {
-              addEvent: {
-                text: "Nová událost",
-                click: () => setShowAddEventForm(true),
-              },
-              addLocation: {
-                text: "Nové místo konání",
-                click: () => setShowAddLocationForm(true),
-              },
-            }
-          }
+          // customButtons={
+          //   globalState?.user?.role === "ROLE_ADMIN" && {
+          //     addEvent: {
+          //       text: "Nová událost",
+          //       click: () => setShowAddEventForm(true),
+          //     },
+          //     addLocation: {
+          //       text: "Nové místo konání",
+          //       click: () => setShowAddLocationForm(true),
+          //     },
+          //   }
+          // }
           initialView="timeGridWeek"
           views={["dayGridMonth", "dayGridWeek", "dayGridDay"]}
           themeSystem="bootstrap5"
@@ -162,19 +157,20 @@ const CustomScheduler = ({
           reloadEvents={reloadEvents}
         />
       )}
-      {showAddEventForm && (
+      {/* {showAddEventForm && (
         <NewEventForm
           locationId={currentLocationId}
           reloadEvents={reloadEvents}
           handleHide={handleHideNewEventModal}
           isOpen={showAddEventForm}
         />
-      )}
+      )} */}
 
-      <NewLocationForm
-        handleHide={handleHideNewLocationModal}
-        isOpen={showAddLocationFrom}
-        reloadLocations={reloadLocations}
+      <NewEventForm
+        locationId={currentLocationId}
+        reloadEvents={reloadEvents}
+        handleHide={handleHideNewEventModal}
+        isOpen={showAddEventForm}
       />
 
       {state.clickInfo && (

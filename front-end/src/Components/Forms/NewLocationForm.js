@@ -1,8 +1,8 @@
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-daterangepicker/daterangepicker.css";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
-import { Col, Row, Container, Card, Form } from "react-bootstrap";
+import { Col, Row, Form } from "react-bootstrap";
 import axios from "axios";
 import { host, newLocationEndpoint } from "../../util/EndpointConfig";
 import { useAlert } from "react-alert";
@@ -27,7 +27,7 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
         if (response.status === 201) {
           reloadLocations();
           handleCancel();
-          alert.success("Bylo vytvořeno nové místo konání událostí.");
+          alert.success("Byl vytvořen nový kalendář");
         }
       })
       .catch((err) => {

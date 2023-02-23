@@ -3,6 +3,8 @@ package com.rstejskalprojects.reservationsystem.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -34,7 +36,7 @@ public class PasswordToken {
     private String encodedPassword;
     private LocalDateTime confirmedAt = null;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(
             name = "user_id"
     )

@@ -14,18 +14,18 @@ const LoggedOutNavbar = () => {
           <ul className="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
             <li>
               <Link to="/events" className="nav-link px-2 text-white">
-                <i class="bi bi-calendar-event"></i> Události
+                <i className="bi bi-calendar-event"></i> Události
               </Link>
             </li>
           </ul>
 
           <div className="text-end">
             <Link to="/login" className="btn btn-outline-light me-2">
-              <i class="bi bi-box-arrow-in-right"></i> Přihlášení
+              <i className="bi bi-box-arrow-in-right"></i> Přihlášení
             </Link>
 
             <Link to="/register" className="btn btn-warning">
-              <i class="bi bi-pencil-square"></i> Registrace
+              <i className="bi bi-pencil-square"></i> Registrace
             </Link>
           </div>
         </div>

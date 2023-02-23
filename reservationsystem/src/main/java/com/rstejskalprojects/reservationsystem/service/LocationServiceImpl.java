@@ -42,6 +42,17 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
+    public void deleteLocationById(Long id) {
+        if (locationRepository.findAll().size() == 1) {
+            throw new IllegalArgumentException("cannot delete last location");
+        }
+        locationRepository.findById(id).orElseThrow(() ->
+                new LocationNotFoundException(String.format("location of id %s does not exist", id)));
+        locationRepository.deleteById(id);
+        log.info("deleted location of id: {}", id);
+    }
+
+    @Override
     public List<Location> findAll() {
         return locationRepository.findAll();
     }

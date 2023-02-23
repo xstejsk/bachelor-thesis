@@ -5,6 +5,7 @@ import {
   reservationsEndpoint,
   cancelMultipleReservationsEndpoint,
   activeReservationsByUser,
+  deleteReservations,
 } from "../../util/EndpointConfig";
 import CustomGridLoader from "../CustomLoader";
 import axios from "axios";
@@ -19,7 +20,7 @@ const ReservationTableWrapper = () => {
 
   const cancelReservations = (ids) => {
     axios
-      .put(host + cancelMultipleReservationsEndpoint, { reservationIds: ids })
+      .delete(host + deleteReservations, { data: { reservationIds: ids } })
       .then((response) => {
         if (response.status === 200) {
           // fetchReservations();
@@ -56,8 +57,6 @@ const ReservationTableWrapper = () => {
       .get(endpoint, { timeout: 10000 })
       .then((response) => {
         setReservations(response.data);
-        console.log("reservations -----------");
-        console.log(response.data);
       })
       .catch((err) => {
         console.log(err);
@@ -82,8 +81,6 @@ const ReservationTableWrapper = () => {
       .get(endpoint, { timeout: 10000 })
       .then((response) => {
         setReservations(response.data);
-        console.log("reservations -----------");
-        console.log(response.data);
       })
       .catch((err) => {
         console.log(err);

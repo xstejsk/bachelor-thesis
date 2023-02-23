@@ -3,11 +3,14 @@ package com.rstejskalprojects.reservationsystem.api.controller;
 import com.rstejskalprojects.reservationsystem.model.Location;
 import com.rstejskalprojects.reservationsystem.service.LocationService;
 import com.rstejskalprojects.reservationsystem.util.customexception.LocationAlreadyExistsException;
+import com.rstejskalprojects.reservationsystem.util.customexception.LocationNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +45,25 @@ public class LocationController {
         } catch (Exception e) {
             log.warn("error saving location: {}", location, e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping("/delete/{locationId}")
+    public ResponseEntity<String> deleteLocation(@PathVariable Long locationId) {
+        log.info("requested to delete location: {}", locationId);
+        try {
+            locationService.deleteLocationById(locationId);
+            return new ResponseEntity<>("The location with id: " + locationId +
+                    "has been deleted along with corresponding events", HttpStatus.OK);
+        } catch (LocationNotFoundException e){
+            log.warn("location not found exception: {}", e.getMessage());
+            return new ResponseEntity<>("The location with id: " + locationId + " does not exist", HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException e) {
+            log.warn("illegal argument exception: {}", e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            log.warn("error deleting location: {}", locationId, e);
+            return new ResponseEntity<>("The location with id: " + locationId + " could not be deleted", HttpStatus.BAD_REQUEST);
         }
     }
 }

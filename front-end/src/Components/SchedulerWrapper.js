@@ -3,10 +3,13 @@ import {
   host,
   locationsEndpoint,
   activeEventsEndpoint,
+  deleteCalendarEndpoint,
 } from "../util/EndpointConfig";
 import axios from "axios";
 import CustomGridLoader from "./CustomLoader";
 import CustomScheduler from "./CustomScheduler";
+import { useAlert } from "react-alert";
+// import WithAuth from "../util/WithAuth";
 
 const SchedulerWrapper = () => {
   const [events, setEvents] = useState({ data: [], loaded: false });
@@ -15,19 +18,15 @@ const SchedulerWrapper = () => {
     locationObjects: [],
   });
   const [currentLocationId, setCurrentLocationId] = useState(0);
+  const alert = useAlert();
 
   const handleLocationChange = (locationId) => {
-    console.log(locationId);
     setCurrentLocationId(locationId);
   };
 
-  useEffect(() => {
-    console.log(events.data);
-  }, [events]);
+  useEffect(() => {}, [events]);
 
   useEffect(() => {
-    console.log("current location id");
-    console.log(currentLocationId);
     reloadEvents();
   }, [currentLocationId]);
 
@@ -55,8 +54,6 @@ const SchedulerWrapper = () => {
   };
 
   const reloadEvents = () => {
-    console.log("inside reload events");
-    console.log(currentLocationId);
     axios
       .get(host + activeEventsEndpoint + "?locationId=" + currentLocationId, {
         timeout: 10000,
@@ -64,14 +61,27 @@ const SchedulerWrapper = () => {
       .then((response) => {
         if (response.status === 200) {
           setEvents({ data: response.data, loaded: true });
-          console.log("events were set");
-          console.log(response.data);
         }
-        console.log(response.status);
       })
       .catch((err) => {
         console.log(err);
         setEvents({ data: [], loaded: true });
+      });
+  };
+
+  const deleteCalendar = () => {
+    axios
+      .delete(host + deleteCalendarEndpoint + currentLocationId)
+      .then((response) => {
+        alert.success("Kalendář a příslušné událisti byly smazány.");
+        setCurrentLocationId(0);
+        reloadLocations();
+      })
+      .catch((error) => {
+        if (error.response.status === 409) {
+          alert.error("Poslední kalendář nelze odstranit");
+        }
+        alert.error("Kalendář nelze zrušit");
       });
   };
 
@@ -125,6 +135,7 @@ const SchedulerWrapper = () => {
             reloadEvents={reloadEvents}
             handleLocationChange={handleLocationChange}
             locationOptions={locations.locationOptions}
+            deleteCalendar={deleteCalendar}
           />
         </div>
       </div>

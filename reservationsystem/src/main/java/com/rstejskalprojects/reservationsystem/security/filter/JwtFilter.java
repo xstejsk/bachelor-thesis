@@ -47,7 +47,7 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         // Get authorization header and validate
         final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (!StringUtils.hasText(header) || !header.startsWith("Bearer ")) {
+        if (!StringUtils.hasText(header) || !header.startsWith("Bearer ") || header.length() < 8) {
             response.setHeader("Error", "Missing bearer token.");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             log.warn("request does not contain header with bearer, path: {}", request.getServletPath());

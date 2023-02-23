@@ -9,10 +9,10 @@ const Footer = () => {
           <Row>
             <Col className="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
               <h5 className="text-uppercase mb-4 font-weight-bold ">
-                Reservoir s.r.o.
+                CShark s.r.o.
               </h5>
 
-              <p>Nejlepší rezervační systém v Angoře</p>
+              <p>Nejlepší rezervační systém v Nigérii</p>
             </Col>
           </Row>
         </div>

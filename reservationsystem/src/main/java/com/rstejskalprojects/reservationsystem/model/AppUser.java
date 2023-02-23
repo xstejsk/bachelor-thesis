@@ -9,16 +9,21 @@ import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Table(name = "app_user")
@@ -26,7 +31,6 @@ import java.util.Collections;
 @Setter
 @RequiredArgsConstructor
 @AllArgsConstructor
-@ToString
 public class AppUser implements UserDetails {
 
     @Id
@@ -45,8 +49,15 @@ public class AppUser implements UserDetails {
     private String password;
     @Enumerated(EnumType.STRING)
     private UserRoleEnum userRole;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.LAZY)
+    private List<Reservation> reservations;
     private Boolean locked = false;
     private Boolean enabled = false;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
+    private List<PasswordToken> passwordTokens;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
+    private List<RegistrationToken> registrationTokens;
+
 
     public AppUser(String firstName, String lastName, String username, String password, UserRoleEnum userRole) {
         this.firstName = firstName;
@@ -55,6 +66,33 @@ public class AppUser implements UserDetails {
         this.password = password;
         this.userRole = userRole;
         this.email = username;
+    }
+
+    public AppUser(Long id, String firstName, String lastName, String email, String username, String password, UserRoleEnum userRole, Boolean locked, Boolean enabled) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.username = username;
+        this.password = password;
+        this.userRole = userRole;
+        this.locked = locked;
+        this.enabled = enabled;
+    }
+
+    @Override
+    public String toString() {
+        return "AppUser{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", userRole=" + userRole +
+                ", locked=" + locked +
+                ", enabled=" + enabled +
+                '}';
     }
 
     @Override

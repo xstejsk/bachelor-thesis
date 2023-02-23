@@ -4,15 +4,12 @@ import {
   host,
   loginEndpoint,
   resendEmailEndpoint,
-  logoutEndpoint,
 } from "../util/EndpointConfig";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Context } from "../util/GlobalState";
 import { Link } from "react-router-dom";
 import { Col, Button, Row, Container, Form } from "react-bootstrap";
 import { useAlert } from "react-alert";
-import { compareByFieldSpec } from "@fullcalendar/react";
-import FormCheckInput from "react-bootstrap/esm/FormCheckInput";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -23,9 +20,9 @@ const Login = () => {
   const alert = useAlert();
   const [submitButtonEnabled, setSubmitButtonEnabled] = useState(false);
 
-  useEffect(() => {
-    setGlobalState({});
-  }, []);
+  // useEffect(() => {
+  //   setGlobalState({});
+  // }, []);
 
   useEffect(() => {
     setSubmitButtonEnabled(password != "" && username != "");
@@ -73,7 +70,13 @@ const Login = () => {
       })
       .catch((err) => {
         if (err.response.status === 403) {
-          handleResendEmail();
+          if (err.response.data.includes("verified")) {
+            handleResendEmail();
+          } else if (err.response.data.includes("locked")) {
+            alert.error("Účet byl zablokován, prosím, kontaktujte správce");
+          } else {
+            alert.error("Zadaná kombinace emailu a hesla je nesprávná");
+          }
         } else if (err.response.status === 401) {
           alert.error("Zadaná kombinace emailu a hesla je nesprávná");
         }

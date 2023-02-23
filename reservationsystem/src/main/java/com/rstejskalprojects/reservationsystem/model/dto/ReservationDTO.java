@@ -26,8 +26,6 @@ public class ReservationDTO {
     @JsonProperty
     private Double price;
     @JsonProperty
-    private Boolean isCanceled = false;
-    @JsonProperty
     private String title;
 
     public ReservationDTO(Reservation reservation) {
@@ -37,7 +35,6 @@ public class ReservationDTO {
         this.start = reservation.getEvent().getStartTime();
         this.end = reservation.getEvent().getEndTime();
         this.price = reservation.getEvent().getPrice();
-        this.isCanceled = reservation.getIsCanceled();
         this.title = reservation.getEvent().getTitle();
     }
 }

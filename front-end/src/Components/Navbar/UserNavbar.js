@@ -27,12 +27,12 @@ const UserNavbar = () => {
           <ul className="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
             <li>
               <Link to="/events" className="nav-link px-2 text-white">
-                <i class="bi bi-calendar-event"></i> Události
+                <i className="bi bi-calendar-event"></i> Události
               </Link>
             </li>
             <li>
               <Link to="/reservations" className="nav-link px-2 text-white">
-                <i class="bi bi-book"></i> Moje rezervace
+                <i className="bi bi-book"></i> Moje rezervace
               </Link>
             </li>
           </ul>
@@ -43,7 +43,7 @@ const UserNavbar = () => {
               className="btn btn-warning"
               onClick={handleLogout}
             >
-              <i class="bi bi-box-arrow-right"></i> Odhlásit
+              <i className="bi bi-box-arrow-right"></i> Odhlásit
             </Link>
           </div>
         </div>

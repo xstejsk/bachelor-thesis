@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState } from "react";
 import BootstrapTable from "react-bootstrap-table-next";
 import paginationFactory from "react-bootstrap-table2-paginator";
 import filterFactory, {
@@ -8,11 +8,38 @@ import filterFactory, {
 import "react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
-import ButtonToolbar from "react-bootstrap/ButtonToolbar";
 import { Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
-import { Context } from "../../util/GlobalState";
+import axios from "axios";
+import {
+  host,
+  promoteUser,
+  banUser,
+  unbanUser,
+  deleteUser,
+} from "../../util/EndpointConfig";
+import { useAlert } from "react-alert";
 
-const UserTable = ({ users }) => {
+const UserTable = ({ users, reloadUsers }) => {
+  const alert = useAlert();
+  const [isBanModalOpen, setIsBanModalOpen] = useState(false);
+  const [isUnbanModalOpen, setIsUnbanModalOpen] = useState(false);
+  const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(0);
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  const selectRow = {
+    mode: "radio",
+    clickToSelect: true,
+
+    onSelect: (row, isSelect) => {
+      if (isSelect) {
+        console.log(row);
+        setSelectedRow(row);
+      }
+    },
+  };
+
   const roleFormatter = (data, row) => {
     return <>{data === "ROLE_ADMIN" ? "Admin" : "Uživatel"}</>;
   };
@@ -21,22 +48,141 @@ const UserTable = ({ users }) => {
     return <>{data === false ? "Ne" : "Ano"}</>;
   };
 
+  const roleOptions = [
+    { value: "ROLE_ADMIN", label: "Admin" },
+    { value: "ROLE_USER", label: "Uživatel" },
+  ];
+
+  const booleanOptions = [
+    { value: "true", label: "Ano" },
+    { value: "false", label: "Ne" },
+  ];
+
+  const handlePromoteUser = () => {
+    console.log(selectedUserId);
+    axios
+      .put(host + promoteUser + selectedRow?.userId)
+      .then((response) => {
+        if (response.status === 200) {
+          alert.success("Uživatel byl povýšen na administrátora");
+          reloadUsers();
+        }
+      })
+      .catch((error) => {
+        console.log(error.response.status);
+        alert.error("Uživatel nemohl být povýšen na administrátora");
+      })
+      .finally(() => {
+        reloadUsers();
+        hidePromoteModal();
+      });
+  };
+  const handleBanUser = () => {
+    axios
+      .put(host + banUser + selectedRow?.userId)
+      .then((response) => {
+        if (response.status === 200) {
+          alert.info("Uživatel byl zablokován");
+          reloadUsers();
+        }
+      })
+      .catch((error) => {
+        console.log(error.response.status);
+        alert.error("Uživatel nemohl být zablokován");
+      })
+      .finally(() => {
+        reloadUsers();
+        hideBanModal();
+      });
+  };
+
+  const handleUnbanUser = () => {
+    axios
+      .put(host + unbanUser + selectedRow?.userId, {})
+      .then((response) => {
+        if (response.status === 200) {
+          alert.success("Uživatel byl odblokován");
+        }
+      })
+      .catch((error) => {
+        console.log(error.response.status);
+        alert.error("Uživatel nemohl být odblokován");
+      })
+      .finally(() => {
+        reloadUsers();
+        hideUnbanModal();
+      });
+  };
+
+  const handleDeleteUser = () => {
+    axios
+      .delete(host + deleteUser + selectedRow?.userId, {})
+      .then((response) => {
+        if (response.status === 200) {
+          alert.info("Uživatel byl smazán");
+        }
+      })
+      .catch((error) => {
+        console.log(error.response.status);
+        alert.error("Uživatel nemohl být smazán");
+      })
+      .finally(() => {
+        reloadUsers();
+        hideDeleteModal();
+      });
+  };
+
+  const hideBanModal = () => {
+    setIsBanModalOpen(false);
+  };
+
+  const hideUnbanModal = () => {
+    setIsUnbanModalOpen(false);
+  };
+
+  const hidePromoteModal = () => {
+    setIsPromoteModalOpen(false);
+  };
+
+  const hideDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  const showBanModal = () => {
+    setIsBanModalOpen(true);
+  };
+
+  const showUnbanModal = () => {
+    setIsUnbanModalOpen(true);
+  };
+
+  const showPromoteModal = () => {
+    setIsPromoteModalOpen(true);
+  };
+
+  const showDeleteModal = () => {
+    setIsDeleteModalOpen(true);
+  };
+
   const columns = [
     {
       dataField: "userId",
       text: "ID uživatele",
       filter: textFilter({ placeholder: "1" }),
+      editable: false,
     },
     {
       dataField: "fullName",
       text: "Celé jméno",
       filter: textFilter({ placeholder: "Čestmír Strakatý" }),
+      editable: false,
     },
 
     {
       dataField: "email",
       filter: textFilter({ placeholder: "cesmitr.strakaty@gmail.com" }),
       text: "Email",
+      editable: false,
     },
     {
       dataField: "enabled",
@@ -50,12 +196,14 @@ const UserTable = ({ users }) => {
         placeholder: "Vyberte stav",
         defaultValue: false,
       }),
+      editable: false,
     },
     {
       dataField: "locked",
       text: "Zablokovaný",
       formatter: booleanFormater,
       filter: selectFilter({
+        defaultValue: "Ne",
         options: {
           true: "Ano",
           false: "Ne",
@@ -63,6 +211,11 @@ const UserTable = ({ users }) => {
         placeholder: "Vyberte stav",
         defaultValue: false,
       }),
+
+      editor: {
+        type: "select",
+        options: booleanOptions,
+      },
     },
     {
       dataField: "role",
@@ -76,6 +229,13 @@ const UserTable = ({ users }) => {
         placeholder: "Uživatel",
         defaultValue: false,
       }),
+      editable: ({ row }) => row?.role !== "ROLE_ADMIN",
+      editor: {
+        type: "select",
+        placeholder: "role",
+        options: roleOptions,
+        defaultValue: "Uživatel",
+      },
     },
   ];
 
@@ -89,45 +249,141 @@ const UserTable = ({ users }) => {
     >
       <ButtonGroup className="mb-3">
         <Button
-          onClick={() => {
-            //console.log(selected.length);
-            // setShowDeleteReservationsModal(selected.length > 0);
-          }}
-          variant="danger"
+          onClick={showBanModal}
+          variant="secondary"
+          disabled={
+            selectedRow == null ||
+            selectedRow?.role === "ROLE_ADMIN" ||
+            selectedRow?.locked
+          }
         >
-          Zrušit vybrané
+          Zablokovat
+        </Button>
+        <Button
+          onClick={showUnbanModal}
+          variant="success"
+          disabled={
+            selectedRow == null ||
+            selectedRow?.role === "ROLE_ADMIN" ||
+            !selectedRow.locked
+          }
+        >
+          Odblokovat
+        </Button>
+        <Button
+          onClick={showDeleteModal}
+          variant="danger"
+          disabled={selectedRow == null || selectedRow?.role === "ROLE_ADMIN"}
+        >
+          Smazat
+        </Button>
+
+        <Button
+          onClick={showPromoteModal}
+          variant="primary"
+          disabled={selectedRow == null || selectedRow?.role === "ROLE_ADMIN"}
+        >
+          Povýšit
         </Button>
       </ButtonGroup>
       <BootstrapTable
-        keyField="reservationId"
+        keyField="userId"
         columns={columns}
         data={users}
         striped
-        // hover
-        // condensed
         pagination={paginationFactory()}
         filter={filterFactory()}
-        //selectRow={selectRow}
+        selectRow={selectRow}
       />
 
-      {/* <Modal
-            isOpen={showDeleteReservationsModal}
-            on
-            backdrop="static"
-            size="sm"
-            centered={true}
-          >
-            <ModalHeader>Zrušit rezervace</ModalHeader>
-            <ModalBody>{"Opravdu si přejete zrušit vybrané rezervace?"}</ModalBody>
-            <ModalFooter>
-              <Button variant="secondary" onClick={handleCancelDelete}>
-                Ne
-              </Button>
-              <Button variant="danger" onClick={handleCancelReservations}>
-                Ano
-              </Button>
-            </ModalFooter>
-          </Modal> */}
+      <Modal
+        isOpen={isBanModalOpen}
+        on
+        backdrop="static"
+        size="sm"
+        centered={true}
+      >
+        <ModalHeader>Zablokovat uživatele</ModalHeader>
+        <ModalBody>
+          {"Opravdu si přejete uživatele " +
+            selectedRow?.email +
+            " zablokovat?"}
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="secondary" onClick={hideBanModal}>
+            Ne
+          </Button>
+          <Button variant="primary" onClick={handleBanUser}>
+            Ano
+          </Button>
+        </ModalFooter>
+      </Modal>
+      <Modal
+        isOpen={isUnbanModalOpen}
+        on
+        backdrop="static"
+        size="sm"
+        centered={true}
+      >
+        <ModalHeader>Odblokovat uživatele</ModalHeader>
+        <ModalBody>
+          {"Opravdu si přejete uživatele " +
+            selectedRow?.email +
+            " odblokovat?"}
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="secondary" onClick={hideUnbanModal}>
+            Ne
+          </Button>
+          <Button variant="primary" onClick={handleUnbanUser}>
+            Ano
+          </Button>
+        </ModalFooter>
+      </Modal>
+      <Modal
+        isOpen={isPromoteModalOpen}
+        on
+        backdrop="static"
+        size="sm"
+        centered={true}
+      >
+        <ModalHeader>Změna role</ModalHeader>
+        <ModalBody>
+          {"Opravdu si přejete uživateli " +
+            selectedRow?.email +
+            " přiřadit roli Administrátor?"}
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="secondary" onClick={hidePromoteModal}>
+            Ne
+          </Button>
+          <Button variant="primary" onClick={handlePromoteUser}>
+            Ano
+          </Button>
+        </ModalFooter>
+      </Modal>
+      <Modal
+        isOpen={isDeleteModalOpen}
+        on
+        backdrop="static"
+        size="sm"
+        centered={true}
+      >
+        <ModalHeader>Smazat uživatele</ModalHeader>
+        <ModalBody>
+          {"Opravdu si přejte trvale smazat uživatele " +
+            selectedRow?.email +
+            "?"}
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="secondary" onClick={hideDeleteModal}>
+            Ne
+          </Button>
+          <Button variant="primary" onClick={handleDeleteUser}>
+            Ano
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 };

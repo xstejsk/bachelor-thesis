@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -70,8 +71,10 @@ public class AuthController {
         } catch (BadCredentialsException ex) {
             log.warn("Bad credentials for user: " + request.getUsername());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } catch (DisabledException ex) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        } catch (DisabledException e) {
+            return new ResponseEntity<>("Account not verified", HttpStatus.FORBIDDEN);
+        } catch (LockedException e) {
+            return new ResponseEntity<>("Account locked", HttpStatus.FORBIDDEN);
         }
     }
 

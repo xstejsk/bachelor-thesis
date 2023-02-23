@@ -15,7 +15,6 @@ import com.rstejskalprojects.reservationsystem.util.customexception.ReservationN
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
-import org.springframework.expression.AccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,29 +41,12 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public Reservation cancelReservationById(Long reservationId, Long ownerId) throws AccessException {
-        Reservation reservation = reservationRepository.findReservationById(reservationId).orElseThrow(() ->
-                new ReservationNotFoundException(String.format("reservation of id %s not found", reservationId
-                )));
-        if (!reservation.getOwner().getId().equals(ownerId)) {
-            throw new AccessException("user of id " + ownerId + " does not have access to reservation of id " + reservationId);
-        }
-        if (reservation.getEvent().getStartTime().isBefore(java.time.LocalDateTime.now())) {
-            throw new PastEventException("event of id " + reservation.getEvent().getId() + " has already started");
-        }
-        reservationRepository.cancelReservationsById(reservationId);
-        return reservationRepository.findReservationById(reservationId).orElseThrow(() ->
-                new ReservationNotFoundException(String.format("reservation of id %s not found", reservationId
-                )));
-    }
-
-    @Override
     public List<Reservation> findReservationsByUserId(Long ownerId) {
         return new ArrayList<>(reservationRepository.findByOwnerId(ownerId));
     }
 
     @Override
-    public List<Reservation> findActivePresentReservationsByUser(Long ownerId) {
+    public List<Reservation> findPresentReservationsByUser(Long ownerId) {
         return reservationRepository.findActivePresentReservationsByUser(ownerId);
     }
 
@@ -95,7 +77,7 @@ public class ReservationServiceImpl implements ReservationService {
         if (eventRepository.findById(eventId).orElseThrow(() ->
                 new EventNotFoundException(String.format("event of id %s not found", eventId
                 ))).getMaximumCapacity() <=
-                reservationRepository.findActiveReservationsByEventId(eventId).size()) {
+                reservationRepository.findReservationsByEventId(eventId).size()) {
             log.debug("event of id {} is full", eventId);
             throw new MaximumCapacityException("event of id " + eventId + " is full");
         }
@@ -103,40 +85,39 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationRepository.save(reservation);
     }
 
-
-    @Override
-    @Transactional
-    public List<Reservation> cancelReservationsByEventId(Long eventId) {
-        reservationRepository.cancelReservationsByEventId(eventId);
-        log.info("reservations for event of id {} have been cancelled", eventId);
-        return reservationRepository.findReservationByEventId(eventId);
-    }
-
-    @Override
-    @Transactional
-    public List<Reservation> cancelReservationsByEventGroupId(Long groupId) {
-        reservationRepository.cancelReservationsByEventGroupId(groupId);
-        log.info("canceled reservations for group id {}", groupId);
-        return reservationRepository.findReservationByEventGroupId(groupId);
-    }
-
-
     @Override
     @Transactional
     public void deleteReservationsByEventId(Long eventId) {
-        
+        reservationRepository.deleteReservationByEventId(eventId);
+        log.info("deleted reservations for event of id {}", eventId);
     }
 
     @Override
     @Transactional
     public void deleteReservationsById(List<Long> reservationIds, Long ownerId) {
-
+        AppUser appUser = userDetailsService.findById(ownerId);
+        for (Long reservationId : reservationIds) {
+            Reservation reservation = reservationRepository.findById(reservationId)
+                    .orElseThrow(() -> new ReservationNotFoundException(String.format("reservation of id %s not found", reservationId)));
+            if (appUser.getUserRole() != UserRoleEnum.ADMIN && !Objects.equals(reservation.getOwner().getId(), ownerId)) {
+                log.warn("user of id {} does not have access to reservation of id {}", ownerId, reservationId);
+                throw new InvalidDataAccessResourceUsageException("the user of id " + ownerId + " is not the owner of reservation of id " + reservationId);
+            }
+            if (reservation.getEvent().getStartTime().isBefore(java.time.LocalDateTime.now())) {
+                log.warn("event of id {} has already started, cannot delete reservation of id {}", reservation.getEvent().getId(), reservation.getId());
+                throw new PastEventException("event of id " + reservation.getEvent().getId() + " has already started," +
+                        "cannot delete reservation of id " + reservation.getId());
+            }
+            reservationRepository.deleteReservationById(reservationId);
+        }
+        log.info("deleted reservations of ids {} for user of id {}", reservationIds, ownerId);
     }
 
     @Override
     @Transactional
     public void deleteReservationsByEventGroupId(Long groupId) {
-
+        reservationRepository.deleteReservationByEventRecurrenceGroupId(groupId);
+        log.info("deleted reservations for group of id {}", groupId);
     }
 
     @Override
@@ -145,29 +126,9 @@ public class ReservationServiceImpl implements ReservationService {
         return create(reservation);
     }
 
-    @Transactional
-    @Override
-    public List<Reservation> cancelMultipleReservations(List<Long> reservationIds, Long ownerId) {
-        List<Reservation> reservations = new ArrayList<>();
-        AppUser appUser = userDetailsService.findById(ownerId);
-        for (Long reservationId : reservationIds) {
-            Reservation reservation = reservationRepository.findById(reservationId)
-                    .orElseThrow(() -> new ReservationNotFoundException(String.format("reservation of id %s not found", reservationId)));
-            if (appUser.getUserRole() != UserRoleEnum.ADMIN && !Objects.equals(reservation.getOwner().getId(), ownerId)) {
-                throw new InvalidDataAccessResourceUsageException("the user of id " + ownerId + " is not the owner of reservation of id " + reservationId);
-            }
-            if (reservation.getEvent().getStartTime().isBefore(java.time.LocalDateTime.now())) {
-                throw new PastEventException("event of id " + reservation.getEvent().getId() + " has already started");
-            }
-            reservation.setIsCanceled(true);
-            reservationRepository.save(reservation);
-            reservations.add(reservation);
-        }
-        return reservations;
-    }
 
     private boolean userIsAlreadyRegisteredForEvent(Long userId, Long eventId) {
-        Optional<Reservation> reservation = reservationRepository.findActiveReservationByEventIdAndUserId(userId, eventId);
+        Optional<Reservation> reservation = reservationRepository.findReservationByEventIdAndUserId(userId, eventId);
         return reservation.isPresent();
     }
 }

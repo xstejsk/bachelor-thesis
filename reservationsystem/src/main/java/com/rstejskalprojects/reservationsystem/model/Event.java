@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -17,6 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PostLoad;
+import javax.persistence.PreRemove;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.time.LocalDateTime;
@@ -28,13 +30,12 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class Event {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(optional = false)
+    @ManyToOne()
     @JoinColumn(name="locaton_id")
     @NotNull
     private Location location;
@@ -51,11 +52,13 @@ public class Event {
     @NotNull
     private String title;
     private String description;
-    @OneToMany(mappedBy = "event")
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Reservation> reservations;
     @ManyToOne
     @JoinColumn(name="recurrence_group_id")
     private RecurrenceGroup recurrenceGroup;
+
+
     private Boolean isCanceled = false;
 
     @Transient
@@ -98,5 +101,27 @@ public class Event {
         this.recurrenceGroup = recurrenceGroup;
         this.isCanceled = isCanceled;
         this.location = location;
+    }
+
+    @PreRemove
+    private void removeEventFromRecurrenceGroup() {
+        System.out.println("Removing event from recurrence group");
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", location=" + location +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", maximumCapacity=" + maximumCapacity +
+                ", price=" + price +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", recurrenceGroup=" + recurrenceGroup +
+                ", isCanceled=" + isCanceled +
+                ", availableCapacity=" + availableCapacity +
+                '}';
     }
 }

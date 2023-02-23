@@ -67,8 +67,6 @@ const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
       setEvent((prev) => ({ ...prev, ["recurrenceGroup"]: recurrenceGroup }));
     }
   }, [recurrenceGroup]);
-
-  const [recurrence, setRecurrence] = useState(recurrenceOptions[0].value);
   const [formHasErrors, setFormHasErrors] = useState(true);
 
   function formatDate(date) {
@@ -86,6 +84,22 @@ const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
   }
   useEffect(() => {
     handleChangeRecurrenceGroup("frequency", "NEVER");
+    setRecurrenceGroup({
+      frequency: recurrenceOptions[0].value,
+      daysOfWeek: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+      endDate: undefined,
+    });
+    setEvent({
+      title: "",
+      start: undefined,
+      end: undefined,
+      description: "",
+      locationId: locationId,
+      price: 100,
+      maximumCapacity: 1,
+      recurrenceGroup: null,
+    });
+    setFormHasErrors(true);
   }, [isOpen]);
 
   function handleSubmit() {
@@ -262,7 +276,7 @@ const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
           <Input
             type="text"
             name="description"
-            placeholder="Lekce jógy pod vedením Jaroslava Bašty."
+            placeholder="Seminář odvolání vlády s Jaroslavem Baštou."
             value={event.description}
             onChange={(e) => handleChangeEvent(e.target.name, e.target.value)}
           />
