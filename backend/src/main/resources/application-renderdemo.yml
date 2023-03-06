@@ -4,6 +4,13 @@ server:
     include-binding-errors: always
 
 spring:
+  autoconfigure:
+    exclude=org:
+      springframework:
+        boot:
+          autoconfigure:
+            jdbc:
+              DataSourceAutoConfiguration: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
   application:
     name: sportsreservationsystem
   datasource:
