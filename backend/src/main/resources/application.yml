@@ -7,9 +7,10 @@ spring:
   application:
     name: sportsreservationsystem
   datasource:
-    password: postgres
-    url: jdbc:postgresql://localhost:5432/reservationsystem
-    username: postgres
+    jdbc-url: jdbc:postgres://dbuser:TSQKPNRS9RH2qlpdN0znjoQ1qYCcC7gh@dpg-cg32464eoogop186bb0g-a.frankfurt-postgres.render.com/reservationsystem
+  #    password: postgres
+#    url: jdbc:postgresql://localhost:5432/reservationsystem
+#    username: postgres
   jpa:
     hibernate:
       ddl-auto: update
