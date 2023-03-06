@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  myfrontend:
+    container_name: myfrontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_URL=http://mybackend:8080/
+
+  mybackend:
+    image: 'docker-spring-boot-postgres:latest'
+    container_name: mybackend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/reservationsystem
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    #   - SMTP_HOST=smtp.gmail.com
+    #   - SMTP_PORT=587
+    #   - SMTP_USERNAME=postgres
+    #   - SMTP_PASSWORD=postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    links:
+      - db
+
+  db:
+    # image: postgres
+    image: 'postgres:13.1-alpine'
+    container_name: db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=reservationsystem
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

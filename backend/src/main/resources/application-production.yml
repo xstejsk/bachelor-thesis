@@ -1,0 +1,50 @@
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  application:
+    name: sportsreservationsystem
+  datasource:
+    password: postgres
+    url: jdbc:postgresql://db:5432/reservationsystem
+    username: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  security:
+    filter:
+      order: 10
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: myjavatenniscourts@gmail.com
+    password: qqvloapsezcxprht
+
+    properties:
+      mail:
+        smtp:
+          ssl:
+            trust: "*"
+          auth: true
+          starttls.enable: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
+jwt:
+  accessExpirationDateInMs: 6000 # 100 minute
+  refreshExpirationDateInMs: 31536000000 # 1 year
+  secret: "L,#8iU27XY$6Y8T;Ny23iWS$ui=Fyv,D?D!uzdQU*Smiiw#Z$pJ/6=GNV,zXxzwwD=,@5c4dA7NPu=u+ppVb_dV.x553ndYJZwwTi&A[M9Mey;wFQ;!Uxxe.xvhA5D+BZ}nn65Gg}fWQrw)dyn-7=vi}Cxi+QA6#iB9TAm8gtjfpM.jgcYFw/_J]c)(98;==Svn/KCv(XfYEn7nP67n2MVwz3QE]uhw?SgvJ=FAq][;;uC=Zyj25$44VvhE?J)4z"
+cors:
+  whiteListedOrigins: "http://myfrontend:3000/"
+host:
+  domain: "http://localhost:3000"
+
+
