@@ -7,7 +7,7 @@ spring:
   application:
     name: sportsreservationsystem
   datasource:
-    jdbc-url: jdbc:postgres://dbuser:TSQKPNRS9RH2qlpdN0znjoQ1qYCcC7gh@dpg-cg32464eoogop186bb0g-a.frankfurt-postgres.render.com/reservationsystem
+    url: jdbc:postgres://db_c3z1_user:ESTdgJwc6zv5o6xGbZihARb6TrHbDjlq@dpg-cg34k9vdvk4r4hgmb6bg-a/db_c3z1
 
   jpa:
     hibernate:
