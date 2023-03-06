@@ -7,10 +7,9 @@ spring:
   application:
     name: sportsreservationsystem
   datasource:
-    url: jdbc:postgresql://ep-shrill-unit-980538.eu-central-1.aws.neon.tech/neondb
-    username: xstejsk
-    password: 1xy3SLvEdDBc
-    driver-class-name: org.postgresql.Driver
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/reservationsystem
+    username: postgres
   jpa:
     hibernate:
       ddl-auto: update

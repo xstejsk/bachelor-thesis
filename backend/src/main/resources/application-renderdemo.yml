@@ -6,12 +6,16 @@ server:
 spring:
   application:
     name: sportsreservationsystem
+#  datasource:
+#    url: jdbc:postgresql://ep-shrill-unit-980538.eu-central-1.aws.neon.tech/neondb
+#    username: xstejsk
+#    password: 1xy3SLvEdDBc
+#    driver-class-name: org.postgresql.Driver
   datasource:
-    url: jdbc:postgresql://ep-shrill-unit-980538.eu-central-1.aws.neon.tech/neondb
-    username: xstejsk
-    password: 1xy3SLvEdDBc
+    url: jdbc:postgresql://dpg-cg34k9vdvk4r4hgmb6bg-a/db_c3z1
+    username: db_c3z1_user
+    password: ESTdgJwc6zv5o6xGbZihARb6TrHbDjlq
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
