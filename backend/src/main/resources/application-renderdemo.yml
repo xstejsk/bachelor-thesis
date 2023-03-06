@@ -8,7 +8,7 @@ spring:
     name: sportsreservationsystem
   datasource:
     password: TSQKPNRS9RH2qlpdN0znjoQ1qYCcC7gh
-    url: postgres://dbuser:TSQKPNRS9RH2qlpdN0znjoQ1qYCcC7gh@dpg-cg32464eoogop186bb0g-a.frankfurt-postgres.render.com/reservationsystem
+    url: jdbc:postgres://dbuser:TSQKPNRS9RH2qlpdN0znjoQ1qYCcC7gh@dpg-cg32464eoogop186bb0g-a.frankfurt-postgres.render.com/reservationsystem
     username: dbuser
   jpa:
     hibernate:
