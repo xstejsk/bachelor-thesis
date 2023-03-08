@@ -4,6 +4,7 @@ import com.rstejskalprojects.reservationsystem.api.controller.model.UpdateEventR
 import com.rstejskalprojects.reservationsystem.model.dto.EventDTO;
 import com.rstejskalprojects.reservationsystem.service.EventService;
 import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
+import com.rstejskalprojects.reservationsystem.util.customexception.InvalidEventTimeException;
 import com.rstejskalprojects.reservationsystem.util.customexception.MaximumCapacityException;
 import com.rstejskalprojects.reservationsystem.util.customexception.OverlappingEventException;
 import com.rstejskalprojects.reservationsystem.util.customexception.RecurrenceGroupNotFoundException;
@@ -87,6 +88,8 @@ public class EventsController {
         try {
             eventsService.deleteEvent(id);
             return new ResponseEntity<>(HttpStatus.OK);
+        } catch (InvalidEventTimeException e) {
+          return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (EventNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }

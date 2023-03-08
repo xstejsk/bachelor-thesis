@@ -80,7 +80,8 @@ public class EventServiceImpl implements EventService {
         if (!overlappingEvents.isEmpty()) {
             log.warn("event overlaps with another event");
             throw new OverlappingEventException("event overlaps with events with IDs: " +
-                    overlappingEvents.stream().map(overlappingEvent -> overlappingEvent.getId().toString()).collect(Collectors.joining(", ")));
+                    overlappingEvents.stream().map(overlappingEvent ->
+                            overlappingEvent.getId().toString()).collect(Collectors.joining(", ")));
         }
         log.info("saved non recurring event");
         return eventRepository.save(event);
@@ -88,15 +89,26 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Event> findOverlappingEvents(Event event){
-        return eventRepository.findOverlappingEvents(event.getId() == null ? -1 : event.getId(), event.getLocation().getId(), event.getStartTime(), event.getEndTime());
+        return eventRepository.findOverlappingEvents(event.getId() == null ? -1 : event.getId(),
+                event.getLocation().getId(), event.getStartTime(), event.getEndTime());
     }
 
 
     @Override
     @Transactional
     public void deleteRecurrentEvents(Long groupId) {
-        recurrenceGroupService.deleteById(groupId);
-        log.info("events of recurrence group {} have been canceled", groupId);
+        List<Event> recurringEvents = eventRepository.findByRecurrenceGroupId(groupId);
+        if (recurringEvents.isEmpty()) {
+            log.warn("no events found for recurrence group with id {}", groupId);
+            throw new RecurrenceGroupNotFoundException("no events found for recurrence group with id " + groupId);
+        }
+        if (eventRepository.findByRecurrenceGroupId(groupId).size() == eventRepository.findFutureEventsByRecurrenceGroupId(groupId).size()) {
+            recurrenceGroupService.deleteById(groupId);
+            log.info("deleted all events for recurrence group with id {}", groupId);
+        } else {
+            eventRepository.deleteFutureEventsByRecurrenceGroupId(groupId);
+            log.info("deleted future events for recurrence group with id {}", groupId);
+        }
     }
 
     @Override
@@ -171,6 +183,10 @@ public class EventServiceImpl implements EventService {
     public Event updateEvent(Long eventId, UpdateEventRequest updateEventRequest) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new EventNotFoundException(
                 String.format("event of id %s not found", eventId)));
+        if (event.getStartTime().isBefore(LocalDateTime.now())) {
+            log.warn("attempted to update event that has already started");
+            throw new InvalidEventTimeException("event has already started");
+        }
         return updateNonRecurringEvent(event, updateEventRequest);
     }
 
@@ -209,7 +225,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public List<Event> updateRecurrentEvents(Long recurrenceGroupId, UpdateEventRequest updateEventRequest) {
-        List<Event> events = eventRepository.findByRecurrenceGroupId(recurrenceGroupId);
+        List<Event> events = eventRepository.findFutureEventsByRecurrenceGroupId(recurrenceGroupId);
         if (events.isEmpty()) {
             log.warn("attempted to update events with invalid recurrence group id: {}", recurrenceGroupId);
             throw new RecurrenceGroupNotFoundException(String.format("recurrence group of id %s not found", recurrenceGroupId));

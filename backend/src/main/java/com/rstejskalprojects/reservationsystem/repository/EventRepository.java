@@ -14,8 +14,13 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("SELECT e FROM Event e WHERE e.location.id = ?1 ORDER BY e.startTime ASC")
     List<Event> findByLocationId(Long id);
 
-//    @Query("SELECT e FROM Event e WHERE e.recurrenceGroup.id = ?1 ORDER BY e.startTime ASC")
-//    List<Event> findEventByRecurrenceGroupId(Long groupId);
+    // find events that do not start in the bast by reccurence group id
+    @Query("SELECT e FROM Event e WHERE e.recurrenceGroup.id = ?1 AND e.startTime > CURRENT_TIMESTAMP ORDER BY e.startTime ASC")
+    List<Event> findFutureEventsByRecurrenceGroupId(Long id);
+
+    // delete future events by recurrence group id
+    @Query("DELETE FROM Event e WHERE e.recurrenceGroup.id = ?1 AND e.startTime > CURRENT_TIMESTAMP")
+    void deleteFutureEventsByRecurrenceGroupId(Long id);
 
     List<Event> findByRecurrenceGroupId(Long groupId);
 
