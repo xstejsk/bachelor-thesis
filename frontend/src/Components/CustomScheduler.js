@@ -17,6 +17,8 @@ const CustomScheduler = ({
   reloadLocations,
   reloadEvents,
   handleLocationChange,
+  opensAt,
+  closesAt,
   locationOptions,
   deleteCalendar,
 }) => {
@@ -31,7 +33,10 @@ const CustomScheduler = ({
     if (globalState?.user?.role === "ROLE_USER") {
       setState({ clickInfo: clickInfo });
       setShowSignUpToEvent(true);
-    } else if (globalState?.user?.role === "ROLE_ADMIN") {
+    } else if (
+      globalState?.user?.role === "ROLE_ADMIN" ||
+      globalState?.user?.role === "ROLE_SUPER_ADMIN"
+    ) {
       setState({ clickInfo: clickInfo });
       setShowDetailsModal(true);
     }
@@ -53,72 +58,42 @@ const CustomScheduler = ({
     });
     if (view.type === "dayGridMonth") {
       return (
-        <div
-          style={{
-            fontWeight: "bold",
-
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-        >
-          {/* left side */}
-          <div style={{ fontWeight: "bold" }}>
+        <div className="event-card monthly">
+          <h6>
             {title}
-            {globalState?.user?.role === "ROLE_ADMIN" && (
+            {(globalState?.user?.role === "ROLE_ADMIN" ||
+              globalState?.user?.role === "ROLE_SUPER_ADMIN") && (
               <span style={{ marginLeft: "5px" }}>
                 [ID:{eventInfo.event.id}]
               </span>
             )}
-          </div>
-          {/* right side  */}
-          <div style={{ fontSize: "smaller" }}>
+          </h6>
+          <div>
             {maximumCapacity - availableCapacity}/{maximumCapacity}
           </div>
         </div>
       );
     } else {
       return (
-        <div>
-          <div style={{ fontWeight: "bold" }}>
-            {title}
-            {globalState?.user?.role === "ROLE_ADMIN" && (
-              <span style={{ marginLeft: "5px" }}>
-                [ID:{eventInfo.event.id}]
-              </span>
-            )}
-          </div>
+        <div className="event-card">
+          <h5>{title}</h5>
 
-          <div
-            style={{
-              fontSize: "smaller",
-            }}
-          >
+          {(globalState?.user?.role === "ROLE_ADMIN" ||
+            globalState?.user?.role === "ROLE_SUPER_ADMIN") && (
+            <span>[ID:{eventInfo.event.id}]</span>
+          )}
+
+          <div>
             {startTime} - {endTime}
           </div>
 
-          <div
-            style={{
-              fontSize: "smaller",
-            }}
-          >
-            {description}
-          </div>
-          <div style={{ position: "absolute", bottom: 0, width: "100%" }}>
-            <div
-              style={{
-                fontSize: "smaller",
-                marginTop: "5px",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <div>Cena: {price}Kč</div>
-              <div style={{ fontWeight: "bold" }}>
-                Obsazení: {maximumCapacity - availableCapacity}/
-                {maximumCapacity}
-              </div>
+          <div className="event-details">
+            <div>Cena: {price}Kč</div>
+            <div>
+              Obsazení: {maximumCapacity - availableCapacity}/{maximumCapacity}
             </div>
           </div>
+          <div>{description}</div>
         </div>
       );
     }
@@ -169,11 +144,12 @@ const CustomScheduler = ({
           events={events}
           eventClick={handleEventClick}
           editable={false}
-          slotMinTime={"5:00"}
+          slotMinTime={opensAt}
           headerToolbar={false}
           eventContent={renderEventContent}
-          slotMaxTime={"22:00"}
+          slotMaxTime={closesAt}
           slotDuration={"00:15:00"}
+          eventColor={"#0082ec"}
           locale={csLocale}
           ref={calendarRef}
           height={"auto"}
@@ -195,14 +171,6 @@ const CustomScheduler = ({
           reloadEvents={reloadEvents}
         />
       )}
-      {/* {showAddEventForm && (
-        <NewEventForm
-          locationId={currentLocationId}
-          reloadEvents={reloadEvents}
-          handleHide={handleHideNewEventModal}
-          isOpen={showAddEventForm}
-        />
-      )} */}
 
       <NewEventForm
         locationId={currentLocationId}

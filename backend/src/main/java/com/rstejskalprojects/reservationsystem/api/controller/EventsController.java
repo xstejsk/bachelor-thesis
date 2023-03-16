@@ -104,7 +104,7 @@ public class EventsController {
             log.warn("event not found exception: {}", e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (OverlappingEventException | MaximumCapacityException e) {
-            log.warn("overlapping event exception: {}", e.getMessage());
+            log.warn("updating event exception", e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         } catch (Exception e) {
             log.warn("error updating event: {}", e.getMessage());

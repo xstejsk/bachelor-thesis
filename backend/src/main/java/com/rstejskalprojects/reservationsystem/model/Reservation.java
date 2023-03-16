@@ -10,8 +10,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.PreRemove;
 import javax.persistence.Table;
+
 
 @Entity
 @Table(name = "reservation")
@@ -34,11 +34,6 @@ public class Reservation {
     public Reservation(AppUser owner, Event event) {
         this.owner = owner;
         this.event = event;
-    }
-
-    @PreRemove
-    private void onDelete(){
-        System.out.println("Deleting reservation");
     }
 
     @Override

@@ -54,6 +54,9 @@ public class JwtUtil {
         if (roles.contains(new SimpleGrantedAuthority(UserRoleEnum.ADMIN.getName()))) {
             claims.put("isAdmin", true);
         }
+        if (roles.contains(new SimpleGrantedAuthority(UserRoleEnum.SUPER_ADMIN.getName()))) {
+            claims.put("isSuperAdmin", true);
+        }
         if (roles.contains(new SimpleGrantedAuthority(UserRoleEnum.USER.getName()))) {
             claims.put("isUser", true);
         }

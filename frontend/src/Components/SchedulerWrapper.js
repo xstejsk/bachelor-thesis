@@ -9,7 +9,6 @@ import axios from "axios";
 import CustomGridLoader from "./CustomLoader";
 import CustomScheduler from "./CustomScheduler";
 import { useAlert } from "react-alert";
-// import WithAuth from "../util/WithAuth";
 
 const SchedulerWrapper = () => {
   const [events, setEvents] = useState({ data: [], loaded: false });
@@ -17,29 +16,40 @@ const SchedulerWrapper = () => {
     locationOptions: [],
     locationObjects: [],
   });
-  const [currentLocationId, setCurrentLocationId] = useState(0);
+  const [currentLocationId, setCurrentLocationId] = useState(undefined);
+  const [locationOpensAt, setLocationOpensAt] = useState(undefined);
+  const [locationClosesAt, setLocationClosesAt] = useState(undefined);
   const alert = useAlert();
 
   const handleLocationChange = (locationId) => {
     setCurrentLocationId(locationId);
+    // console.log(locations.locationObjects.find((location) => location.id == 1));
+    const locationById = locations.locationObjects.find(
+      (location) => location.id == locationId
+    );
+    // console.log(locationById);
+    setLocationOpensAt(locationById.opensAt);
+    setLocationClosesAt(locationById.closesAt);
   };
 
-  useEffect(() => {}, [events]);
-
   useEffect(() => {
-    reloadEvents();
+    if (currentLocationId !== undefined) {
+      reloadEvents();
+    }
   }, [currentLocationId]);
 
   const reloadLocations = () => {
     axios.get(host + locationsEndpoint).then((response) => {
       if (response.status === 200) {
         let locationsData = response.data;
-        let locationId;
-        if (currentLocationId !== 0) {
-          locationId = currentLocationId;
+        let location;
+        if (currentLocationId !== undefined) {
+          location = currentLocationId;
         } else {
-          locationId = response.data.at(0).id;
-          setCurrentLocationId(locationId);
+          location = response.data.at(0);
+          setCurrentLocationId(location.id);
+          setLocationOpensAt(location.opensAt);
+          setLocationClosesAt(location.closesAt);
         }
         let locationOptions = response.data.map((location) => ({
           value: location.id,
@@ -74,7 +84,7 @@ const SchedulerWrapper = () => {
       .delete(host + deleteCalendarEndpoint + currentLocationId)
       .then((response) => {
         alert.success("Kalendář a příslušné událisti byly smazány.");
-        setCurrentLocationId(0);
+        setCurrentLocationId(undefined);
         reloadLocations();
       })
       .catch((error) => {
@@ -91,12 +101,14 @@ const SchedulerWrapper = () => {
       .then((response) => {
         if (response.status === 200) {
           let locationsData = response.data;
-          let locationId;
-          if (currentLocationId != 0) {
-            locationId = currentLocationId;
+          let location;
+          if (currentLocationId !== undefined) {
+            location = currentLocationId;
           } else {
-            locationId = response.data.at(0).id;
-            setCurrentLocationId(locationId);
+            location = response.data.at(0);
+            setCurrentLocationId(location.id);
+            setLocationOpensAt(location.opensAt);
+            setLocationClosesAt(location.closesAt);
           }
           let locationOptions = response.data.map((location) => ({
             value: location.id,
@@ -122,7 +134,11 @@ const SchedulerWrapper = () => {
     initialize();
   }, []);
 
-  if (!events.loaded) {
+  if (
+    !events.loaded ||
+    locationOpensAt === undefined ||
+    locationClosesAt === undefined
+  ) {
     return <CustomGridLoader />;
   } else {
     return (
@@ -133,6 +149,8 @@ const SchedulerWrapper = () => {
             currentLocationId={currentLocationId}
             reloadLocations={reloadLocations}
             reloadEvents={reloadEvents}
+            closesAt={locationClosesAt}
+            opensAt={locationOpensAt}
             handleLocationChange={handleLocationChange}
             locationOptions={locations.locationOptions}
             deleteCalendar={deleteCalendar}

@@ -117,7 +117,10 @@ const ReservationTable = ({ reservations, cancelReservation }) => {
   ];
 
   let columns;
-  if (globalState?.user?.role === "ROLE_ADMIN") {
+  if (
+    globalState?.user?.role === "ROLE_ADMIN" ||
+    globalState?.user?.role === "ROLE_SUPER_ADMIN"
+  ) {
     columns = adminColumns;
   } else {
     columns = userColumns;

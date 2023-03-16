@@ -11,8 +11,6 @@ const Footer = () => {
               <h5 className="text-uppercase mb-4 font-weight-bold ">
                 CShark s.r.o.
               </h5>
-
-              <p>Nejlepší rezervační systém v Nigérii</p>
             </Col>
           </Row>
         </div>

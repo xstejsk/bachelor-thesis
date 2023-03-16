@@ -2,6 +2,7 @@ package com.rstejskalprojects.reservationsystem.repository;
 
 import com.rstejskalprojects.reservationsystem.model.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findFutureEventsByRecurrenceGroupId(Long id);
 
     // delete future events by recurrence group id
+    @Modifying
     @Query("DELETE FROM Event e WHERE e.recurrenceGroup.id = ?1 AND e.startTime > CURRENT_TIMESTAMP")
     void deleteFutureEventsByRecurrenceGroupId(Long id);
 

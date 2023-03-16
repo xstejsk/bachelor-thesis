@@ -18,4 +18,6 @@ public interface ReservationService {
     Reservation create(ReservationDTO reservationDTO);
 
     void deleteReservationById(Long reservationId);
+
+    void deleteFutureByRecurrenceGroupId(Long recurrenceGroupId);
 }

@@ -1,9 +1,11 @@
 package com.rstejskalprojects.reservationsystem.service;
 
 import com.rstejskalprojects.reservationsystem.api.controller.model.UpdateEventRequest;
+import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.Event;
 import com.rstejskalprojects.reservationsystem.model.FrequencyEnum;
 import com.rstejskalprojects.reservationsystem.model.RecurrenceGroup;
+import com.rstejskalprojects.reservationsystem.model.Reservation;
 import com.rstejskalprojects.reservationsystem.model.dto.EventDTO;
 import com.rstejskalprojects.reservationsystem.repository.EventRepository;
 import com.rstejskalprojects.reservationsystem.util.EventDtoEventMapper;
@@ -21,8 +23,11 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +40,8 @@ public class EventServiceImpl implements EventService {
     private final EventDtoEventMapper eventDtoToEventMapper;
     private final RecurrenceGroupService recurrenceGroupService;
     private final LocationService locationService;
+    private final EmailFormatterService emailFormatterService;
+    private final EmailSender emailSender;
 
     @Override
     public List<Event> findAll() {
@@ -106,18 +113,55 @@ public class EventServiceImpl implements EventService {
             recurrenceGroupService.deleteById(groupId);
             log.info("deleted all events for recurrence group with id {}", groupId);
         } else {
+            reservationService.deleteFutureByRecurrenceGroupId(groupId);
             eventRepository.deleteFutureEventsByRecurrenceGroupId(groupId);
             log.info("deleted future events for recurrence group with id {}", groupId);
         }
+        new Thread(() -> notifyUsersAboutCancelledRecurrentEvent(recurringEvents)).start();
     }
 
     @Override
     @Transactional
     public void deleteEvent(Long id) {
-        eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(
+        Event event = eventRepository.findById(id).orElseThrow(() -> new EventNotFoundException(
                 String.format("even of id %s not found", id)));
         eventRepository.deleteById(id);
         log.info("event with id {} has been deleted", id);
+        new Thread(() -> notifyUserAboutCancelledEvent(event)).start();
+    }
+
+    private void notifyUsersAboutCancelledRecurrentEvent(List<Event> events) {
+        String subject = "Zrušení opakované události";
+        Set<AppUser> recipients = events.stream()
+                .flatMap(event -> event.getReservations().stream())
+                .map(Reservation::getOwner)
+                .collect(Collectors.toSet());
+        for (AppUser recipient: recipients) {
+            try {
+                String body = emailFormatterService.formatRecurrentEventCancellationEmail(recipient.getFirstName(),
+                        events.get(0).getTitle());
+                log.info("event cancellation body: {}", body);
+                emailSender.sendEmail(recipient.getEmail(), body, subject);
+            } catch (Exception e) {
+                log.error("error while sending email about creating a reservation to user of id {}", recipient.getId());
+            }
+        }
+    }
+
+    private void notifyUserAboutCancelledEvent(Event event) {
+        String subject = "Zrušení události";
+        for (Reservation reservation: event.getReservations()) {
+            try {
+                AppUser owner = reservation.getOwner();
+                String body = emailFormatterService.formatEventCancellationEmail(owner.getFirstName(),
+                    reservation.getEvent().getTitle(), reservation.getEvent().getLocation().getName(),
+                    reservation.getEvent().getStartTime().format(DateTimeFormatter.ofPattern("dd. MM. HH:mm")));
+                log.info("event cancellation body: {}", body);
+                emailSender.sendEmail(owner.getEmail(), body, subject);
+            } catch (Exception e) {
+                log.error("error while sending email about creating a reservation to user of id {}", reservation.getOwner().getId());
+            }
+        }
     }
 
     private List<Event> saveRecurringEvent(Event event) {
@@ -191,23 +235,30 @@ public class EventServiceImpl implements EventService {
     }
 
     private Event updateNonRecurringEvent(Event event, UpdateEventRequest updateEventRequest) {
-        if (updateEventRequest.getTitle() != null) {
+        log.info("updateEventRequest capacity: {}", updateEventRequest.getMaximumCapacity());
+        if (updateEventRequest.getTitle() != null && !updateEventRequest.getTitle().isBlank() &&
+                !updateEventRequest.getTitle().equals(event.getTitle())) {
             event.setTitle(updateEventRequest.getTitle());
+            log.info("updated event title to {}", updateEventRequest.getTitle());
         }
-        if (updateEventRequest.getDescription() != null) {
+        if (updateEventRequest.getDescription() != null && !updateEventRequest.getDescription().isBlank() &&
+                !updateEventRequest.getDescription().equals(event.getDescription())) {
             event.setDescription(updateEventRequest.getDescription());
+            log.info("updated event description to {}", updateEventRequest.getDescription());
         }
-        if (updateEventRequest.getCapacity() != null) {
-            if (reservationService.findReservationsByEventId(event.getId()).size() > updateEventRequest.getCapacity()) {
-                log.warn("attempted to update event capacity to less than the number of reservations");
-                throw new MaximumCapacityException("There are more existing reservations than the new capacity for the event of id " + event.getId());
+        if (updateEventRequest.getMaximumCapacity() != null && !Objects.equals(updateEventRequest.getMaximumCapacity(), event.getMaximumCapacity())) {
+            if (event.getMaximumCapacity() > updateEventRequest.getMaximumCapacity()) {
+                log.warn("attempted to update event capacity to less than current capacity");
+                throw new MaximumCapacityException("event capacity cannot be less than current capacity");
             }
-            event.setMaximumCapacity(updateEventRequest.getCapacity());
+            log.info("updated event capacity to {}", updateEventRequest.getMaximumCapacity());
+            event.setMaximumCapacity(updateEventRequest.getMaximumCapacity());
         }
-        if (updateEventRequest.getPrice() != null) {
+        if (updateEventRequest.getPrice() != null && !Objects.equals(updateEventRequest.getPrice(), event.getPrice())) {
             event.setPrice(updateEventRequest.getPrice());
+            log.info("updated event price to {}", updateEventRequest.getPrice());
         }
-        if (updateEventRequest.getLocationId() != null) {
+        if (updateEventRequest.getLocationId() != null && !Objects.equals(updateEventRequest.getLocationId(), event.getLocation().getId())) {
             event.setLocation(updateEventRequest.getLocationId() == null ? event.getLocation() : locationService.findLocationById(updateEventRequest.getLocationId()));
             List<Event> overlappingEvents = findOverlappingEvents(event);
             if (!overlappingEvents.isEmpty()) {
@@ -217,6 +268,7 @@ public class EventServiceImpl implements EventService {
                         overlappingEvents.stream().map(overlappingEvent -> overlappingEvent.getId().toString()).collect(Collectors.joining(", "))
                 );
             }
+            log.info("updated event location to {}", updateEventRequest.getLocationId());
         }
         log.info("updated event with id {}", event.getId());
         return eventRepository.save(event);

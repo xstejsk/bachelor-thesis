@@ -24,13 +24,13 @@ public class AuthorizationUtil {
         return appUser.getUsername().equals(username);
     }
 
-    public boolean isAdmin(String token) {
-        if (token == null) {
-            return false;
-        }
-        if (token.startsWith("Bearer")) {
-            token = token.substring(7);
-        }
-        return ((AppUser)userDetailsService.loadUserByUsername(jwtUtil.getUserNameFromToken(token))).getUserRole().getName().equals("ROLE_ADMIN");
-    }
+//    public boolean isAdmin(String token) {
+//        if (token == null) {
+//            return false;
+//        }
+//        if (token.startsWith("Bearer")) {
+//            token = token.substring(7);
+//        }
+//        return ((AppUser)userDetailsService.loadUserByUsername(jwtUtil.getUserNameFromToken(token))).getUserRole().getName().equals("ROLE_ADMIN");
+//    }
 }

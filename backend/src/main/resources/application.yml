@@ -12,7 +12,7 @@ spring:
     username: postgres
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -46,5 +46,33 @@ cors:
   whiteListedOrigins: "http://localhost:3000/"
 host:
   domain: "http://localhost:3000"
+emailTemplates:
+  confirmReservation:
+    path: "templates/NewReservationEmailTemplate.html"
+    subject: "Zrušení rezervace"
+  cancelReservation:
+    path: "templates/CancelReservationEmailTemplate.html"
+    subject: "Zrušení rezervace"
+  registrationConfirmation:
+    path: "templates/RegistrationEmailTemplate.html"
+    subject: "Potvrzení registrace"
+  passwordReset:
+    path: "templates/ResetPasswordEmailTemplate.html"
+    subject: "Reset hesla"
+  cancelEvent:
+    path: "templates/CancelEventEmailTemplate.html"
+    subject: "Zrušení akce"
+  cancelRecurrentEvent:
+    path: "templates/CancelRecurrentEventEmailTemplate.html"
+    subject: "Zrušení série událostí"
+  deleteAccount:
+    path: "templates/DeleteAccountEmailTemplate.html"
+    subject: "Smazání účtu"
+  blockAccount:
+    path: "templates/BlockAccountEmailTemplate.html"
+    subject: "Blokace účtu"
+  unblockAccount:
+    path: "templates/UnblockAccountEmailTemplate.html"
+    subject: "Odblokování účtu"
 
 

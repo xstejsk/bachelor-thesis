@@ -44,9 +44,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/api/reservations/{userId}", "/api/reservations/{userId}/present",
                         "/api/reservations/create", "/api/reservations", "/api/reservations/delete/**").authenticated()
+                .antMatchers("/api/users/promote/**", "/api/users/demote/**").hasAnyAuthority("ROLE_SUPER_ADMIN")
                 .antMatchers("/api/events/create", "/api/events/delete-recurrent/**", "/api/events/delete/**",
                         "/api/events/update-recurrent/**", "/api/events/update/**", "/api/locations/create",
-                        "/api/locations/delete/**", "/api/reservations", "/api/users/**").hasAnyAuthority("ROLE_ADMIN")
+                        "/api/locations/delete/**", "/api/reservations", "/api/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
+
                 .antMatchers("/api/access/**", "/api/auth/**", "/api/events", "/swagger-ui.html/**", "/api/locations", "/api/token/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // TODO authorize
                 .anyRequest().authenticated()
                 .and()

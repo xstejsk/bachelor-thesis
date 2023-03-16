@@ -21,7 +21,10 @@ const Navbar = () => {
       });
   };
   if (globalState.user) {
-    if (globalState.user.role === "ROLE_ADMIN") {
+    if (
+      globalState.user.role === "ROLE_ADMIN" ||
+      globalState?.user?.role === "ROLE_SUPER_ADMIN"
+    ) {
       return (
         <>
           <AdminNavbar handleLogout={handleLogout} />

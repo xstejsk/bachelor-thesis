@@ -14,6 +14,7 @@ import {
   Col,
   Row,
 } from "reactstrap";
+import { Form, InputGroup } from "react-bootstrap";
 import Select from "react-select";
 import axios from "axios";
 import DaysSelector from "../DaysSelector";
@@ -43,6 +44,40 @@ const DetailsModal = ({
   const [formHasErrors, setFormHasErrors] = useState(false);
   const [locationsOptions, setLocationsOptions] = useState([]);
   const [showFrequencyOptions, setShowFrequencyOptions] = useState(false);
+  const [showCancelConfirmationModal, setShowCancelConfirmationModal] =
+    useState(false);
+  const [showCancelOptions, setShowCancelOptions] = useState(false);
+  const [showDefaultDetailsModal, setShowDefaultDetailsModal] = useState(true);
+  const [eventsOverlap, setEventsOverlap] = useState(false);
+
+  function viewOnlyCancelOptionsModal() {
+    setShowCancelOptions(true);
+    setShowCancelConfirmationModal(false);
+    setShowFrequencyOptions(false);
+    setShowDefaultDetailsModal(false);
+  }
+
+  function viewOnlyCancelConfirmationModal() {
+    setShowCancelConfirmationModal(true);
+    setShowCancelOptions(false);
+    setShowFrequencyOptions(false);
+    setShowDefaultDetailsModal(false);
+  }
+
+  function viewOnlyFrequencyOptionsModal() {
+    setShowFrequencyOptions(true);
+    setShowCancelConfirmationModal(false);
+    setShowCancelOptions(false);
+    setShowDefaultDetailsModal(false);
+  }
+
+  function viewOnlyDefaultDetailsModal() {
+    setShowDefaultDetailsModal(true);
+    setShowFrequencyOptions(false);
+    setShowCancelConfirmationModal(false);
+    setShowCancelOptions(false);
+  }
+
   const [changeEventRequest, setChangeEventRequest] = useState({
     id: eventObj.id,
     title: eventObj.title,
@@ -79,10 +114,7 @@ const DetailsModal = ({
     return true;
   }
 
-  const [showCancelOptions, setShowCancelOptions] = useState(false);
-
   useEffect(() => {
-    console.log(eventObj);
     fetchLocations();
 
     async function resetModal() {
@@ -90,6 +122,7 @@ const DetailsModal = ({
       setReadOnly(true);
       setShowCancelOptions(false);
       setShowFrequencyOptions(false);
+      setEventsOverlap(false);
     }
     console.log(changeEventRequest);
     resetModal();
@@ -97,21 +130,26 @@ const DetailsModal = ({
 
   useEffect(() => {
     setFormHasErrors(changeEventRequest.title === "");
+    console.log("change event request --------------");
     console.log(changeEventRequest);
+    console.log("--------------------------------------");
+    console.log(locationsOptions);
   }, [changeEventRequest]);
 
   const handleChangeEventRequest = (field, value) => {
+    if (field === "locationId") {
+      setEventsOverlap(false);
+    }
+    console.log(field);
+    console.log(value);
     setChangeEventRequest((prev) => ({ ...prev, [field]: value }));
   };
 
   const alert = useAlert();
   const frequency = recurrenceOptions.find((option) => {
     if (eventObj.extendedProps.recurrenceGroup == null) {
-      console.log("neni rec");
       return option.value == "NEVER";
     } else {
-      console.log("je rec");
-      console.log(eventObj.extendedProps.recurrenceGroup);
       return option?.value === eventObj.extendedProps.recurrenceGroup.frequency;
     }
   });
@@ -130,20 +168,24 @@ const DetailsModal = ({
         if (response.status === 200) {
           reloadEvents();
           alert.success("Série byla aktualizována.");
+          handleHide();
         }
       })
       .catch((error) => {
         let status = error.response.status;
         if (status === 409) {
-          alert.error("Sérii nebylo možné přesunout kvůli časovým kolizím.");
+          setEventsOverlap(true);
+          viewOnlyDefaultDetailsModal();
+          // alert.error("Sérii nebylo možné přesunout kvůli časovým kolizím.");
         } else {
           console.log(status);
           alert.error("Sérii nebylo možné aktualizovat.");
+          handleHide();
         }
       });
     console.log("reload events fired");
 
-    handleHide();
+    // handleHide();
   }
 
   function submitChangeSingleEventRequest() {
@@ -156,17 +198,21 @@ const DetailsModal = ({
         if (response.status === 200) {
           reloadEvents();
           alert.success("Událost byla aktualizována.");
+          handleHide();
         }
       })
       .catch((error) => {
         if (error.response.status === 409) {
-          alert.error("Událost nelze přesunout kvůli časovým kolizím.");
+          // alert.error("Událost nelze přesunout kvůli časovým kolizím.");
+          setEventsOverlap(true);
+          viewOnlyDefaultDetailsModal();
         } else {
           alert.error("Událost se nepodařilo aktualizovat.");
+          handleHide();
         }
       });
 
-    handleHide();
+    // handleHide();
   }
 
   function submitChangeEventRequest() {
@@ -177,7 +223,7 @@ const DetailsModal = ({
       return;
     }
     if (eventObj.extendedProps.recurrenceGroup.frequency != "NEVER") {
-      setShowFrequencyOptions(true);
+      viewOnlyFrequencyOptionsModal();
     } else {
       submitChangeSingleEventRequest();
     }
@@ -237,15 +283,15 @@ const DetailsModal = ({
 
   function handleDelete() {
     if (eventObj?.extendedProps?.recurrenceGroup != null) {
-      setShowCancelOptions(true);
+      viewOnlyCancelOptionsModal();
     } else {
-      cancelSingleEvent();
+      viewOnlyCancelConfirmationModal();
     }
   }
 
   return (
     <Modal isOpen={isOpen} on backdrop="static" size="md" centered>
-      {!showCancelOptions && !showFrequencyOptions && (
+      {showDefaultDetailsModal && (
         <>
           <ModalHeader>Detail události</ModalHeader>
           <ModalBody>
@@ -269,16 +315,36 @@ const DetailsModal = ({
                   <Col>
                     <FormGroup>
                       <Label for="locationId">Místo konání</Label>
-                      <Select
-                        name="locationId"
-                        defaultValue={locationsOptions.find(
-                          (location) => location?.value == locationId
+
+                      <InputGroup>
+                        <Form.Control
+                          as="select"
+                          name="locationId"
+                          defaultValue={
+                            changeEventRequest.locationId
+                              ? changeEventRequest.locationId
+                              : locationId
+                          }
+                          onChange={(e) =>
+                            handleChangeEventRequest(
+                              "locationId",
+                              e.target.value
+                            )
+                          }
+                          isInvalid={eventsOverlap}
+                        >
+                          {locationsOptions.map((location) => (
+                            <option key={location.value} value={location.value}>
+                              {location.label}
+                            </option>
+                          ))}
+                        </Form.Control>
+                        {eventsOverlap && (
+                          <Form.Control.Feedback type="invalid">
+                            Událost nelze přesunout kvůli časovým kolizím
+                          </Form.Control.Feedback>
                         )}
-                        options={locationsOptions}
-                        onChange={(element) =>
-                          handleChangeEventRequest("locationId", element?.value)
-                        }
-                      />
+                      </InputGroup>
                     </FormGroup>
                   </Col>
                 )}
@@ -345,7 +411,7 @@ const DetailsModal = ({
                     type="number"
                     name="maximumCapacity"
                     placeholder="4"
-                    min={1}
+                    min={eventObj.extendedProps.maximumCapacity}
                     defaultValue={eventObj.extendedProps.maximumCapacity}
                     disabled={readOnly}
                     onChange={(e) =>
@@ -435,7 +501,7 @@ const DetailsModal = ({
           </ModalFooter>
         </>
       )}
-      {showFrequencyOptions && !showCancelOptions && (
+      {showFrequencyOptions && (
         <>
           <ModalHeader>Aktualizovat události</ModalHeader>
           <ModalBody>
@@ -457,11 +523,11 @@ const DetailsModal = ({
         </>
       )}
 
-      {showCancelOptions && !showFrequencyOptions && (
+      {showCancelOptions && (
         <>
           <ModalHeader>Zrušit události</ModalHeader>
           <ModalBody>
-            {"Přejete si zrušit celou sérii událostí či pouze tuto událost " +
+            {"Přejete si zrušit pouze tento výskyt události či všechny budoucí události série " +
               eventObj.title +
               " a související rezervace?"}
           </ModalBody>
@@ -470,10 +536,27 @@ const DetailsModal = ({
               Zavřít
             </Button>
             <Button color="primary" onClick={cancelSingleEvent}>
-              Zrušit událost
+              Tato událost
             </Button>
             <Button color="danger" onClick={cancelEventGroup}>
-              Zrušit sérii
+              Budoucí události
+            </Button>
+          </ModalFooter>
+        </>
+      )}
+
+      {showCancelConfirmationModal && (
+        <>
+          <ModalHeader>Zrušit události</ModalHeader>
+          <ModalBody>
+            {"Opravdu si přejete zrušit událost " + eventObj.title + "?"}
+          </ModalBody>
+          <ModalFooter>
+            <Button color="secondary" onClick={handleHide}>
+              Zavřít
+            </Button>
+            <Button color="primary" onClick={cancelSingleEvent}>
+              Zrušit událost
             </Button>
           </ModalFooter>
         </>

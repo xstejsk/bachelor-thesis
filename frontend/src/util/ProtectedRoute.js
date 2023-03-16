@@ -18,7 +18,11 @@ const ProtectedRoute = ({ children, requireAdmin }) => {
     console.log("not user");
     console.log(globalState);
     return <Navigate to="/login" replace />;
-  } else if (requireAdmin && globalState.user?.role != "ROLE_ADMIN") {
+  } else if (
+    requireAdmin &&
+    globalState.user?.role != "ROLE_ADMIN" &&
+    globalState.user?.role != "ROLE_SUPER_ADMIN"
+  ) {
     console.log("user role");
     return <Navigate to="/events" replace />;
   }

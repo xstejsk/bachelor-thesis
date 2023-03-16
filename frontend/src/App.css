@@ -49,7 +49,9 @@
 .fc {
   background-color: #f7f7f7;
 }
-
+#locationSelect {
+  min-width: 20rem;
+}
 #calendar {
   position: relative;
   z-index: 0;
@@ -86,6 +88,72 @@
   vertical-align: middle;
   margin-right: 5px;
 }
+
+.event-card {
+  display: flex;
+
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  flex-wrap: wrap;
+  border-radius: 5px;
+}
+
+.event-details {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* .event-card:hover {
+  background-color: #0082ec;
+} */
+.monthly {
+  color: white;
+  width: 100%;
+  background-color: #0082ec;
+  border-radius: 5px;
+}
+
+.calendarViews {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.calendarOperations {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.calendarOperations button {
+  white-space: nowrap;
+}
+
+.basicCalendarToolbar {
+  display: flex;
+  max-width: 20rem;
+  margin-bottom: 1rem;
+}
+
+.adminCalendarToolbar {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  width: 100%;
+  /* className="mb-3"
+        style={{
+          display: "flex",
+          justifyContent: "start",
+          alignItems: "center",
+          width: "100%",
+        }} */
+}
+
 /* .myFooter {
   position: static;
   bottom: 0;

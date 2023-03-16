@@ -38,7 +38,10 @@ const ReservationTableWrapper = () => {
       endpoint +=
         reservationsByUser.replace("{userId}", globalState.user.userId) +
         "?present=true";
-    } else if (globalState?.user?.role === "ROLE_ADMIN") {
+    } else if (
+      globalState?.user?.role === "ROLE_ADMIN" ||
+      globalState?.user?.role === "ROLE_SUPER_ADMIN"
+    ) {
       endpoint += reservationsEndpoint;
     }
 

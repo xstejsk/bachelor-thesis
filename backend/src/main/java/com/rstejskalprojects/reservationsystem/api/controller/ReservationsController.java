@@ -1,11 +1,6 @@
 package com.rstejskalprojects.reservationsystem.api.controller;
-import com.rstejskalprojects.reservationsystem.api.controller.model.CancelReservationsRequest;
-import com.rstejskalprojects.reservationsystem.model.AppUser;
-import com.rstejskalprojects.reservationsystem.model.Reservation;
 import com.rstejskalprojects.reservationsystem.model.dto.ReservationDTO;
 import com.rstejskalprojects.reservationsystem.service.ReservationService;
-import com.rstejskalprojects.reservationsystem.util.AuthorizationUtil;
-import com.rstejskalprojects.reservationsystem.util.JwtUtil;
 import com.rstejskalprojects.reservationsystem.util.customexception.AlreadyRegisteredException;
 import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.IllegalResourceAccessException;
@@ -15,12 +10,8 @@ import com.rstejskalprojects.reservationsystem.util.customexception.ReservationN
 import com.rstejskalprojects.reservationsystem.util.customexception.UserIdNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -85,9 +76,12 @@ public class ReservationsController {
         } catch (EventNotFoundException e) {
             log.warn("event not found");
             return new ResponseEntity<>("event with the given ID was not found", HttpStatus.NOT_FOUND);
-        } catch (MaximumCapacityException | PastEventException | AlreadyRegisteredException e) {
+        } catch (MaximumCapacityException | AlreadyRegisteredException e) {
             log.warn(e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        } catch (PastEventException e) {
+            log.warn(e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         } catch (Exception e) {
             log.warn("something went wrong", e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -95,7 +89,6 @@ public class ReservationsController {
     }
 
     @DeleteMapping("/delete/{reservationId}")
-    @Transactional
     public ResponseEntity<String> deleteReservation(@PathVariable("reservationId") Long reservationId, HttpServletRequest request) {
         try {
             reservationService.deleteReservationById(reservationId);

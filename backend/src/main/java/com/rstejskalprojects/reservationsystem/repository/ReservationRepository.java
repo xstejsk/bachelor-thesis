@@ -2,6 +2,7 @@ package com.rstejskalprojects.reservationsystem.repository;
 
 import com.rstejskalprojects.reservationsystem.model.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +20,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     List<Reservation> findReservationByEventId(Long eventId);
 
-    @Query("SELECT r FROM Reservation r WHERE r.event.recurrenceGroup.id = ?1 ORDER BY r.event.startTime ASC")
-    List<Reservation> findReservationByEventGroupId(Long groupId);
-    
     @Query("SELECT r FROM Reservation r WHERE r.owner.id = ?1 ORDER BY r.event.startTime ASC")
     List<Reservation> findByOwnerId(Long id);
 
@@ -32,8 +30,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findReservationsByEventId(Long eventId);
 
     @Transactional
-    void deleteReservationByEventId(Long eventId);
+    @Modifying
+    @Query("DELETE FROM Reservation r WHERE r.event.id IN (SELECT e.id FROM Event e WHERE e.recurrenceGroup.id = ?1 AND e.startTime >= CURRENT_TIMESTAMP)")
+    void deleteFutureByRecurrenceGroupId(Long recurrenceGroupId);
 
-    @Transactional
-    void deleteReservationByEventRecurrenceGroupId(Long groupId);
+    @Query("SELECT r FROM Reservation r WHERE r.event.id IN (SELECT e.id FROM Event e WHERE e.recurrenceGroup.id = ?1 AND e.startTime >= CURRENT_TIMESTAMP)")
+    Optional<Reservation> findFutureReservationByGroupId(Long groupId);
 }

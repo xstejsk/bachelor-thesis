@@ -31,6 +31,9 @@ public class LocationServiceImpl implements LocationService {
         locationRepository.findByName(location.getName()).ifPresent(location1 -> {
             throw new LocationAlreadyExistsException(String.format("location of name %s already exists", location.getName()));
         });
+        if (location.getOpensAt().isAfter(location.getClosesAt())) {
+            throw new IllegalArgumentException("Opening time of a location must be before the closing time");
+        }
         log.info("saving location: {}", location);
         return locationRepository.save(location);
     }

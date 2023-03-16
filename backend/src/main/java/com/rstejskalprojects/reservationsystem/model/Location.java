@@ -2,7 +2,6 @@ package com.rstejskalprojects.reservationsystem.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +17,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Entity
@@ -39,9 +41,17 @@ public class Location {
     @OneToMany(mappedBy = "location",cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @Transient
     private List<Event> events;
+    @JsonProperty
+    @NotNull
+    private LocalTime opensAt;
+    @NotNull
+    @JsonProperty
+    private LocalTime closesAt;
 
-    public Location(String name, String description) {
+    public Location(String name, LocalTime opensAt, LocalTime closesAt) {
         this.name = name;
+        this.opensAt = opensAt;
+        this.closesAt = closesAt;
     }
 
     @Override
@@ -49,6 +59,8 @@ public class Location {
         return "Location{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", opensAt='" + opensAt + '\'' +
+                ", closesAt='" + closesAt + '\'' +
                 '}';
     }
 }

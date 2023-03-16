@@ -27,22 +27,22 @@ public class UserController {
 
     private final UserDetailsServiceImpl userDetailsService;
 
-    @GetMapping // only admin
+    @GetMapping
     public ResponseEntity<List<AppUserDTO>> getAllUsers(HttpServletRequest request, HttpServletResponse response) {
         List<AppUser> users = userDetailsService.findAll();
         return new ResponseEntity<>(users.stream().map(AppUserDTO::new).collect(Collectors.toList()),
                 HttpStatus.OK);
     }
 
-    @PutMapping("/ban/{userId}") // only admin
+    @PutMapping("/ban/{userId}")
     public ResponseEntity<String> blockUser(@PathVariable Long userId, HttpServletRequest request) {
         try {
             userDetailsService.blockUser(userId);
             return new ResponseEntity<>("User blocked", HttpStatus.OK);
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         } catch (UserNotFoundException e) {
             return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -56,8 +56,7 @@ public class UserController {
         }
     }
 
-    // I want to create an endpoint that promotes user to admin
-    @PutMapping("/promote/{userId}") // only admin
+    @PutMapping("/promote/{userId}") // only superadmin
     public ResponseEntity<String> promoteUser(@PathVariable Long userId, HttpServletRequest request) {
         try {
             userDetailsService.promoteUser(userId);

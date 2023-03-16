@@ -8,7 +8,16 @@ import { host, newLocationEndpoint } from "../../util/EndpointConfig";
 import { useAlert } from "react-alert";
 
 const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
-  const [locationName, setLocationName] = useState("");
+  const [newLocation, setNewLocation] = useState({
+    name: "",
+    opensAt: undefined,
+    closesAt: undefined,
+  });
+
+  const handleUpdateLocation = (field, value) => {
+    setNewLocation((prev) => ({ ...prev, [field]: value }));
+  };
+
   const [locationExists, setLocationExists] = useState(false);
   const alert = useAlert();
   function handleCancel() {
@@ -16,10 +25,6 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
   }
 
   function handleSubmit() {
-    const newLocation = {
-      name: locationName,
-    };
-
     axios
       .post(host + newLocationEndpoint, newLocation)
       .then((response) => {
@@ -49,9 +54,9 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
                 type="text"
                 placeholder="Modrý sál"
                 onChange={(e) => {
-                  setLocationName(e.target.value);
+                  handleUpdateLocation(e.target.name, e.target.value);
                 }}
-                name="locationName"
+                name="name"
                 isInvalid={locationExists}
               />
               <Form.Control.Feedback type="invalid">
@@ -65,9 +70,9 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
               <Form.Control
                 type="time"
                 onChange={(e) => {
-                  setLocationName(e.target.value);
+                  handleUpdateLocation(e.target.name, e.target.value);
                 }}
-                name="locationName"
+                name="opensAt"
               />
             </Col>
 
@@ -76,9 +81,10 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
               <Form.Control
                 type="time"
                 onChange={(e) => {
-                  setLocationName(e.target.value);
+                  handleUpdateLocation(e.target.name, e.target.value);
                 }}
-                name="locationName"
+                min={newLocation.opensAt}
+                name="closesAt"
               />
             </Col>
           </Row>

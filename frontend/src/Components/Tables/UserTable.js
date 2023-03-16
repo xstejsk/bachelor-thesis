@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import BootstrapTable from "react-bootstrap-table-next";
 import paginationFactory from "react-bootstrap-table2-paginator";
+import { Context } from "../../util/GlobalState";
 import filterFactory, {
   textFilter,
   selectFilter,
@@ -27,6 +28,7 @@ const UserTable = ({ users, reloadUsers }) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(0);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [globalState, setGlobalState] = useContext(Context);
 
   const selectRow = {
     mode: "radio",
@@ -41,7 +43,13 @@ const UserTable = ({ users, reloadUsers }) => {
   };
 
   const roleFormatter = (data, row) => {
-    return <>{data === "ROLE_ADMIN" ? "Admin" : "Uživatel"}</>;
+    if (data === "ROLE_ADMIN") {
+      return "Admin";
+    } else if (data === "ROLE_SUPER_ADMIN") {
+      return "Superadmin";
+    } else {
+      return "Uživatel";
+    }
   };
 
   const booleanFormater = (data, row) => {
@@ -51,6 +59,7 @@ const UserTable = ({ users, reloadUsers }) => {
   const roleOptions = [
     { value: "ROLE_ADMIN", label: "Admin" },
     { value: "ROLE_USER", label: "Uživatel" },
+    { value: "ROLE_SUPER_ADMIN", label: "Superdmin" },
   ];
 
   const booleanOptions = [
@@ -229,11 +238,12 @@ const UserTable = ({ users, reloadUsers }) => {
         options: {
           ROLE_ADMIN: "Admin",
           ROLE_USER: "Uživatel",
+          ROLE_SUPER_ADMIN: "Superadmin",
         },
         placeholder: "Uživatel",
         defaultValue: false,
       }),
-      editable: ({ row }) => row?.role !== "ROLE_ADMIN",
+      editable: ({ row }) => row?.role == "ROLE_USER",
       editor: {
         type: "select",
         placeholder: "role",
@@ -257,7 +267,7 @@ const UserTable = ({ users, reloadUsers }) => {
           variant="secondary"
           disabled={
             selectedRow == null ||
-            selectedRow?.role === "ROLE_ADMIN" ||
+            selectedRow?.role !== "ROLE_USER" ||
             selectedRow?.locked
           }
         >
@@ -268,7 +278,7 @@ const UserTable = ({ users, reloadUsers }) => {
           variant="success"
           disabled={
             selectedRow == null ||
-            selectedRow?.role === "ROLE_ADMIN" ||
+            selectedRow?.role !== "ROLE_USER" ||
             !selectedRow.locked
           }
         >
@@ -277,18 +287,23 @@ const UserTable = ({ users, reloadUsers }) => {
         <Button
           onClick={showDeleteModal}
           variant="danger"
-          disabled={selectedRow == null || selectedRow?.role === "ROLE_ADMIN"}
+          disabled={
+            selectedRow == null ||
+            selectedRow?.role === "ROLE_SUPER_ADMIN" ||
+            selectedRow?.role === "ROLE_ADMIN"
+          }
         >
           Smazat
         </Button>
-
-        <Button
-          onClick={showPromoteModal}
-          variant="primary"
-          disabled={selectedRow == null || selectedRow?.role === "ROLE_ADMIN"}
-        >
-          Povýšit
-        </Button>
+        {globalState?.user?.role === "ROLE_SUPER_ADMIN" && (
+          <Button
+            onClick={showPromoteModal}
+            variant="primary"
+            disabled={selectedRow == null || selectedRow?.role !== "ROLE_USER"}
+          >
+            Povýšit
+          </Button>
+        )}
       </ButtonGroup>
       <BootstrapTable
         keyField="userId"

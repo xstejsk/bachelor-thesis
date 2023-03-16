@@ -17,7 +17,7 @@ public class UpdateEventRequest {
     private String description;
     @JsonProperty
     @Min(value = 1, message = "Maximum capacity must be greater than 0")
-    private Integer capacity;
+    private Integer maximumCapacity;
     @JsonProperty
     @Min(value = 0, message = "Event price cannot be negative")
     private Double price;
