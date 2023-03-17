@@ -15,10 +15,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -39,7 +37,6 @@ public class Location {
     private String name;
     @JsonIgnore
     @OneToMany(mappedBy = "location",cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @Transient
     private List<Event> events;
     @JsonProperty
     @NotNull

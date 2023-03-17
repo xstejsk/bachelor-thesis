@@ -11,52 +11,44 @@ import CustomScheduler from "./CustomScheduler";
 import { useAlert } from "react-alert";
 
 const SchedulerWrapper = () => {
-  const [events, setEvents] = useState({ data: [], loaded: false });
+  const [events, setEvents] = useState([]);
+  const [eventsLoaded, setEventsLoaded] = useState(false);
   const [locations, setLocations] = useState({
     locationOptions: [],
     locationObjects: [],
   });
-  const [currentLocationId, setCurrentLocationId] = useState(undefined);
-  const [locationOpensAt, setLocationOpensAt] = useState(undefined);
-  const [locationClosesAt, setLocationClosesAt] = useState(undefined);
+  const [currentLocation, setCurrentLocation] = useState(undefined);
   const alert = useAlert();
 
   const handleLocationChange = (locationId) => {
-    setCurrentLocationId(locationId);
-    // console.log(locations.locationObjects.find((location) => location.id == 1));
+    // setEventsLoaded(false);
     const locationById = locations.locationObjects.find(
       (location) => location.id == locationId
     );
-    // console.log(locationById);
-    setLocationOpensAt(locationById.opensAt);
-    setLocationClosesAt(locationById.closesAt);
+    setCurrentLocation(locationById);
   };
 
   useEffect(() => {
-    if (currentLocationId !== undefined) {
+    if (currentLocation !== undefined) {
       reloadEvents();
     }
-  }, [currentLocationId]);
+  }, [currentLocation]);
+
+  useEffect(() => {
+    setEventsLoaded(true);
+  }, [events]);
 
   const reloadLocations = () => {
     axios.get(host + locationsEndpoint).then((response) => {
       if (response.status === 200) {
-        let locationsData = response.data;
-        let location;
-        if (currentLocationId !== undefined) {
-          location = currentLocationId;
-        } else {
-          location = response.data.at(0);
-          setCurrentLocationId(location.id);
-          setLocationOpensAt(location.opensAt);
-          setLocationClosesAt(location.closesAt);
-        }
+        let location = response.data.at(0);
+        setCurrentLocation(location);
         let locationOptions = response.data.map((location) => ({
           value: location.id,
           label: location.name,
         }));
         setLocations({
-          locationObjects: locationsData,
+          locationObjects: response.data,
           locationOptions: locationOptions,
         });
       }
@@ -64,27 +56,25 @@ const SchedulerWrapper = () => {
   };
 
   const reloadEvents = () => {
+    // setEventsLoaded(false);
     axios
-      .get(host + activeEventsEndpoint + "?locationId=" + currentLocationId, {
-        timeout: 10000,
-      })
+      .get(host + activeEventsEndpoint + "?locationId=" + currentLocation.id)
       .then((response) => {
         if (response.status === 200) {
-          setEvents({ data: response.data, loaded: true });
+          setEvents(response.data);
         }
       })
       .catch((err) => {
         console.log(err);
-        setEvents({ data: [], loaded: true });
+        setEvents([]);
       });
   };
 
   const deleteCalendar = () => {
     axios
-      .delete(host + deleteCalendarEndpoint + currentLocationId)
+      .delete(host + deleteCalendarEndpoint + currentLocation.id)
       .then((response) => {
         alert.success("Kalendář a příslušné událisti byly smazány.");
-        setCurrentLocationId(undefined);
         reloadLocations();
       })
       .catch((error) => {
@@ -96,28 +86,18 @@ const SchedulerWrapper = () => {
   };
 
   const initialize = () => {
+    console.log("initialising");
     axios
       .get(host + locationsEndpoint)
       .then((response) => {
         if (response.status === 200) {
           let locationsData = response.data;
-          let location;
-          if (currentLocationId !== undefined) {
-            location = currentLocationId;
-          } else {
-            location = response.data.at(0);
-            setCurrentLocationId(location.id);
-            setLocationOpensAt(location.opensAt);
-            setLocationClosesAt(location.closesAt);
-          }
+          let location = response.data.at(0);
+          setCurrentLocation(location);
           let locationOptions = response.data.map((location) => ({
             value: location.id,
             label: location.name,
           }));
-          if (locationsData.size === 0) {
-            setEvents({ data: [], loaded: true });
-            return;
-          }
           setLocations({
             locationObjects: locationsData,
             locationOptions: locationOptions,
@@ -126,7 +106,6 @@ const SchedulerWrapper = () => {
       })
       .catch((err) => {
         console.log(err);
-        setEvents([]);
       });
   };
 
@@ -134,31 +113,25 @@ const SchedulerWrapper = () => {
     initialize();
   }, []);
 
-  if (
-    !events.loaded ||
-    locationOpensAt === undefined ||
-    locationClosesAt === undefined
-  ) {
-    return <CustomGridLoader />;
-  } else {
-    return (
-      <div className="container-fluid">
-        <div id="calendar">
-          <CustomScheduler
-            events={events.data}
-            currentLocationId={currentLocationId}
-            reloadLocations={reloadLocations}
-            reloadEvents={reloadEvents}
-            closesAt={locationClosesAt}
-            opensAt={locationOpensAt}
-            handleLocationChange={handleLocationChange}
-            locationOptions={locations.locationOptions}
-            deleteCalendar={deleteCalendar}
-          />
-        </div>
+  return !eventsLoaded || currentLocation === undefined ? (
+    <CustomGridLoader />
+  ) : (
+    <div className="container-fluid">
+      <div id="calendar">
+        <CustomScheduler
+          events={events}
+          currentLocationId={currentLocation.id}
+          reloadLocations={reloadLocations}
+          reloadEvents={reloadEvents}
+          closesAt={currentLocation.closesAt}
+          opensAt={currentLocation.opensAt}
+          handleLocationChange={handleLocationChange}
+          locationOptions={locations.locationOptions}
+          deleteCalendar={deleteCalendar}
+        />
       </div>
-    );
-  }
+    </div>
+  );
 };
 
 export default SchedulerWrapper;
