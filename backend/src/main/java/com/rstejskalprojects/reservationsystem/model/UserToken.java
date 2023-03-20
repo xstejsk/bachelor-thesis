@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -19,8 +19,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "password_token")
-public class PasswordToken {
+@Table(name = "user_token")
+public class UserToken {
     @Id
     @GeneratedValue(
             strategy = GenerationType.IDENTITY
@@ -32,7 +32,11 @@ public class PasswordToken {
     private LocalDateTime createdAt;
     @Column(nullable = false)
     private LocalDateTime expiresAt;
+    @Enumerated(
+            value = javax.persistence.EnumType.STRING
+    )
     @Column(nullable = false)
+    private TokenTypeEnum tokenType;
     private String encodedPassword;
     private LocalDateTime confirmedAt = null;
 
@@ -42,11 +46,20 @@ public class PasswordToken {
     )
     private AppUser user;
 
-    public PasswordToken(String token, LocalDateTime createdAt, LocalDateTime expiresAt, String encodedPassword, AppUser user) {
+    public UserToken(String token, LocalDateTime createdAt, LocalDateTime expiresAt, TokenTypeEnum tokenType, String encodedPassword, AppUser user) {
         this.token = token;
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
+        this.tokenType = tokenType;
         this.encodedPassword = encodedPassword;
+        this.user = user;
+    }
+
+    public UserToken(String token, LocalDateTime createdAt, LocalDateTime expiresAt, TokenTypeEnum tokenType, AppUser user) {
+        this.token = token;
+        this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
+        this.tokenType = tokenType;
         this.user = user;
     }
 }

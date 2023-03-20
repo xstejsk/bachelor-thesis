@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Col, Button, Row, Container, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { forgotPasswordEndpoint, host } from "../../util/EndpointConfig";
+import { passwordResetEndpoint, host } from "../../util/EndpointConfig";
 import { useAlert } from "react-alert";
 
 const ResetPassword = () => {
@@ -12,7 +12,7 @@ const ResetPassword = () => {
 
   const handlePasswordReset = () => {
     alert.info("Na uvedenou adresu bylo zasláno nové heslo.");
-    axios.post(host + forgotPasswordEndpoint.replace("{email}", email));
+    axios.put(host + passwordResetEndpoint,{email: email});
   };
 
   useEffect(() => {

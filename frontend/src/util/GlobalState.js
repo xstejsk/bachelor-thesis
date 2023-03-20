@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "universal-cookie";
-import { host, refreshTokenEndpoint } from "./EndpointConfig";
-import axios from "axios";
-import { Navigate } from "react-router-dom";
 const initialState = { user: undefined };
 
 export const Context = React.createContext();
 
 const GlobalState = ({ children }) => {
-  const cookies = new Cookies();
+
   const [globalState, setGlobalState] = useState(initialState);
   // useEffect(() => {
   //   if (localStorage.getItem("user")) {

@@ -3,8 +3,6 @@ import ReservationTable from "./ReservationTable";
 import {
   host,
   reservationsEndpoint,
-  reservationsByUser,
-  deleteReservation,
 } from "../../util/EndpointConfig";
 import CustomGridLoader from "../CustomLoader";
 import axios from "axios";
@@ -19,7 +17,7 @@ const ReservationTableWrapper = () => {
 
   const cancelReservation = (id) => {
     axios
-      .delete(host + deleteReservation + id)
+      .delete(host + reservationsEndpoint + "/" + id)
       .then((response) => {
         if (response.status === 200) {
           // fetchReservations();
@@ -36,7 +34,7 @@ const ReservationTableWrapper = () => {
     let endpoint = host;
     if (globalState?.user?.role === "ROLE_USER") {
       endpoint +=
-        reservationsByUser.replace("{userId}", globalState.user.userId) +
+        reservationsEndpoint + "/" + globalState.user.userId +
         "?present=true";
     } else if (
       globalState?.user?.role === "ROLE_ADMIN" ||
@@ -62,7 +60,7 @@ const ReservationTableWrapper = () => {
     let endpoint = host;
     if (globalState?.user?.role === "ROLE_USER") {
       endpoint +=
-        reservationsByUser.replace("{userId}", globalState.user.userId) +
+        reservationsEndpoint + "/" + globalState.user.userId +
         "?present=true";
       console.log(endpoint);
     } else {

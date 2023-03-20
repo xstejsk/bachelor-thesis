@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -69,7 +68,7 @@ public class ReservationRepositoryTest {
         AppUser owner = new AppUser();
         owner.setFirstName("John");
         owner.setLastName("Doe");
-        owner.setEmail("john.doe@test.com");
+        owner.setLoginEmail("john.doe@test.com");
         owner.setPassword("password");
         owner.setUserRole(UserRoleEnum.USER);
         owner.setEnabled(true);

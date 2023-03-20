@@ -13,10 +13,7 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import axios from "axios";
 import {
   host,
-  promoteUser,
-  banUser,
-  unbanUser,
-  deleteUser,
+  usersEndpoint
 } from "../../util/EndpointConfig";
 import { useAlert } from "react-alert";
 
@@ -70,7 +67,7 @@ const UserTable = ({ users, reloadUsers }) => {
   const handlePromoteUser = () => {
     console.log(selectedUserId);
     axios
-      .put(host + promoteUser + selectedRow?.userId)
+      .put(host + usersEndpoint + "/" + selectedRow?.userId + "/role", {role: "ROLE_ADMIN"} )
       .then((response) => {
         if (response.status === 200) {
           alert.success("Uživatel byl povýšen na administrátora");
@@ -88,7 +85,7 @@ const UserTable = ({ users, reloadUsers }) => {
   };
   const handleBanUser = () => {
     axios
-      .put(host + banUser + selectedRow?.userId)
+      .put(host + usersEndpoint + "/" + selectedRow?.userId + "/ban-status", { banned: true})
       .then((response) => {
         if (response.status === 200) {
           alert.info("Uživatel byl zablokován");
@@ -107,7 +104,7 @@ const UserTable = ({ users, reloadUsers }) => {
 
   const handleUnbanUser = () => {
     axios
-      .put(host + unbanUser + selectedRow?.userId, {})
+      .put(host + usersEndpoint + "/" + selectedRow?.userId + "/ban-status", { banned: false})
       .then((response) => {
         if (response.status === 200) {
           alert.success("Uživatel byl odblokován");
@@ -125,7 +122,7 @@ const UserTable = ({ users, reloadUsers }) => {
 
   const handleDeleteUser = () => {
     axios
-      .delete(host + deleteUser + selectedRow?.userId, {})
+      .delete(host + usersEndpoint + "/" + selectedRow?.userId, {})
       .then((response) => {
         if (response.status === 200) {
           alert.info("Uživatel byl smazán");
@@ -216,7 +213,6 @@ const UserTable = ({ users, reloadUsers }) => {
       text: "Zablokovaný",
       formatter: booleanFormater,
       filter: selectFilter({
-        defaultValue: "Ne",
         options: {
           true: "Ano",
           false: "Ne",

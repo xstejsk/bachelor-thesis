@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import {
   host,
-  registerEndpoint,
+  usersEndpoint,
   resendEmailEndpoint,
 } from "../../util/EndpointConfig";
 import { useAlert } from "react-alert";
@@ -31,7 +31,7 @@ const Register = () => {
   const [emailAlreadyInUse, setEmailAlreadyInUse] = useState(false);
   const handleResendEmail = () => {
     axios
-      .post(host + resendEmailEndpoint.replace("{emailAddress}", newUser.email))
+      .post(host + resendEmailEndpoint, {email:newUser.email})
       .then((response) => {
         if (response.status === 200) {
           console.log("email has been resent");
@@ -55,7 +55,7 @@ const Register = () => {
 
   const handleRegistration = () => {
     axios
-      .post(host + registerEndpoint, newUser)
+      .post(host + usersEndpoint, newUser)
       .then((response) => {
         if (response.status === 201) {
           console.log("sucess reg");

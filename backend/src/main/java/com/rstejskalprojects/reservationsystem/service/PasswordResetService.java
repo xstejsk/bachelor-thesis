@@ -1,10 +1,10 @@
 package com.rstejskalprojects.reservationsystem.service;
 
-import com.rstejskalprojects.reservationsystem.model.PasswordToken;
+import com.rstejskalprojects.reservationsystem.model.UserToken;
 
 public interface PasswordResetService {
 
-    void confirmToken(PasswordToken token);
+    void confirmToken(UserToken token);
 
     void sendResetPasswordEmail(String email);
 }

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import { Col, Row, Form } from "react-bootstrap";
 import axios from "axios";
-import { host, newLocationEndpoint } from "../../util/EndpointConfig";
+import { host, locationsEndpoint } from "../../util/EndpointConfig";
 import { useAlert } from "react-alert";
 
 const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
@@ -26,7 +26,7 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
 
   function handleSubmit() {
     axios
-      .post(host + newLocationEndpoint, newLocation)
+      .post(host + locationsEndpoint, newLocation)
       .then((response) => {
         console.log("posting new location");
         if (response.status === 201) {

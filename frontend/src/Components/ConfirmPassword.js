@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { host, resetPasswordEdnpoint } from "../util/EndpointConfig";
+import { host, submitConfirmationsTokenEndpoint } from "../util/EndpointConfig";
 import Card from "react-bootstrap/Card";
 import { Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -15,7 +15,7 @@ const ConfirmPassword = () => {
 
   useEffect(() => {
     axios
-      .put(host + resetPasswordEdnpoint + token)
+      .put(host + submitConfirmationsTokenEndpoint, {token: token} )
       .then((response) => {
         if (response.status === 200) {
           setStatus({

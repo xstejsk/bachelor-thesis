@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import {
   host,
-  loginEndpoint,
+  accessTokenEndpoint,
   resendEmailEndpoint,
 } from "../util/EndpointConfig";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -10,7 +10,6 @@ import { Context } from "../util/GlobalState";
 import { Link } from "react-router-dom";
 import { Col, Button, Row, Container, Form } from "react-bootstrap";
 import { useAlert } from "react-alert";
-import { Navigate } from "react-router-dom";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -32,7 +31,7 @@ const Login = () => {
 
   const handleResendEmail = () => {
     axios
-      .post(host + resendEmailEndpoint.replace("{emailAddress}", username))
+      .post(host + resendEmailEndpoint, {email:username})
       .then((response) => {
         if (response.status === 200) {
           console.log("email has been resent");
@@ -48,7 +47,7 @@ const Login = () => {
     e.preventDefault();
     axios
       .post(
-        host + loginEndpoint,
+        host + accessTokenEndpoint,
         {
           username,
           password,

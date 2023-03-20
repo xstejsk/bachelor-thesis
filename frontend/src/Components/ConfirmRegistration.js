@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { host, confirmRegistrationEndopoint } from "../util/EndpointConfig";
+import { host, submitConfirmationsTokenEndpoint } from "../util/EndpointConfig";
 import success from "../resources/check128.png";
 import fail from "../resources/error128.png";
 import Card from "react-bootstrap/Card";
@@ -15,7 +15,7 @@ const ConfirmRegistration = () => {
 
   useEffect(() => {
     axios
-      .put(host + confirmRegistrationEndopoint + token)
+      .put(host + submitConfirmationsTokenEndpoint, {token: token})
       .then((response) => {
         setStatus({
           icon: success,

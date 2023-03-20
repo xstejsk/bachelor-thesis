@@ -4,6 +4,7 @@ import com.rstejskalprojects.reservationsystem.security.filter.JwtFilter;
 import com.rstejskalprojects.reservationsystem.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -42,18 +43,33 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/reservations/{userId}", "/api/reservations/{userId}/present",
-                        "/api/reservations/create", "/api/reservations", "/api/reservations/delete/**").authenticated()
-                .antMatchers("/api/users/promote/**", "/api/users/demote/**").hasAnyAuthority("ROLE_SUPER_ADMIN")
-                .antMatchers("/api/events/create", "/api/events/delete-recurrent/**", "/api/events/delete/**",
-                        "/api/events/update-recurrent/**", "/api/events/update/**", "/api/locations/create",
-                        "/api/locations/delete/**", "/api/reservations", "/api/users/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
-
-                .antMatchers("/api/access/**", "/api/auth/**", "/api/events", "/swagger-ui.html/**", "/api/locations", "/api/token/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // TODO authorize
+                .antMatchers("api/v1/token", "api/v1/token/**", "api/v1/confirmations/**",
+                        "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html/**").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/v1/users/{userId}/role").hasAnyAuthority("ROLE_SUPER_ADMIN")
+                .antMatchers(HttpMethod.PUT, "/api/v1/users/{userId}/ban-status").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
+                .antMatchers(HttpMethod.GET, "/api/v1/users").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/users/password-reset").permitAll()
+                .antMatchers(HttpMethod.DELETE, "/api/v1/users/{userId}").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
+                .antMatchers(HttpMethod.PUT, "/api/v1/events/{eventId}").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/api/v1/events/{eventId}").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
+                .antMatchers(HttpMethod.PUT, "/api/v1/events/recurrent/{groupId}").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/api/v1/events/recurrent/{groupId}").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
+                .antMatchers(HttpMethod.GET, "/api/v1/events").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/events").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/v1/confirmations/submit-token").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/confirmations/resend-confirmation").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/token").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/token/refresh").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/v1/reservations").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/v1/reservations").authenticated()
+                .antMatchers(HttpMethod.GET, "/api/v1/reservations/{userId}").authenticated()
+                .antMatchers(HttpMethod.DELETE, "/api/v1/reservations/{reservationId}").authenticated()
+                .antMatchers(HttpMethod.GET, "/api/v1/locations").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/locations").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/api/v1/locations/{locationId}").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
                 .anyRequest().authenticated()
                 .and()
-
-//                .addFilter(customAuthenticationFilter);
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
 

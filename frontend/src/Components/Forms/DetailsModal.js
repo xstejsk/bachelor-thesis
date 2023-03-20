@@ -21,10 +21,8 @@ import DaysSelector from "../DaysSelector";
 import {
   host,
   locationsEndpoint,
-  cancelEventById,
-  cancelEventsByGroupId,
-  updateEventEndpoint,
-  updateRecurrenceGroup,
+  eventsEndpoint,
+  recurrentEventsEndpoint
 } from "../../util/EndpointConfig";
 import { useAlert } from "react-alert";
 
@@ -161,7 +159,7 @@ const DetailsModal = ({
     console.log("changing series");
     axios
       .put(
-        host + updateRecurrenceGroup + originalEvent.recurrenceGroupId,
+        host + recurrentEventsEndpoint + "/" + originalEvent.recurrenceGroupId,
         changeEventRequest
       )
       .then((response) => {
@@ -191,7 +189,7 @@ const DetailsModal = ({
   function submitChangeSingleEventRequest() {
     axios
       .put(
-        host + updateEventEndpoint + changeEventRequest.id,
+        host + eventsEndpoint + "/" + changeEventRequest.id,
         changeEventRequest
       )
       .then((response) => {
@@ -246,7 +244,7 @@ const DetailsModal = ({
     let groupId = eventObj.extendedProps?.recurrenceGroup?.id;
     if (groupId) {
       axios
-        .delete(host + cancelEventsByGroupId + groupId)
+        .delete(host + recurrentEventsEndpoint + "/" + groupId)
         .then((response) => {
           if (response.status === 200) {
             console.log("removed group");
@@ -265,7 +263,7 @@ const DetailsModal = ({
 
   function cancelSingleEvent() {
     axios
-      .delete(host + cancelEventById + eventObj.id)
+      .delete(host + eventsEndpoint + "/" + eventObj.id)
       .then((response) => {
         if (response.status === 200) {
           reloadEvents();

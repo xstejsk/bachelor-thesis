@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { host, getAllUsersEndpoint } from "../../util/EndpointConfig";
+import { host, usersEndpoint } from "../../util/EndpointConfig";
 import axios from "axios";
 import CustomGridLoader from "../CustomLoader";
 import UserTable from "./UserTable";
@@ -11,7 +11,7 @@ const UsersTableWrapper = () => {
 
   useEffect(() => {
     axios
-      .get(host + getAllUsersEndpoint)
+      .get(host + usersEndpoint)
       .then((response) => {
         setUsers(response.data);
       })
@@ -24,7 +24,7 @@ const UsersTableWrapper = () => {
   const reloadUsers = () => {
     setIsLoading(true);
     axios
-      .get(host + getAllUsersEndpoint)
+      .get(host + usersEndpoint)
       .then((response) => {
         setUsers(response.data);
       })

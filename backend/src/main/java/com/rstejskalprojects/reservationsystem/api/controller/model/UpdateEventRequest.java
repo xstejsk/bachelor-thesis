@@ -21,6 +21,4 @@ public class UpdateEventRequest {
     @JsonProperty
     @Min(value = 0, message = "Event price cannot be negative")
     private Double price;
-    @JsonProperty
-    private Long locationId;
 }

@@ -134,7 +134,7 @@ public class ReservationServiceImpl implements ReservationService {
             String subject = "Vytvoření rezervace";
             String body = emailFormatterService.formatReservationConfirmationEmail(appUser.getFirstName(), reservation.getEvent().getTitle(), reservation.getEvent().getLocation().getName(),
                     reservation.getEvent().getStartTime().format(DateTimeFormatter.ofPattern("dd. MM. HH:mm")));
-            new Thread(() -> emailSender.sendEmail(appUser.getEmail(), body, subject)).start();
+            new Thread(() -> emailSender.sendEmail(appUser.getLoginEmail(), body, subject)).start();
         } catch (Exception e) {
             log.error("error while sending email about creating a reservation to user of id {}", appUser.getId());
         }
@@ -144,7 +144,7 @@ public class ReservationServiceImpl implements ReservationService {
         try {
             String eventDate = reservation.getEvent().getStartTime().format(DateTimeFormatter.ofPattern("dd. MM. HH:mm"));
             System.out.println(eventDate);
-            new Thread(() -> emailSender.sendEmail(appUser.getEmail(),
+            new Thread(() -> emailSender.sendEmail(appUser.getLoginEmail(),
                     emailFormatterService
                             .formatReservationCancellationEmail(
                                     appUser.getFirstName(), reservation.getEvent().getTitle(), reservation.getEvent().getLocation().getName(), eventDate), "Zrušení rezervace")).start();

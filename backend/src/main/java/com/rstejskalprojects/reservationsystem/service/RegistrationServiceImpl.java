@@ -2,8 +2,10 @@ package com.rstejskalprojects.reservationsystem.service;
 
 import com.rstejskalprojects.reservationsystem.api.model.authorization.RegistrationRequest;
 import com.rstejskalprojects.reservationsystem.model.AppUser;
+import com.rstejskalprojects.reservationsystem.model.TokenTypeEnum;
 import com.rstejskalprojects.reservationsystem.model.UserRoleEnum;
-import com.rstejskalprojects.reservationsystem.model.RegistrationToken;
+import com.rstejskalprojects.reservationsystem.model.UserToken;
+import com.rstejskalprojects.reservationsystem.repository.UserTokenRepository;
 import com.rstejskalprojects.reservationsystem.util.customexception.ExpiredTokenException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UnknownTokenException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UsedTokenException;
@@ -22,8 +24,8 @@ import java.util.UUID;
 @Slf4j
 public class RegistrationServiceImpl implements RegistrationService {
 
+    private final UserTokenRepository userTokenRepository;
     private final UserDetailsServiceImpl userDetailsService;
-    private final ConfirmationTokenServiceImpl registrationTokenService;
     private final EmailSender emailSender;
     private final EmailFormatterService emailFormatterService;
     @Value("${host.domain}")
@@ -46,14 +48,18 @@ public class RegistrationServiceImpl implements RegistrationService {
     public String resendRegistrationEmail(String email) {
         try {
             AppUser appUser = (AppUser) userDetailsService.loadUserByUsername(email);
+            if (appUser.isEnabled()) {
+                throw new UsedTokenException("User is already enabled");
+            }
             String token = UUID.randomUUID().toString();
-            RegistrationToken confirmationToken = new RegistrationToken(
+            UserToken confirmationToken = new UserToken(
                     token,
                     LocalDateTime.now(),
                     LocalDateTime.now().plusMinutes(30),
+                    TokenTypeEnum.REGISTRATION,
                     appUser);
 
-            registrationTokenService.saveToken(confirmationToken);
+            userTokenRepository.save(confirmationToken);
             String link = host + "/registration/confirm?token=" + token;
             new Thread(() -> emailSender.sendEmail(email, buildEmail(appUser.getFirstName(), link), "Potvrzení registrace")).start();
             log.info("Registration token for user {} was resent", email);
@@ -65,23 +71,21 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Transactional
-    public void confirmToken(String token) throws UnknownTokenException {
-        RegistrationToken confirmationToken = registrationTokenService
-                .getToken(token);
-
+    public void confirmToken(UserToken confirmationToken) throws UnknownTokenException {
         if (confirmationToken.getConfirmedAt() != null) {
             throw new UsedTokenException("Email is already confirmed");
         }
-
+        if (confirmationToken.getTokenType() != TokenTypeEnum.REGISTRATION) {
+            throw new UnknownTokenException("given token is not registration token");
+        }
         LocalDateTime expiredAt = confirmationToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
             throw new ExpiredTokenException("Token has expired");
         }
-
-        registrationTokenService.setConfirmedAt(confirmationToken);
-        userDetailsService.enableUser(confirmationToken.getUser().getEmail());
-        log.info("User {} was enabled", confirmationToken.getUser().getEmail());
+        userTokenRepository.updateConfirmedAt(confirmationToken.getToken(), LocalDateTime.now());
+        userDetailsService.enableUser(confirmationToken.getUser().getLoginEmail());
+        log.info("User {} was enabled", confirmationToken.getUser().getLoginEmail());
     }
 
     private String buildEmail(String name, String link) {

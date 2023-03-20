@@ -15,7 +15,7 @@ import { Row, Col } from "react-bootstrap";
 import Select from "react-select";
 import DaysSelector from "../DaysSelector";
 import axios from "axios";
-import { host, newEventEndpoint } from "../../util/EndpointConfig";
+import { host, eventsEndpoint } from "../../util/EndpointConfig";
 import { useAlert } from "react-alert";
 
 const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
@@ -91,7 +91,7 @@ const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
 
   function handleSubmit() {
     axios
-      .post(host + newEventEndpoint, event)
+      .post(host + eventsEndpoint, event)
       .then((response) => {
         if (response.status === 201) {
           alert.info("Událost byla vytvořena.");

@@ -29,7 +29,7 @@ public class AppUserDTO {
         this.lastName = appUser.getLastName();
         this.enabled = appUser.getEnabled();
         this.locked = appUser.getLocked();
-        this.email = appUser.getEmail();
+        this.email = appUser.getLoginEmail();
         this.role = appUser.getUserRole().getName();
     }
 }

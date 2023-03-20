@@ -36,10 +36,13 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    public boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
-        return path.startsWith("/api/auth") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.startsWith("/api/auth/register")
-                || path.startsWith("/api/access") || path.equals("/api/events") || path.equals("/api/locations");
+        return path.startsWith("/api/v1/token") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") ||
+                (path.startsWith("/api/v1/users") && request.getMethod().equals("POST")) ||
+                (path.startsWith("/api/v1/events") && request.getMethod().equals("GET")) ||
+                (path.startsWith("/api/v1/locations") && request.getMethod().equals("GET")) ||
+                path.startsWith("/api/v1/confirmations") || path.startsWith("/api/v1/users/password-reset");
 
     }
 
@@ -59,7 +62,7 @@ public class JwtFilter extends OncePerRequestFilter {
         UserDetails userDetails;
         try {
             jwtUtil.isTokenValid(token);
-            userDetails = userRepository.findUserByUsername(jwtUtil.getUserNameFromToken(token))
+            userDetails = userRepository.findAppUserByLoginEmail(jwtUtil.getUserNameFromToken(token))
                     .orElseThrow(() ->
                             new UsernameNotFoundException(String.format("Username %s not found for token",
                                     jwtUtil.getUserNameFromToken(token))));

@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(path = "/api/reservations", produces="application/json")
+@RequestMapping(path = "/api/v1/reservations", produces="application/json")
 @RequiredArgsConstructor
 @Slf4j
 public class ReservationsController {
@@ -35,14 +35,21 @@ public class ReservationsController {
     private final ReservationService reservationService;
 
     @GetMapping
-    public ResponseEntity<List<ReservationDTO>> getAll(HttpServletRequest request, HttpServletResponse response) {
-        log.info("getting all reservations");
-        List<ReservationDTO> reservationDTOS = reservationService.findAll().stream().map(ReservationDTO::new).collect(Collectors.toList());
-        return new ResponseEntity<>(reservationDTOS, HttpStatus.OK);
+    public ResponseEntity<List<ReservationDTO>> getAll(@RequestParam(required=false) Long  eventId) {
+        List<ReservationDTO> reservations;
+        if (eventId == null) {
+            reservations = reservationService.findAll().stream().map(ReservationDTO::new).collect(Collectors.toList());
+            log.info("requested to get all reservations");
+        } else {
+            reservations = reservationService.findReservationsByEventId(eventId).stream().map(ReservationDTO::new).collect(Collectors.toList());
+            log.info("requested to get all reservations for event with id: {}", eventId);
+        }
+        return new ResponseEntity<>(reservations, HttpStatus.OK);
+
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<?> getByUsername(@PathVariable("userId") Long userId, @RequestParam(required=false) Boolean present, HttpServletRequest request) {
+    public ResponseEntity<?> getByUserId(@PathVariable("userId") Long userId, @RequestParam(required=false) Boolean present, HttpServletRequest request) {
         try {
             List<ReservationDTO> reservationDTOS;
             if (present == null || !present) {
@@ -65,7 +72,7 @@ public class ReservationsController {
         }
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<?> createReservation(@RequestBody @Valid ReservationDTO reservationDTO, HttpServletRequest request) {
         try {
             reservationService.create(reservationDTO);
@@ -88,7 +95,7 @@ public class ReservationsController {
         }
     }
 
-    @DeleteMapping("/delete/{reservationId}")
+    @DeleteMapping("/{reservationId}")
     public ResponseEntity<String> deleteReservation(@PathVariable("reservationId") Long reservationId, HttpServletRequest request) {
         try {
             reservationService.deleteReservationById(reservationId);

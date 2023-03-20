@@ -19,6 +19,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -40,9 +41,7 @@ public class AppUser implements UserDetails {
     private String lastName;
     @NotNull
     @Column(unique = true)
-    private String email;
-    @Column(unique = true)
-    private String username;
+    private String loginEmail;
     @NotNull
     private String password;
     @Enumerated(EnumType.STRING)
@@ -52,30 +51,30 @@ public class AppUser implements UserDetails {
     private Boolean locked = false;
     private Boolean enabled = false;
     @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "user", fetch = FetchType.LAZY)
-    private List<PasswordToken> passwordTokens;
-    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "user", fetch = FetchType.LAZY)
-    private List<RegistrationToken> registrationTokens;
+    private List<UserToken> confirmationTokens;
+    @Transient
+    private String username;
 
 
-    public AppUser(String firstName, String lastName, String username, String password, UserRoleEnum userRole) {
+    public AppUser(String firstName, String lastName, String loginEmail, String password, UserRoleEnum userRole) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.username = username;
         this.password = password;
         this.userRole = userRole;
-        this.email = username;
+        this.loginEmail = loginEmail;
+        this.username = loginEmail;
     }
 
-    public AppUser(Long id, String firstName, String lastName, String email, String username, String password, UserRoleEnum userRole, Boolean locked, Boolean enabled) {
+    public AppUser(Long id, String firstName, String lastName, String loginEmail, String password, UserRoleEnum userRole, Boolean locked, Boolean enabled) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.email = email;
-        this.username = username;
+        this.loginEmail = loginEmail;
         this.password = password;
         this.userRole = userRole;
         this.locked = locked;
         this.enabled = enabled;
+        this.username = loginEmail;
     }
 
     @Override
@@ -84,8 +83,7 @@ public class AppUser implements UserDetails {
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", username='" + username + '\'' +
+                ", email='" + loginEmail + '\'' +
                 ", password='" + password + '\'' +
                 ", userRole=" + userRole +
                 ", locked=" + locked +
@@ -95,7 +93,7 @@ public class AppUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return loginEmail;
     }
 
     @Override

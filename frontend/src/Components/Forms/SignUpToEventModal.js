@@ -5,7 +5,7 @@ import React, { useContext, useState } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import { Context } from "../../util/GlobalState";
 import axios from "axios";
-import { host, newReservationEndpoint } from "../../util/EndpointConfig";
+import { host, reservationsEndpoint } from "../../util/EndpointConfig";
 import { useAlert } from "react-alert";
 
 const SignUpModal = ({ clickInfo, isOpen, handleHide, reloadEvents }) => {
@@ -30,7 +30,7 @@ const SignUpModal = ({ clickInfo, isOpen, handleHide, reloadEvents }) => {
     };
     console.log(newReservation);
     axios
-      .post(host + newReservationEndpoint, newReservation)
+      .post(host + reservationsEndpoint, newReservation)
       .then((response) => {
         alert.success("Rezervace byla vytvořena.");
         reloadEvents();

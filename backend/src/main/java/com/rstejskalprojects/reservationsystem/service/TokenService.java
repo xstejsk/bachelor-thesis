@@ -6,5 +6,5 @@ public interface TokenService<T> {
 
     T getToken(String token);
 
-    void setConfirmedAt(T token);
+    void confirmToken(T token);
 }

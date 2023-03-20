@@ -1,11 +1,12 @@
 package com.rstejskalprojects.reservationsystem.service;
 
 import com.rstejskalprojects.reservationsystem.api.model.authorization.RegistrationRequest;
+import com.rstejskalprojects.reservationsystem.model.UserToken;
 
 public interface RegistrationService {
     String register(RegistrationRequest request);
 
-    void confirmToken(String token);
+    void confirmToken(UserToken token);
 
     String resendRegistrationEmail(String email);
 }

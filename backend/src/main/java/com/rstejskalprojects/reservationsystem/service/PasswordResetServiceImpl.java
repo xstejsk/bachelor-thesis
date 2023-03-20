@@ -2,7 +2,9 @@ package com.rstejskalprojects.reservationsystem.service;
 
 import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.NonPersistentPasswordToken;
-import com.rstejskalprojects.reservationsystem.model.PasswordToken;
+import com.rstejskalprojects.reservationsystem.model.TokenTypeEnum;
+import com.rstejskalprojects.reservationsystem.model.UserToken;
+import com.rstejskalprojects.reservationsystem.repository.UserTokenRepository;
 import com.rstejskalprojects.reservationsystem.util.customexception.ExpiredTokenException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UsedTokenException;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +23,11 @@ import java.util.UUID;
 @Slf4j
 public class PasswordResetServiceImpl implements PasswordResetService {
 
-    private final TokenService<PasswordToken> passwordTokenService;
     private final UserDetailsServiceImpl userDetailsService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final EmailSender emailSender;
     private final EmailFormatterService emailFormatterService;
+    private final UserTokenRepository userTokenRepository;
     @Value("${host.domain}")
     private String host;
     private final static int PASSWORD_LENGTH = 8;
@@ -47,34 +49,34 @@ public class PasswordResetServiceImpl implements PasswordResetService {
     private NonPersistentPasswordToken createPasswordResetTokenForUser(AppUser appUser) {
         String token = UUID.randomUUID().toString();
         String password = generateRandomPassword(PASSWORD_LENGTH);
-        PasswordToken passwordToken = new PasswordToken(token,
+        UserToken passwordToken = new UserToken(token,
                 LocalDateTime.now(),
                 LocalDateTime.now().plusMinutes(30),
+                TokenTypeEnum.PASSWORD_RESET,
                 bCryptPasswordEncoder.encode(password),
                 appUser);
-        passwordTokenService.saveToken(passwordToken);
+        userTokenRepository.save(passwordToken);
         return new NonPersistentPasswordToken(passwordToken.getToken(), passwordToken.getUser(), password);
     }
 
     @Override
-    public void confirmToken(PasswordToken passwordToken) {
+    public void confirmToken(UserToken passwordToken) {
         if (passwordToken.getConfirmedAt() != null) {
             throw new UsedTokenException("Password was already set");
         }
-
+        if (passwordToken.getTokenType() != TokenTypeEnum.PASSWORD_RESET) {
+            throw new IllegalArgumentException("Token is not password reset token");
+        }
         LocalDateTime expiredAt = passwordToken.getExpiresAt();
 
         if (expiredAt.isBefore(LocalDateTime.now())) {
             throw new ExpiredTokenException("Token has expired");
         }
-        passwordTokenService.setConfirmedAt(passwordToken);
         AppUser appUser = passwordToken.getUser();
         String encodedPassword = passwordToken.getEncodedPassword();
         userDetailsService.changeUserEncodedPassword(appUser, encodedPassword);
         log.info("Password for user " + appUser.getUsername() + " was changed");
     }
-
-
 
     public static String generateRandomPassword(int len) {
         String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghi"

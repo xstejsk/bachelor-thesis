@@ -42,9 +42,9 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
             RecurrenceGroup recurrenceGroup = null;
             //recurrenceGroupRepository.save(recurrenceGroup);
             //RecurrenceGroup recurrenceGroup1 = recurrenceGroupRepository.findById(1L).get();
-            AppUser superAdmin = new AppUser(3L, "Petr", "Pavel", "superadmin", "superadmin", bCryptPasswordEncoder.encode("superadmin"), UserRoleEnum.SUPER_ADMIN, false, true);
-            AppUser admin = new AppUser(1L, "Vlastimil", "Novák", "admin", "admin", encodedPw, UserRoleEnum.ADMIN, false, true);
-            AppUser user = new AppUser(2L, "Petr", "Jirák", "user", "user", bCryptPasswordEncoder.encode("user"), UserRoleEnum.USER, false, true);
+            AppUser superAdmin = new AppUser(3L, "Petr", "Pavel", "superadmin", bCryptPasswordEncoder.encode("superadmin"), UserRoleEnum.SUPER_ADMIN, false, true);
+            AppUser admin = new AppUser(1L, "Vlastimil", "Novák", "admin", encodedPw, UserRoleEnum.ADMIN, false, true);
+            AppUser user = new AppUser(2L, "Petr", "Jirák", "user", bCryptPasswordEncoder.encode("user"), UserRoleEnum.USER, false, true);
             userRepository.save(admin);
             userRepository.save(user);
             userRepository.save(superAdmin);

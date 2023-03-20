@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   host,
   locationsEndpoint,
-  activeEventsEndpoint,
-  deleteCalendarEndpoint,
+  eventsEndpoint,
 } from "../util/EndpointConfig";
 import axios from "axios";
 import CustomGridLoader from "./CustomLoader";
@@ -58,7 +57,7 @@ const SchedulerWrapper = () => {
   const reloadEvents = () => {
     // setEventsLoaded(false);
     axios
-      .get(host + activeEventsEndpoint + "?locationId=" + currentLocation.id)
+      .get(host + eventsEndpoint + "?locationId=" + currentLocation.id)
       .then((response) => {
         if (response.status === 200) {
           setEvents(response.data);
@@ -72,7 +71,7 @@ const SchedulerWrapper = () => {
 
   const deleteCalendar = () => {
     axios
-      .delete(host + deleteCalendarEndpoint + currentLocation.id)
+      .delete(host + locationsEndpoint + "/" + currentLocation.id)
       .then((response) => {
         alert.success("Kalendář a příslušné událisti byly smazány.");
         reloadLocations();

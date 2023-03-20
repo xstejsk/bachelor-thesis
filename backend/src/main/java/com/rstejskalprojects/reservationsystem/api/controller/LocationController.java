@@ -21,7 +21,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/api/locations", produces="application/json")
+@RequestMapping(path = "/api/v1/locations", produces="application/json")
 @RequiredArgsConstructor
 @Slf4j
 public class LocationController {
@@ -35,7 +35,7 @@ public class LocationController {
         return new ResponseEntity<>(locations, HttpStatus.OK);
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<?> saveLocation(@Valid @RequestBody Location location) {
         log.info("requested to save eventDTO: {}", location);
         try {
@@ -50,7 +50,7 @@ public class LocationController {
         }
     }
 
-    @DeleteMapping("/delete/{locationId}")
+    @DeleteMapping("/{locationId}")
     public ResponseEntity<String> deleteLocation(@PathVariable Long locationId) {
         log.info("requested to delete location: {}", locationId);
         try {

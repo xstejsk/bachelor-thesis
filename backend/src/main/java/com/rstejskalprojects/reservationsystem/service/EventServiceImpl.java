@@ -39,7 +39,6 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final EventDtoEventMapper eventDtoToEventMapper;
     private final RecurrenceGroupService recurrenceGroupService;
-    private final LocationService locationService;
     private final EmailFormatterService emailFormatterService;
     private final EmailSender emailSender;
 
@@ -141,7 +140,7 @@ public class EventServiceImpl implements EventService {
                 String body = emailFormatterService.formatRecurrentEventCancellationEmail(recipient.getFirstName(),
                         events.get(0).getTitle());
                 log.info("event cancellation body: {}", body);
-                emailSender.sendEmail(recipient.getEmail(), body, subject);
+                emailSender.sendEmail(recipient.getLoginEmail(), body, subject);
             } catch (Exception e) {
                 log.error("error while sending email about creating a reservation to user of id {}", recipient.getId());
             }
@@ -157,7 +156,7 @@ public class EventServiceImpl implements EventService {
                     reservation.getEvent().getTitle(), reservation.getEvent().getLocation().getName(),
                     reservation.getEvent().getStartTime().format(DateTimeFormatter.ofPattern("dd. MM. HH:mm")));
                 log.info("event cancellation body: {}", body);
-                emailSender.sendEmail(owner.getEmail(), body, subject);
+                emailSender.sendEmail(owner.getLoginEmail(), body, subject);
             } catch (Exception e) {
                 log.error("error while sending email about creating a reservation to user of id {}", reservation.getOwner().getId());
             }
@@ -257,18 +256,6 @@ public class EventServiceImpl implements EventService {
         if (updateEventRequest.getPrice() != null && !Objects.equals(updateEventRequest.getPrice(), event.getPrice())) {
             event.setPrice(updateEventRequest.getPrice());
             log.info("updated event price to {}", updateEventRequest.getPrice());
-        }
-        if (updateEventRequest.getLocationId() != null && !Objects.equals(updateEventRequest.getLocationId(), event.getLocation().getId())) {
-            event.setLocation(updateEventRequest.getLocationId() == null ? event.getLocation() : locationService.findLocationById(updateEventRequest.getLocationId()));
-            List<Event> overlappingEvents = findOverlappingEvents(event);
-            if (!overlappingEvents.isEmpty()) {
-                log.warn("attempted to update event with overlapping events");
-                throw new OverlappingEventException("Location of the event cannot be changed because " +
-                        "event would overlap with events with IDs: " +
-                        overlappingEvents.stream().map(overlappingEvent -> overlappingEvent.getId().toString()).collect(Collectors.joining(", "))
-                );
-            }
-            log.info("updated event location to {}", updateEventRequest.getLocationId());
         }
         log.info("updated event with id {}", event.getId());
         return eventRepository.save(event);

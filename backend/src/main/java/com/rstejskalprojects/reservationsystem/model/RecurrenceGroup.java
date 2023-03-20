@@ -11,6 +11,7 @@ import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -43,6 +44,7 @@ public class RecurrenceGroup {
     private FrequencyEnum frequency;
     @JsonProperty
     @ElementCollection(fetch = FetchType.EAGER, targetClass=DayOfWeek.class)
+    @Column(name="day_of_week")
     private List<DayOfWeek> daysOfWeek;
     @JsonProperty
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

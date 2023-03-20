@@ -1,10 +1,11 @@
 package com.rstejskalprojects.reservationsystem.service;
 
 import com.rstejskalprojects.reservationsystem.model.AppUser;
-import com.rstejskalprojects.reservationsystem.model.PasswordToken;
-import com.rstejskalprojects.reservationsystem.model.RegistrationToken;
+import com.rstejskalprojects.reservationsystem.model.TokenTypeEnum;
 import com.rstejskalprojects.reservationsystem.model.UserRoleEnum;
+import com.rstejskalprojects.reservationsystem.model.UserToken;
 import com.rstejskalprojects.reservationsystem.repository.UserRepository;
+import com.rstejskalprojects.reservationsystem.repository.UserTokenRepository;
 import com.rstejskalprojects.reservationsystem.util.customexception.ReservationNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UserIdNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UserNotFoundException;
@@ -26,18 +27,18 @@ import java.util.UUID;
 @Slf4j
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final ConfirmationTokenServiceImpl registrationTokenService;
+    private final UserTokenRepository userTokenRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-        return userRepository.findUserByUsername(username)
+        return userRepository.findAppUserByLoginEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("user with username %s not found", username)));
     }
 
     public boolean existsByUsername(String username) {
-        return userRepository.findUserByUsername(username).isPresent();
+        return userRepository.findAppUserByLoginEmail(username).isPresent();
     }
 
     public List<AppUser> findAll() {
@@ -59,7 +60,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     public String saveUser(AppUser appUser){
-        Optional<AppUser> newUser = userRepository.findUserByUsername(appUser.getEmail());
+        Optional<AppUser> newUser = userRepository.findAppUserByLoginEmail(appUser.getLoginEmail());
         if (newUser.isPresent() && newUser.get().getEnabled()){
             throw new IllegalStateException("account with this email is already registered");
         }else if (newUser.isPresent() && !newUser.get().getEnabled()){
@@ -73,29 +74,37 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         userRepository.save(appUser);
 
         String token = UUID.randomUUID().toString();
-        RegistrationToken confirmationToken = new RegistrationToken(
+        UserToken confirmationToken = new UserToken(
                 token,
                 LocalDateTime.now(),
                 LocalDateTime.now().plusMinutes(30),
+                TokenTypeEnum.REGISTRATION,
                 appUser);
 
-        registrationTokenService.saveToken(confirmationToken);
-        log.info("new user registered with email: " + appUser.getEmail());
+        userTokenRepository.save(confirmationToken);
+        log.info("new user registered with email: " + appUser.getLoginEmail());
         return token;
     }
 
     public void enableUser(String email) {
-        AppUser appUser = userRepository.findUserByUsername(email).orElseThrow(() -> new ReservationNotFoundException(String.format("user with email %s not found", email)));
+        AppUser appUser = userRepository.findAppUserByLoginEmail(email).orElseThrow(() -> new UserNotFoundException(String.format("user with email %s not found", email)));
         userRepository.enableUser(email);
     }
 
     public void promoteUser(Long userId) {
         AppUser appUser = userRepository.findById(userId).orElseThrow(() ->
-                new ReservationNotFoundException(String.format("user with id %s not found", userId)));
+                new UserNotFoundException(String.format("user with id %s not found", userId)));
         appUser.setUserRole(UserRoleEnum.ADMIN);
         appUser.setLocked(false);
         userRepository.save(appUser);
         log.info("user with id: " + userId + " promoted to admin");
+    }
+
+    public void demoteUser(Long userId) {
+        AppUser appUser = userRepository.findById(userId).orElseThrow(() ->  new UserNotFoundException(String.format("user with id %s not found", userId)));
+        appUser.setUserRole(UserRoleEnum.USER);
+        userRepository.save(appUser);
+        log.info("user with id: " + userId + " demoted to user");
     }
 
     public void blockUser(Long userId) {
@@ -121,7 +130,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     public void deleteUser(Long userId) {
         AppUser appUser = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(String.format("user with id %s not found", userId)));
-        if (appUser.getUserRole().equals(UserRoleEnum.ADMIN)){
+        if (appUser.getUserRole().equals(UserRoleEnum.ADMIN) || appUser.getUserRole().equals(UserRoleEnum.SUPER_ADMIN)){
             throw new IllegalStateException("admin cannot be deleted");
         }
         userRepository.delete(appUser);

@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ForgotPasswordRequest {
+public class EmailRequest {
 
     @JsonProperty
     @NotNull

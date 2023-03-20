@@ -31,14 +31,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(path = "/api/events", produces="application/json")
+@RequestMapping(path = "/api/v1/events", produces="application/json")
 @RequiredArgsConstructor
 @Slf4j
 public class EventsController {
 
     private final EventService eventsService;
 
-    @PostMapping("/create")
+    @PostMapping
     @Operation(summary = "Create a new event", responses = {
         @ApiResponse(description = "Event was successfully created", responseCode = "201", content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class))),
         @ApiResponse(responseCode = "409", description = "Event overlaps with an existing event.", content = @Content),
@@ -83,7 +83,7 @@ public class EventsController {
         }
     }
 
-    @DeleteMapping("/delete/{eventId}")
+    @DeleteMapping("/{eventId}")
     public ResponseEntity<String> cancelEvent(@PathVariable("eventId") Long id) {
         try {
             eventsService.deleteEvent(id);
@@ -95,7 +95,7 @@ public class EventsController {
         }
     }
 
-    @PutMapping("/update/{eventId}")
+    @PutMapping("/{eventId}")
     public ResponseEntity<String> updateEvent(@PathVariable("eventId") Long eventId, @Valid @RequestBody UpdateEventRequest updateEventRequest) {
         try {
             eventsService.updateEvent(eventId, updateEventRequest);
@@ -112,7 +112,7 @@ public class EventsController {
         }
     }
 
-    @PutMapping("/update-recurrent/{groupId}")
+    @PutMapping("/recurrent/{groupId}")
     public ResponseEntity<String> updateRecurrenceGroup(@PathVariable("groupId") Long groupId, @Valid @RequestBody UpdateEventRequest updateEventRequest) {
         try {
             eventsService.updateRecurrentEvents(groupId, updateEventRequest);
@@ -126,7 +126,7 @@ public class EventsController {
         }
     }
 
-    @DeleteMapping("/delete-recurrent/{groupId}")
+    @DeleteMapping("/recurrent/{groupId}")
     public ResponseEntity<String> cancelRecurrenceGroup(@PathVariable("groupId") Long groupId) {
         try {
             eventsService.deleteRecurrentEvents(groupId);
