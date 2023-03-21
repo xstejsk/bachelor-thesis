@@ -1,10 +1,13 @@
-package com.rstejskalprojects.reservationsystem.service;
+package com.rstejskalprojects.reservationsystem.service.impl;
 
 import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.NonPersistentPasswordToken;
 import com.rstejskalprojects.reservationsystem.model.TokenTypeEnum;
 import com.rstejskalprojects.reservationsystem.model.UserToken;
 import com.rstejskalprojects.reservationsystem.repository.UserTokenRepository;
+import com.rstejskalprojects.reservationsystem.service.EmailFormatterService;
+import com.rstejskalprojects.reservationsystem.service.EmailSender;
+import com.rstejskalprojects.reservationsystem.service.PasswordResetService;
 import com.rstejskalprojects.reservationsystem.util.customexception.ExpiredTokenException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UsedTokenException;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +45,6 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             log.info("Email with password reset link was sent to " + email);
         } catch (UsernameNotFoundException e) {
             log.warn("User {} not found", email);
-            throw new UsernameNotFoundException("user with given email does not exist");
         }
     }
 

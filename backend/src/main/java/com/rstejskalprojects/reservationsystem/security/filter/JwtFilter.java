@@ -38,6 +38,7 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     public boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
+        log.info("Path in JWT filter: " + path);
         return path.startsWith("/api/v1/token") || path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") ||
                 (path.startsWith("/api/v1/users") && request.getMethod().equals("POST")) ||
                 (path.startsWith("/api/v1/events") && request.getMethod().equals("GET")) ||

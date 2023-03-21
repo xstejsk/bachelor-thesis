@@ -1,5 +1,6 @@
-package com.rstejskalprojects.reservationsystem.service;
+package com.rstejskalprojects.reservationsystem.service.impl;
 
+import com.rstejskalprojects.reservationsystem.service.EmailSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;

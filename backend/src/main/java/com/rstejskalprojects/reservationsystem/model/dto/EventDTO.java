@@ -21,12 +21,10 @@ public class EventDTO {
     private Long id;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
-    @Future(message = "Event start date cannot be in the past")
     @NotNull(message = "Event start date cannot be null")
     private LocalDateTime start;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm")
-    @Future(message = "Event end date cannot be in the past")
     @NotNull(message = "Event start date cannot be null")
     private LocalDateTime end;
     @JsonProperty
@@ -63,6 +61,17 @@ public class EventDTO {
         this.recurrenceGroup = event.getRecurrenceGroup();
         this.locationId = event.getLocation().getId();
         this.availableCapacity = event.getAvailableCapacity();
+    }
+
+    public EventDTO(LocalDateTime start, LocalDateTime end, Integer maximumCapacity, Double price, String title, String description, RecurrenceGroup recurrenceGroup, Long locationId) {
+        this.start = start;
+        this.end = end;
+        this.maximumCapacity = maximumCapacity;
+        this.price = price;
+        this.title = title;
+        this.description = description;
+        this.recurrenceGroup = recurrenceGroup;
+        this.locationId = locationId;
     }
 }
 

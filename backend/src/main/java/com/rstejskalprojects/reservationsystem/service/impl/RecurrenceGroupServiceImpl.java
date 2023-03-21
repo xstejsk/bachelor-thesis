@@ -1,8 +1,9 @@
-package com.rstejskalprojects.reservationsystem.service;
+package com.rstejskalprojects.reservationsystem.service.impl;
 
 import com.rstejskalprojects.reservationsystem.model.FrequencyEnum;
 import com.rstejskalprojects.reservationsystem.model.RecurrenceGroup;
 import com.rstejskalprojects.reservationsystem.repository.RecurrenceGroupRepository;
+import com.rstejskalprojects.reservationsystem.service.RecurrenceGroupService;
 import com.rstejskalprojects.reservationsystem.util.customexception.RecurrenceGroupNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

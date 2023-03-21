@@ -1,4 +1,4 @@
-package com.rstejskalprojects.reservationsystem.service;
+package com.rstejskalprojects.reservationsystem.service.impl;
 
 import com.rstejskalprojects.reservationsystem.api.controller.model.UpdateEventRequest;
 import com.rstejskalprojects.reservationsystem.model.AppUser;
@@ -8,6 +8,11 @@ import com.rstejskalprojects.reservationsystem.model.RecurrenceGroup;
 import com.rstejskalprojects.reservationsystem.model.Reservation;
 import com.rstejskalprojects.reservationsystem.model.dto.EventDTO;
 import com.rstejskalprojects.reservationsystem.repository.EventRepository;
+import com.rstejskalprojects.reservationsystem.service.EmailFormatterService;
+import com.rstejskalprojects.reservationsystem.service.EmailSender;
+import com.rstejskalprojects.reservationsystem.service.EventService;
+import com.rstejskalprojects.reservationsystem.service.RecurrenceGroupService;
+import com.rstejskalprojects.reservationsystem.service.ReservationService;
 import com.rstejskalprojects.reservationsystem.util.EventDtoEventMapper;
 import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.InvalidEventTimeException;

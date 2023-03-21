@@ -2,7 +2,7 @@ package com.rstejskalprojects.reservationsystem.util;
 
 import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.UserRoleEnum;
-import com.rstejskalprojects.reservationsystem.service.UserDetailsServiceImpl;
+import com.rstejskalprojects.reservationsystem.service.impl.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;

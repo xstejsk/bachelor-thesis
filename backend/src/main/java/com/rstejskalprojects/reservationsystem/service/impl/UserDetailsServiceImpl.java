@@ -1,4 +1,4 @@
-package com.rstejskalprojects.reservationsystem.service;
+package com.rstejskalprojects.reservationsystem.service.impl;
 
 import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.TokenTypeEnum;

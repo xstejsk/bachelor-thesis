@@ -5,9 +5,9 @@ import com.rstejskalprojects.reservationsystem.model.dto.ReservationDTO;
 import java.util.List;
 
 public interface ReservationService {
-    List<Reservation> findReservationsByUserId(Long ownerId);
+    List<Reservation> findReservationsByUserId(Long ownerId, String jwtUserName);
 
-    List<Reservation> findPresentReservationsByUser(Long ownerId);
+    List<Reservation> findPresentReservationsByUser(Long ownerId, String jwtUserName);
 
     List<Reservation> findReservationsByEventId(Long eventId);
 

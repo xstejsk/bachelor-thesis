@@ -1,7 +1,8 @@
-package com.rstejskalprojects.reservationsystem.service;
+package com.rstejskalprojects.reservationsystem.service.impl;
 
 import com.rstejskalprojects.reservationsystem.model.Location;
 import com.rstejskalprojects.reservationsystem.repository.LocationRepository;
+import com.rstejskalprojects.reservationsystem.service.LocationService;
 import com.rstejskalprojects.reservationsystem.util.customexception.LocationAlreadyExistsException;
 import com.rstejskalprojects.reservationsystem.util.customexception.LocationNotFoundException;
 import lombok.RequiredArgsConstructor;

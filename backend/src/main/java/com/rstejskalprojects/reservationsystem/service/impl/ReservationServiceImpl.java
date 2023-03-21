@@ -1,4 +1,4 @@
-package com.rstejskalprojects.reservationsystem.service;
+package com.rstejskalprojects.reservationsystem.service.impl;
 
 import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.Reservation;
@@ -6,6 +6,9 @@ import com.rstejskalprojects.reservationsystem.model.UserRoleEnum;
 import com.rstejskalprojects.reservationsystem.model.dto.ReservationDTO;
 import com.rstejskalprojects.reservationsystem.repository.EventRepository;
 import com.rstejskalprojects.reservationsystem.repository.ReservationRepository;
+import com.rstejskalprojects.reservationsystem.service.EmailFormatterService;
+import com.rstejskalprojects.reservationsystem.service.EmailSender;
+import com.rstejskalprojects.reservationsystem.service.ReservationService;
 import com.rstejskalprojects.reservationsystem.util.ReservationDtoToReservationMapper;
 import com.rstejskalprojects.reservationsystem.util.customexception.AlreadyRegisteredException;
 import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
@@ -39,9 +42,8 @@ public class ReservationServiceImpl implements ReservationService {
     private final EmailFormatterService emailFormatterService;
 
     @Override
-    public List<Reservation> findReservationsByUserId(Long ownerId) {
-        AppUser appUser = (AppUser) userDetailsService.loadUserByUsername(((UserDetails)
-                SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername());
+    public List<Reservation> findReservationsByUserId(Long ownerId, String jwtUsername) {
+        AppUser appUser = (AppUser) userDetailsService.loadUserByUsername(jwtUsername);
         if (appUser.getUserRole().equals(UserRoleEnum.ADMIN) || appUser.getUserRole().equals(UserRoleEnum.SUPER_ADMIN) || appUser.getId().equals(ownerId)) {
             return reservationRepository.findByOwnerId(ownerId);
         } else {
@@ -50,8 +52,13 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public List<Reservation> findPresentReservationsByUser(Long ownerId) {
-        return reservationRepository.findActivePresentReservationsByUser(ownerId);
+    public List<Reservation> findPresentReservationsByUser(Long ownerId, String jwtUsername) {
+        AppUser appUser = (AppUser) userDetailsService.loadUserByUsername(jwtUsername);
+        if (appUser.getUserRole().equals(UserRoleEnum.ADMIN) || appUser.getUserRole().equals(UserRoleEnum.SUPER_ADMIN) || appUser.getId().equals(ownerId)) {
+            return reservationRepository.findActivePresentReservationsByUser(ownerId);
+        } else {
+            throw new IllegalResourceAccessException("You are not authorized to view this user's reservations");
+        }
     }
 
     @Override

@@ -9,13 +9,12 @@ import com.rstejskalprojects.reservationsystem.model.UserRoleEnum;
 import com.rstejskalprojects.reservationsystem.model.dto.AppUserDTO;
 import com.rstejskalprojects.reservationsystem.service.PasswordResetService;
 import com.rstejskalprojects.reservationsystem.service.RegistrationService;
-import com.rstejskalprojects.reservationsystem.service.UserDetailsServiceImpl;
+import com.rstejskalprojects.reservationsystem.service.impl.UserDetailsServiceImpl;
 import com.rstejskalprojects.reservationsystem.util.customexception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -89,17 +88,17 @@ public class UserController {
         } catch (UserNotFoundException e) {
             return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
         } catch (IllegalStateException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @PostMapping("/password-reset")
-    public ResponseEntity<String> forgotPassword(@RequestBody @Valid EmailRequest forgotPasswordRequest, @PathVariable Long userId, HttpServletRequest request) {
+    public ResponseEntity<String> forgotPassword(@RequestBody @Valid EmailRequest forgotPasswordRequest, HttpServletRequest request) {
         try {
             passwordResetService.sendResetPasswordEmail(forgotPasswordRequest.getEmail());
-            return new ResponseEntity<>("Password reset link sent to email", HttpStatus.OK);
-        }  catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with email: " + forgotPasswordRequest.getEmail() + " not found");
+            return new ResponseEntity<>("Password reset link sent to email", HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 

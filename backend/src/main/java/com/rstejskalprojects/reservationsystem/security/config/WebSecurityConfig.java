@@ -1,7 +1,7 @@
 package com.rstejskalprojects.reservationsystem.security.config;
 
 import com.rstejskalprojects.reservationsystem.security.filter.JwtFilter;
-import com.rstejskalprojects.reservationsystem.service.UserDetailsServiceImpl;
+import com.rstejskalprojects.reservationsystem.service.impl.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
@@ -16,7 +16,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @EnableWebSecurity
 @RequiredArgsConstructor

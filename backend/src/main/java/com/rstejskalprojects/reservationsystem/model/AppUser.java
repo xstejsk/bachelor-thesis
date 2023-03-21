@@ -65,6 +65,16 @@ public class AppUser implements UserDetails {
         this.username = loginEmail;
     }
 
+    public AppUser(Long Id, String firstName, String lastName, String loginEmail, String password, UserRoleEnum userRole) {
+        this.id = Id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.password = password;
+        this.userRole = userRole;
+        this.loginEmail = loginEmail;
+        this.username = loginEmail;
+    }
+
     public AppUser(Long id, String firstName, String lastName, String loginEmail, String password, UserRoleEnum userRole, Boolean locked, Boolean enabled) {
         this.id = id;
         this.firstName = firstName;

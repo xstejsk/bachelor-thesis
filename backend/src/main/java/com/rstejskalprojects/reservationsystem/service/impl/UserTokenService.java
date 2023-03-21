@@ -1,8 +1,11 @@
-package com.rstejskalprojects.reservationsystem.service;
+package com.rstejskalprojects.reservationsystem.service.impl;
 
 import com.rstejskalprojects.reservationsystem.model.TokenTypeEnum;
 import com.rstejskalprojects.reservationsystem.model.UserToken;
 import com.rstejskalprojects.reservationsystem.repository.UserTokenRepository;
+import com.rstejskalprojects.reservationsystem.service.PasswordResetService;
+import com.rstejskalprojects.reservationsystem.service.RegistrationService;
+import com.rstejskalprojects.reservationsystem.service.TokenService;
 import com.rstejskalprojects.reservationsystem.util.customexception.UnknownTokenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.rstejskalprojects.reservationsystem.service;
+package com.rstejskalprojects.reservationsystem.service.impl;
 
 import com.rstejskalprojects.reservationsystem.api.model.authorization.RegistrationRequest;
 import com.rstejskalprojects.reservationsystem.model.AppUser;
@@ -6,6 +6,9 @@ import com.rstejskalprojects.reservationsystem.model.TokenTypeEnum;
 import com.rstejskalprojects.reservationsystem.model.UserRoleEnum;
 import com.rstejskalprojects.reservationsystem.model.UserToken;
 import com.rstejskalprojects.reservationsystem.repository.UserTokenRepository;
+import com.rstejskalprojects.reservationsystem.service.EmailFormatterService;
+import com.rstejskalprojects.reservationsystem.service.EmailSender;
+import com.rstejskalprojects.reservationsystem.service.RegistrationService;
 import com.rstejskalprojects.reservationsystem.util.customexception.ExpiredTokenException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UnknownTokenException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UsedTokenException;

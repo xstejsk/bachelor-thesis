@@ -1,6 +1,7 @@
 package com.rstejskalprojects.reservationsystem.api.controller;
 import com.rstejskalprojects.reservationsystem.model.dto.ReservationDTO;
 import com.rstejskalprojects.reservationsystem.service.ReservationService;
+import com.rstejskalprojects.reservationsystem.util.JwtUtil;
 import com.rstejskalprojects.reservationsystem.util.customexception.AlreadyRegisteredException;
 import com.rstejskalprojects.reservationsystem.util.customexception.EventNotFoundException;
 import com.rstejskalprojects.reservationsystem.util.customexception.IllegalResourceAccessException;
@@ -24,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 public class ReservationsController {
 
     private final ReservationService reservationService;
+    private final JwtUtil jwtUtil;
 
     @GetMapping
     public ResponseEntity<List<ReservationDTO>> getAll(@RequestParam(required=false) Long  eventId) {
@@ -52,11 +55,13 @@ public class ReservationsController {
     public ResponseEntity<?> getByUserId(@PathVariable("userId") Long userId, @RequestParam(required=false) Boolean present, HttpServletRequest request) {
         try {
             List<ReservationDTO> reservationDTOS;
+            String jwt = request.getHeader("Authorization");
+            String jwtUserName = jwtUtil.getUserNameFromToken(jwt);
             if (present == null || !present) {
-                reservationDTOS = reservationService.findReservationsByUserId(userId).stream().map(ReservationDTO::new).collect(Collectors.toList());
+                reservationDTOS = reservationService.findReservationsByUserId(userId, jwtUserName).stream().map(ReservationDTO::new).collect(Collectors.toList());
                 log.info("getting all reservations for user with id: " + userId);
             } else {
-                reservationDTOS = reservationService.findPresentReservationsByUser(userId).stream().map(ReservationDTO::new).collect(Collectors.toList());
+                reservationDTOS = reservationService.findPresentReservationsByUser(userId, jwtUserName).stream().map(ReservationDTO::new).collect(Collectors.toList());
                 log.info("getting all present reservations for user with id: " + userId);
             }
             return new ResponseEntity<>(reservationDTOS, HttpStatus.OK);
@@ -86,12 +91,9 @@ public class ReservationsController {
         } catch (MaximumCapacityException | AlreadyRegisteredException e) {
             log.warn(e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
-        } catch (PastEventException e) {
-            log.warn(e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         } catch (Exception e) {
             log.warn("something went wrong", e);
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 

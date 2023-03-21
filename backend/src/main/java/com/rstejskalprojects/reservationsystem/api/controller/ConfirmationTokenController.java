@@ -4,7 +4,7 @@ import com.rstejskalprojects.reservationsystem.api.controller.model.Confirmation
 import com.rstejskalprojects.reservationsystem.api.controller.model.EmailRequest;
 import com.rstejskalprojects.reservationsystem.model.UserToken;
 import com.rstejskalprojects.reservationsystem.service.RegistrationService;
-import com.rstejskalprojects.reservationsystem.service.UserTokenService;
+import com.rstejskalprojects.reservationsystem.service.impl.UserTokenService;
 import com.rstejskalprojects.reservationsystem.util.customexception.ExpiredTokenException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UnknownTokenException;
 import com.rstejskalprojects.reservationsystem.util.customexception.UsedTokenException;

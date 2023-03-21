@@ -1,7 +1,7 @@
 package com.rstejskalprojects.reservationsystem.util;
 
 import com.rstejskalprojects.reservationsystem.model.AppUser;
-import com.rstejskalprojects.reservationsystem.service.UserDetailsServiceImpl;
+import com.rstejskalprojects.reservationsystem.service.impl.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
