@@ -25,7 +25,7 @@ import javax.validation.Valid;
 @RequestMapping("/api/v1/confirmations")
 @RequiredArgsConstructor
 @Slf4j
-public class ConfirmationTokenController {
+public class ConfirmationTokensController {
 
     private final UserTokenService userTokenService;
     private final RegistrationService registrationService;
@@ -36,7 +36,7 @@ public class ConfirmationTokenController {
             String token = confirmationTokenRequest.getToken();
             UserToken userToken = userTokenService.getToken(token);
             userTokenService.confirmToken(userToken);
-            return new ResponseEntity<>(userToken.getTokenType().getName() + " token submitted successfully", HttpStatus.OK);
+            return new ResponseEntity<>("token submitted successfully", HttpStatus.OK);
         } catch (UnknownTokenException e) {
             log.warn("Unknown token: {}", confirmationTokenRequest.getToken());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Token not found");

@@ -20,7 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,35 +35,31 @@ import java.util.Map;
 @RequestMapping("/api/v1/token")
 @RequiredArgsConstructor
 @Slf4j
-public class TokenController {
+public class TokensController {
 
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/refresh")
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) {
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-
-        final String refreshToken = header.split(" ")[1].trim();
-        UserDetails userDetails = userDetailsService.loadUserByUsername(jwtUtil.getUserNameFromToken(refreshToken));
-        String accessToken = jwtUtil.generateToken(userDetails, false);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        Map<String, String> tokens = new HashMap<>();
-        tokens.put("access_token", accessToken);
-        tokens.put("refresh_token", refreshToken);
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
         try {
-            new ObjectMapper().writeValue(response.getOutputStream(), tokens);
-        } catch (IOException e) {
-            response.setHeader("Error", e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            log.warn("refresh token could not be sent", e);
+            String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+            final String refreshToken = header.split(" ")[1].trim();
+            UserDetails userDetails = userDetailsService.loadUserByUsername(jwtUtil.getUserNameFromToken(refreshToken));
+            String accessToken = jwtUtil.generateToken(userDetails, false);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            Map<String, String> tokens = new HashMap<>();
+            tokens.put("access_token", accessToken);
+            tokens.put("refresh_token", refreshToken);
+            return new ResponseEntity<>(tokens, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
-
     @PostMapping
-    public ResponseEntity<?> login(@Valid @RequestBody AuthCredentialsRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> login(@Valid @RequestBody AuthCredentialsRequest request) {
         try {
             Authentication authenticate = authenticationManager
                     .authenticate(
@@ -85,7 +80,7 @@ public class TokenController {
 
         } catch (BadCredentialsException ex) {
             log.warn("Bad credentials for user: " + request.getUsername());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return new ResponseEntity<>("Bad credentials", HttpStatus.UNAUTHORIZED);
         } catch (DisabledException e) {
             return new ResponseEntity<>("Account not verified", HttpStatus.FORBIDDEN);
         } catch (LockedException e) {

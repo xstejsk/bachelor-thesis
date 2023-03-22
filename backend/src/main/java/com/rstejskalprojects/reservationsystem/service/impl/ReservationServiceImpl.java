@@ -42,8 +42,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final EmailFormatterService emailFormatterService;
 
     @Override
-    public List<Reservation> findReservationsByUserId(Long ownerId, String jwtUsername) {
-        AppUser appUser = (AppUser) userDetailsService.loadUserByUsername(jwtUsername);
+    public List<Reservation> findReservationsByUser(Long ownerId, AppUser appUser) {
         if (appUser.getUserRole().equals(UserRoleEnum.ADMIN) || appUser.getUserRole().equals(UserRoleEnum.SUPER_ADMIN) || appUser.getId().equals(ownerId)) {
             return reservationRepository.findByOwnerId(ownerId);
         } else {
@@ -52,8 +51,14 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public List<Reservation> findPresentReservationsByUser(Long ownerId, String jwtUsername) {
-        AppUser appUser = (AppUser) userDetailsService.loadUserByUsername(jwtUsername);
+    public Reservation findById(Long reservationId) {
+        return  reservationRepository.findReservationById(reservationId).orElseThrow(() ->
+                new ReservationNotFoundException(String.format("reservation of id %s not found", reservationId
+                )));
+    }
+
+    @Override
+    public List<Reservation> findPresentReservationsByUser(Long ownerId, AppUser appUser) {
         if (appUser.getUserRole().equals(UserRoleEnum.ADMIN) || appUser.getUserRole().equals(UserRoleEnum.SUPER_ADMIN) || appUser.getId().equals(ownerId)) {
             return reservationRepository.findActivePresentReservationsByUser(ownerId);
         } else {
@@ -116,12 +121,8 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public void deleteReservationById(Long reservationId) {
-        Reservation reservation = reservationRepository.findReservationById(reservationId).orElseThrow(() ->
-                new ReservationNotFoundException(String.format("reservation of id %s not found", reservationId
-                )));
-        AppUser appUser = (AppUser) userDetailsService.loadUserByUsername(((UserDetails)
-                SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername());
+    public void deleteReservationById(Long reservationId, AppUser appUser) {
+        Reservation reservation = findById(reservationId);
         if (reservation.getEvent().getStartTime().isBefore(java.time.LocalDateTime.now())) {
             log.warn("event of id {} has already started, cannot delete reservation of id {}", reservation.getEvent().getId(), reservation.getId());
             throw new PastEventException("event of id " + reservation.getEvent().getId() + " has already started," +

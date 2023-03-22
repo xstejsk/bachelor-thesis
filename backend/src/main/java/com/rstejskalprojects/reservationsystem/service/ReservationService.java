@@ -1,13 +1,14 @@
 package com.rstejskalprojects.reservationsystem.service;
 
+import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.Reservation;
 import com.rstejskalprojects.reservationsystem.model.dto.ReservationDTO;
 import java.util.List;
 
 public interface ReservationService {
-    List<Reservation> findReservationsByUserId(Long ownerId, String jwtUserName);
+    List<Reservation> findReservationsByUser(Long ownerId, AppUser appUser);
 
-    List<Reservation> findPresentReservationsByUser(Long ownerId, String jwtUserName);
+    List<Reservation> findPresentReservationsByUser(Long ownerId, AppUser appUser);
 
     List<Reservation> findReservationsByEventId(Long eventId);
 
@@ -17,7 +18,9 @@ public interface ReservationService {
 
     Reservation create(ReservationDTO reservationDTO);
 
-    void deleteReservationById(Long reservationId);
+    Reservation findById(Long reservationId);
+
+    void deleteReservationById(Long reservationId, AppUser appUser);
 
     void deleteFutureByRecurrenceGroupId(Long recurrenceGroupId);
 }

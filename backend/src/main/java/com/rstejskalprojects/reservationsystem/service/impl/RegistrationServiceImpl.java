@@ -48,7 +48,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
-    public String resendRegistrationEmail(String email) {
+    public void resendRegistrationEmail(String email) {
         try {
             AppUser appUser = (AppUser) userDetailsService.loadUserByUsername(email);
             if (appUser.isEnabled()) {
@@ -66,7 +66,6 @@ public class RegistrationServiceImpl implements RegistrationService {
             String link = host + "/registration/confirm?token=" + token;
             new Thread(() -> emailSender.sendEmail(email, buildEmail(appUser.getFirstName(), link), "Potvrzení registrace")).start();
             log.info("Registration token for user {} was resent", email);
-            return token;
         } catch (UsernameNotFoundException e) {
             log.warn("User {} not found", email);
             throw new UsernameNotFoundException("user with given email does not exist");

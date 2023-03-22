@@ -67,9 +67,9 @@ public class JwtUtil {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
-    public Long getUserIdFromToken(String token) {
+    public AppUser getUserFromToken(String token) {
         String userName = getUserNameFromToken(token);
-        return ((AppUser) userDetailsService.loadUserByUsername(userName)).getId();
+        return ((AppUser) userDetailsService.loadUserByUsername(userName));
     }
 
     public LocalDateTime getIssuedDateFromToken(String token) {

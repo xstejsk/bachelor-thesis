@@ -1,7 +1,7 @@
 package com.rstejskalprojects.reservationsystem.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rstejskalprojects.reservationsystem.repository.UserRepository;
+import com.rstejskalprojects.reservationsystem.service.impl.UserDetailsServiceImpl;
 import com.rstejskalprojects.reservationsystem.util.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -9,9 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,7 +30,7 @@ import java.util.Map;
 @Slf4j
 public class JwtFilter extends OncePerRequestFilter {
 
-    private final UserRepository userRepository;
+    private final UserDetailsServiceImpl userDetailsService;
     private final JwtUtil jwtUtil;
 
     @Override
@@ -63,10 +61,7 @@ public class JwtFilter extends OncePerRequestFilter {
         UserDetails userDetails;
         try {
             jwtUtil.isTokenValid(token);
-            userDetails = userRepository.findAppUserByLoginEmail(jwtUtil.getUserNameFromToken(token))
-                    .orElseThrow(() ->
-                            new UsernameNotFoundException(String.format("Username %s not found for token",
-                                    jwtUtil.getUserNameFromToken(token))));
+            userDetails = userDetailsService.loadUserByUsername(jwtUtil.getUserNameFromToken(token));
         } catch (ExpiredJwtException | MalformedJwtException e) {
             log.info("Invalid token filtered {} ", token, e);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

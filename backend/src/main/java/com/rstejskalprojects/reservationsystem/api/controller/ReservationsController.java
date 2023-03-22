@@ -1,4 +1,5 @@
 package com.rstejskalprojects.reservationsystem.api.controller;
+import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.dto.ReservationDTO;
 import com.rstejskalprojects.reservationsystem.service.ReservationService;
 import com.rstejskalprojects.reservationsystem.util.JwtUtil;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,13 +57,12 @@ public class ReservationsController {
     public ResponseEntity<?> getByUserId(@PathVariable("userId") Long userId, @RequestParam(required=false) Boolean present, HttpServletRequest request) {
         try {
             List<ReservationDTO> reservationDTOS;
-            String jwt = request.getHeader("Authorization");
-            String jwtUserName = jwtUtil.getUserNameFromToken(jwt);
+            AppUser appUser = jwtUtil.getUserFromToken(request.getHeader("Authorization"));
             if (present == null || !present) {
-                reservationDTOS = reservationService.findReservationsByUserId(userId, jwtUserName).stream().map(ReservationDTO::new).collect(Collectors.toList());
+                reservationDTOS = reservationService.findReservationsByUser(userId, appUser).stream().map(ReservationDTO::new).collect(Collectors.toList());
                 log.info("getting all reservations for user with id: " + userId);
             } else {
-                reservationDTOS = reservationService.findPresentReservationsByUser(userId, jwtUserName).stream().map(ReservationDTO::new).collect(Collectors.toList());
+                reservationDTOS = reservationService.findPresentReservationsByUser(userId, appUser).stream().map(ReservationDTO::new).collect(Collectors.toList());
                 log.info("getting all present reservations for user with id: " + userId);
             }
             return new ResponseEntity<>(reservationDTOS, HttpStatus.OK);
@@ -100,7 +101,8 @@ public class ReservationsController {
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<String> deleteReservation(@PathVariable("reservationId") Long reservationId, HttpServletRequest request) {
         try {
-            reservationService.deleteReservationById(reservationId);
+            AppUser appUser = jwtUtil.getUserFromToken(request.getHeader("Authorization"));
+            reservationService.deleteReservationById(reservationId, appUser);
             return new ResponseEntity<>("The reservation has been deleted",HttpStatus.OK);
         } catch (ReservationNotFoundException e) {
             log.warn("reservation not found", e);

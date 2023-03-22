@@ -2,6 +2,8 @@ package com.rstejskalprojects.reservationsystem.securityconfig;
 
 import com.rstejskalprojects.reservationsystem.model.AppUser;
 import com.rstejskalprojects.reservationsystem.model.UserRoleEnum;
+import com.rstejskalprojects.reservationsystem.security.filter.JwtFilter;
+import com.rstejskalprojects.reservationsystem.service.impl.UserDetailsServiceImpl;
 import com.rstejskalprojects.reservationsystem.util.JwtUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +13,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -37,11 +40,14 @@ public class SecurityConfigUsersControllerTest {
     @Autowired
     private WebApplicationContext context;
 
-    @Mock
-    private UserDetailsService userDetailsService;
+    @MockBean
+    private UserDetailsServiceImpl userDetailsService;
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private JwtFilter jwtFilter;
 
     UserDetails superAdmin;
     UserDetails admin;
@@ -56,6 +62,7 @@ public class SecurityConfigUsersControllerTest {
     public void setup() throws Exception {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(context)
                 .apply(springSecurity())
+                .addFilters(jwtFilter)
                 .build();
 
         superAdmin = new AppUser("fstname","lastname", SUPER_ADMIN_USERNAME, PASSWORD, UserRoleEnum.SUPER_ADMIN);
@@ -153,7 +160,7 @@ public class SecurityConfigUsersControllerTest {
     public void testDeleteUserSuperAdmin() throws Exception {
         mockMvc.perform(delete("/api/v1/users/1000000").servletPath("/api/v1/users/1000000").header("Authorization", "Bearer " + jwtUtil.generateToken(superAdmin, false))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -161,7 +168,7 @@ public class SecurityConfigUsersControllerTest {
     public void testDeleteUserAdmin() throws Exception {
         mockMvc.perform(delete("/api/v1/users/1000000").servletPath("/api/v1/users/1000000").header("Authorization", "Bearer " + jwtUtil.generateToken(admin, false))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -181,7 +188,7 @@ public class SecurityConfigUsersControllerTest {
         mockMvc.perform(put("/api/v1/users/1000000/ban-status").servletPath("/api/v1/users/1000000/ban-status").header("Authorization", "Bearer " + jwtUtil.generateToken(superAdmin, false))
                         .content(jsonBody)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -191,7 +198,7 @@ public class SecurityConfigUsersControllerTest {
         mockMvc.perform(put("/api/v1/users/1000000/ban-status").servletPath("/api/v1/users/1000000/ban-status").header("Authorization", "Bearer " + jwtUtil.generateToken(admin, false))
                         .content(jsonBody)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -213,7 +220,7 @@ public class SecurityConfigUsersControllerTest {
         mockMvc.perform(put("/api/v1/users/1000000/role").servletPath("/api/v1/users/1000000/role").header("Authorization", "Bearer " + jwtUtil.generateToken(superAdmin, false))
                         .content(jsonBody)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     @Test

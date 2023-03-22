@@ -97,6 +97,7 @@ public class Event {
         this.location = location;
     }
 
+
     @PreRemove
     private void removeEventFromRecurrenceGroup() {
         System.out.println("Removing event from recurrence group");

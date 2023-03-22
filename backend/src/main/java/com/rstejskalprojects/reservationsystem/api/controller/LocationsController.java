@@ -24,7 +24,7 @@ import java.util.List;
 @RequestMapping(path = "/api/v1/locations", produces="application/json")
 @RequiredArgsConstructor
 @Slf4j
-public class LocationController {
+public class LocationsController {
 
     private final LocationService locationService;
 

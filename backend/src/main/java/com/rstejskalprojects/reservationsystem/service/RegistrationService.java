@@ -8,5 +8,5 @@ public interface RegistrationService {
 
     void confirmToken(UserToken token);
 
-    String resendRegistrationEmail(String email);
+    void resendRegistrationEmail(String email);
 }

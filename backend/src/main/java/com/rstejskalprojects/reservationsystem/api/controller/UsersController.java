@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @RequestMapping("api/v1/users")
 @RequiredArgsConstructor
 @Slf4j
-public class UserController {
+public class UsersController {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final RegistrationService registrationService;

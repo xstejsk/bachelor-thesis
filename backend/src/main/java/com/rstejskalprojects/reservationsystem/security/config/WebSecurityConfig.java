@@ -56,7 +56,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/api/v1/events/recurrent/{groupId}").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
                 .antMatchers(HttpMethod.GET, "/api/v1/events").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/v1/events").hasAnyAuthority("ROLE_ADMIN", "ROLE_SUPER_ADMIN")
-                .antMatchers(HttpMethod.POST, "/api/v1/confirmations/submit-token").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/v1/confirmations/submit-token").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/v1/confirmations/resend-confirmation").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/v1/token").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/v1/token/refresh").permitAll()

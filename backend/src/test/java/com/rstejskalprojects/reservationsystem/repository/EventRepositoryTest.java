@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,8 +38,7 @@ class EventRepositoryTest {
 
     @BeforeEach
     void init() {
-        Location location = new Location();
-        location.setName("Test location");
+        Location location = new Location("Test location", LocalTime.MIN, LocalTime.MAX);
         locationRepository.save(location);
 
         RecurrenceGroup recurrenceGroup = new RecurrenceGroup();
@@ -50,9 +50,8 @@ class EventRepositoryTest {
 
     @Test
     public void testFindByLocationId() {
-        Location location = new Location();
+        Location location = new Location("Test location", LocalTime.MIN, LocalTime.MAX);
         location.setId(2L);
-        location.setName("Test Location");
         locationRepository.save(location);
 
         Event event1 = new Event(location, LocalDateTime.now(), LocalDateTime.now().plusMinutes(30), 1, 30d, "Test Event 1");
