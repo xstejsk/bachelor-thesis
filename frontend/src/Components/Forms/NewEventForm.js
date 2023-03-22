@@ -136,7 +136,6 @@ const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
               <Input
                 type="datetime-local"
                 name="start"
-                placeholder={new Date().toISOString().substr(0, 16)}
                 min={new Date().toISOString().substr(0, 16)}
                 onChange={(e) =>
                   handleChangeEvent(e.target.name, e.target.value)
@@ -151,7 +150,6 @@ const NewEventForm = ({ handleHide, isOpen, locationId, reloadEvents }) => {
               <Input
                 type="datetime-local"
                 name="end"
-                placeholder={new Date().toISOString().substr(0, 16)}
                 min={event.start}
                 onChange={(e) =>
                   handleChangeEvent(e.target.name, e.target.value)

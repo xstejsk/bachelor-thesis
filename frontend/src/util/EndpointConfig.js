@@ -1,6 +1,7 @@
 const host = process.env.BACKEND_URL || "http://localhost:8080/";
-const eventsEndpoint = "api/v1/events";
 const reservationsEndpoint = "api/v1/reservations";
+const eventsEndpoint = "api/v1/events";
+
 const locationsEndpoint = "api/v1/locations";
 const usersEndpoint = "api/v1/users";
 const confirmationTokenEndpoint = "api/v1/confirmations";

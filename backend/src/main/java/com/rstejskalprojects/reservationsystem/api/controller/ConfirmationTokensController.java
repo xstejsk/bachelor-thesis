@@ -56,7 +56,7 @@ public class ConfirmationTokensController {
     public ResponseEntity<String> resendRegistrationToken(@RequestBody @Valid EmailRequest emailAddress) {
         try {
             registrationService.resendRegistrationEmail(emailAddress.getEmail());
-            return new ResponseEntity<>("Registration email has been resent to the provided email address", HttpStatus.OK);
+            return new ResponseEntity<>("Registration email has been resent to the provided email address", HttpStatus.ACCEPTED);
         } catch (UsernameNotFoundException ex) {
             log.warn("User not found: " + emailAddress);
             return new ResponseEntity<>("User with given email not found", HttpStatus.NOT_FOUND);

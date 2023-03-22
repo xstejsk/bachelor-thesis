@@ -46,7 +46,6 @@ const DetailsModal = ({
     useState(false);
   const [showCancelOptions, setShowCancelOptions] = useState(false);
   const [showDefaultDetailsModal, setShowDefaultDetailsModal] = useState(true);
-  const [eventsOverlap, setEventsOverlap] = useState(false);
 
   function viewOnlyCancelOptionsModal() {
     setShowCancelOptions(true);
@@ -77,13 +76,10 @@ const DetailsModal = ({
   }
 
   const [changeEventRequest, setChangeEventRequest] = useState({
-    id: eventObj.id,
     title: eventObj.title,
     price: eventObj.extendedProps.price,
     maximumCapacity: eventObj.extendedProps.maximumCapacity,
     description: eventObj.extendedProps.description,
-    locationId: locationId,
-    recurrenceGroupId: eventObj.extendedProps.recurrenceGroup?.id,
   });
   const originalEvent = {
     id: eventObj.id,
@@ -113,16 +109,18 @@ const DetailsModal = ({
   }
 
   useEffect(() => {
-    fetchLocations();
-
-    async function resetModal() {
+      async function resetModal() {
       await sleep(500);
       setReadOnly(true);
       setShowCancelOptions(false);
       setShowFrequencyOptions(false);
-      setEventsOverlap(false);
     }
-    console.log(changeEventRequest);
+    console.log(eventObj.end);
+    console.log("event start-------")
+    console.log(new Date(eventObj.start))
+    console.log("now-------")
+    console.log(new Date())
+    console.log(new Date(eventObj.start) < new Date())
     resetModal();
   }, [isOpen]);
 
@@ -135,9 +133,6 @@ const DetailsModal = ({
   }, [changeEventRequest]);
 
   const handleChangeEventRequest = (field, value) => {
-    if (field === "locationId") {
-      setEventsOverlap(false);
-    }
     console.log(field);
     console.log(value);
     setChangeEventRequest((prev) => ({ ...prev, [field]: value }));
@@ -172,9 +167,8 @@ const DetailsModal = ({
       .catch((error) => {
         let status = error.response.status;
         if (status === 409) {
-          setEventsOverlap(true);
           viewOnlyDefaultDetailsModal();
-          // alert.error("Sérii nebylo možné přesunout kvůli časovým kolizím.");
+          alert.error("Nová kapacita události nesmí být menší než ta původní.");
         } else {
           console.log(status);
           alert.error("Sérii nebylo možné aktualizovat.");
@@ -189,7 +183,7 @@ const DetailsModal = ({
   function submitChangeSingleEventRequest() {
     axios
       .put(
-        host + eventsEndpoint + "/" + changeEventRequest.id,
+        host + eventsEndpoint + "/" + originalEvent.id,
         changeEventRequest
       )
       .then((response) => {
@@ -201,8 +195,6 @@ const DetailsModal = ({
       })
       .catch((error) => {
         if (error.response.status === 409) {
-          // alert.error("Událost nelze přesunout kvůli časovým kolizím.");
-          setEventsOverlap(true);
           viewOnlyDefaultDetailsModal();
         } else {
           alert.error("Událost se nepodařilo aktualizovat.");
@@ -293,6 +285,7 @@ const DetailsModal = ({
         <>
           <ModalHeader>Detail události</ModalHeader>
           <ModalBody>
+            <Form>
             <FormGroup>
               <Row>
                 <Col>
@@ -309,43 +302,6 @@ const DetailsModal = ({
                     disabled={readOnly}
                   />
                 </Col>
-                {!readOnly && (
-                  <Col>
-                    <FormGroup>
-                      <Label for="locationId">Místo konání</Label>
-
-                      <InputGroup>
-                        <Form.Control
-                          as="select"
-                          name="locationId"
-                          defaultValue={
-                            changeEventRequest.locationId
-                              ? changeEventRequest.locationId
-                              : locationId
-                          }
-                          onChange={(e) =>
-                            handleChangeEventRequest(
-                              "locationId",
-                              e.target.value
-                            )
-                          }
-                          isInvalid={eventsOverlap}
-                        >
-                          {locationsOptions.map((location) => (
-                            <option key={location.value} value={location.value}>
-                              {location.label}
-                            </option>
-                          ))}
-                        </Form.Control>
-                        {eventsOverlap && (
-                          <Form.Control.Feedback type="invalid">
-                            Událost nelze přesunout kvůli časovým kolizím
-                          </Form.Control.Feedback>
-                        )}
-                      </InputGroup>
-                    </FormGroup>
-                  </Col>
-                )}
               </Row>
 
               <FormFeedback>Název nesmí být prázdný</FormFeedback>
@@ -358,7 +314,7 @@ const DetailsModal = ({
                   <Input
                     type="datetime-local"
                     name="start"
-                    value={eventObj.start.toISOString().slice(0, 16)}
+                    value={eventObj.startStr.slice(0, 16)}
                     readOnly
                   />
                 </Col>
@@ -368,7 +324,7 @@ const DetailsModal = ({
                   <Input
                     type="datetime-local"
                     name="end"
-                    value={eventObj.end.toISOString().slice(0, 16)}
+                    value={eventObj.endStr.slice(0, 16)}
                     readOnly
                   />
                 </Col>
@@ -469,6 +425,8 @@ const DetailsModal = ({
                 }
               />
             </FormGroup>
+            </Form>
+            
           </ModalBody>
           <ModalFooter>
             {
@@ -477,12 +435,12 @@ const DetailsModal = ({
               </Button>
             }
             {readOnly && (
-              <Button color="danger" onClick={handleDelete}>
+              <Button color="danger" onClick={handleDelete} disabled={new Date(eventObj.start) < new Date()}>
                 Smazat
               </Button>
             )}
             {readOnly && (
-              <Button color="primary" onClick={handleEdit}>
+              <Button color="primary" onClick={handleEdit} disabled={new Date(eventObj.start) < new Date()}>
                 Upravit
               </Button>
             )}

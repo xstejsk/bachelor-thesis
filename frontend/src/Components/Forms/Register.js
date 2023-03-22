@@ -33,7 +33,7 @@ const Register = () => {
     axios
       .post(host + resendEmailEndpoint, {email:newUser.email})
       .then((response) => {
-        if (response.status === 200) {
+        if (response.status === 202) {
           console.log("email has been resent");
           alert.info(
             "Potvrzovací email byl znovu zaslán, zkontrolujte prosím vaši emailovou schránku."

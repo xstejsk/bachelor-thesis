@@ -103,7 +103,7 @@ public class EventsController {
         } catch (EventNotFoundException | RecurrenceGroupNotFoundException e) {
             log.warn("event not found exception: {}", e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (OverlappingEventException | MaximumCapacityException e) {
+        } catch (MaximumCapacityException e) {
             log.warn("updating event exception", e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         } catch (Exception e) {
@@ -120,7 +120,7 @@ public class EventsController {
         } catch (RecurrenceGroupNotFoundException e) {
             log.warn("recurrence group not found exception: {}", e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (OverlappingEventException | MaximumCapacityException e) {
+        } catch (MaximumCapacityException e) {
             log.warn("overlapping event exception: {}", e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }

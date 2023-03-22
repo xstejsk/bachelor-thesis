@@ -35,6 +35,9 @@ const SchedulerWrapper = () => {
 
   useEffect(() => {
     setEventsLoaded(true);
+    console.log("events----------------")
+    console.log(events)
+    console.log("----------------")
   }, [events]);
 
   const reloadLocations = () => {
@@ -73,7 +76,7 @@ const SchedulerWrapper = () => {
     axios
       .delete(host + locationsEndpoint + "/" + currentLocation.id)
       .then((response) => {
-        alert.success("Kalendář a příslušné událisti byly smazány.");
+        alert.success("Kalendář a příslušné události byly smazány.");
         reloadLocations();
       })
       .catch((error) => {

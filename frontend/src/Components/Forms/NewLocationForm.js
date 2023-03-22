@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-daterangepicker/daterangepicker.css";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import { Col, Row, Form } from "react-bootstrap";
 import axios from "axios";
@@ -14,11 +14,47 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
     closesAt: undefined,
   });
 
+  const [errors, setErrors] = useState({
+    locationExists: false,
+    closesBeforeOpens: false,
+  })
+
+  useEffect(() => {
+    setNewLocation({
+      name: "",
+      opensAt: undefined,
+      closesAt: undefined,
+    })
+    setErrors({
+      locationExists: false,
+      closesBeforeOpens: false,
+    })
+  },
+  [isOpen])
+
+
   const handleUpdateLocation = (field, value) => {
+    if(field === "opensAt") {
+      if(value > newLocation.closesAt) {
+        setErrors((prev) => ({ ...prev, ["closesBeforeOpens"]: true }));
+      } else {
+        setErrors((prev) => ({ ...prev, ["closesBeforeOpens"]: false }));
+      }
+    }
+    else if(field === "closesAt") {
+      if(value < newLocation.opensAt) {
+        setErrors((prev) => ({ ...prev, ["closesBeforeOpens"]: true }));
+      } else {
+        setErrors((prev) => ({ ...prev, ["closesBeforeOpens"]: false }));
+      }
+    }
+    if(field === "name" && errors.locationExists) {
+      setErrors((prev) => ({ ...prev, ["locationExists"]: false }));
+    }
     setNewLocation((prev) => ({ ...prev, [field]: value }));
   };
 
-  const [locationExists, setLocationExists] = useState(false);
+  
   const alert = useAlert();
   function handleCancel() {
     handleHide();
@@ -28,7 +64,6 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
     axios
       .post(host + locationsEndpoint, newLocation)
       .then((response) => {
-        console.log("posting new location");
         if (response.status === 201) {
           reloadLocations();
           handleCancel();
@@ -37,7 +72,7 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
       })
       .catch((err) => {
         if (err.response.status === 409) {
-          setLocationExists(true);
+          setErrors((prev) => ({ ...prev, ["locationExists"]: true }));
         }
       });
   }
@@ -57,7 +92,7 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
                   handleUpdateLocation(e.target.name, e.target.value);
                 }}
                 name="name"
-                isInvalid={locationExists}
+                isInvalid={errors.locationExists}
               />
               <Form.Control.Feedback type="invalid">
                 Místo se stejným názvem již existuje
@@ -85,7 +120,11 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
                 }}
                 min={newLocation.opensAt}
                 name="closesAt"
+                isInvalid={errors.closesBeforeOpens}
               />
+              <Form.Control.Feedback type="invalid">
+                Nesmí být menší než "od"
+              </Form.Control.Feedback>
             </Col>
           </Row>
         </Form.Group>
@@ -98,7 +137,11 @@ const NewLocationForm = ({ handleHide, isOpen, reloadLocations }) => {
           </Button>
         }
         {
-          <Button color="primary" onClick={handleSubmit}>
+          <Button color="primary" onClick={handleSubmit} disabled={errors.locationExists 
+          || errors.closesBeforeOpens ||
+          newLocation.closesAt === undefined ||
+          newLocation.opensAt === undefined ||
+          newLocation.name === undefined}>
             Uložit
           </Button>
         }
