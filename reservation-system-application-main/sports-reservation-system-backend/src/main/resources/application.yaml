@@ -1,0 +1,66 @@
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  application:
+    name: sportsreservationsystem
+  datasource:
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/reservationsystem
+    username: postgres
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+  security:
+    filter:
+      order: 10
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: myjavatenniscourts@gmail.com
+    password: qqvloapsezcxprht
+
+    properties:
+      mail:
+        smtp:
+          ssl:
+            trust: "*"
+          auth: true
+          starttls.enable: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
+jwt:
+  accessExpirationDateInMs: 600000  # 10 minutes
+  refreshExpirationDateInMs: 86400000  # 1 day
+  secret: "secret-from-env-variable"
+email:
+  templates:
+    registration:
+      subject: "Potvrzení registrace"
+      path: "templates/RegistrationEmailTemplate.html"
+      url: "http://localhost:5173/registration-confirmation?token="
+      expirationMinutes: 30
+    reservation-confirmation:
+      path: "templates/ReservationConfirmationTemplate.html"
+      subject: "Potvrzení rezervace"
+    reservation-deletion:
+      path: "templates/ReservationDeletionTemplate.html"
+      subject: "Zrušení rezervace"
+    reset-password:
+      path: "templates/ResetPasswordTemplate.html"
+      subject: "Obnovení hesla"
+      url: "http://localhost:5173/password-reset?token="
+      expirationMinutes: 30

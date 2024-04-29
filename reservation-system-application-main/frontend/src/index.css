@@ -1,0 +1,100 @@
+:root {
+  --solidBg: "#319795";
+  --solidHoverBg: "#2C7A7B";
+  --solidActiveBg: "#285E61";
+  --outlinedColor: "#2C7A7B";
+  --outlinedBorder: "#2C7A7B";
+  --outlinedHoverBg: "#E6FFFA";
+  --outlinedActiveBg: "#B2F5EA";
+  --solidBgTransparent: "rgba(44, 122, 123, 0.4)";
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+.basic-link {
+  text-decoration: none;
+  color: #319795;
+}
+
+.basic-link:hover {
+  text-decoration: underline;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-areas:
+    "header"
+    "main";
+  grid-template-rows: 56px 1fr;
+  grid-template-columns: 1fr;
+  height: 100vh;
+  width: 100vw;
+}
+
+.navbar {
+  grid-area: header;
+}
+
+.main {
+  grid-area: main;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2rem 1.5rem;
+}
+
+.new-calendar-card {
+  cursor: pointer;
+}
+
+.new-calendar-card:hover button {
+  background-color: rgb(44, 122, 123);
+}
+
+span {
+  margin: 0;
+}
+
+.event-card--full {
+  background-color: rgba(44, 122, 123, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  cursor: no-drop;
+}
+
+.event-card--reserved {
+  background-color: #2c7a7b;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  cursor: no-drop;
+}
+
+.event-card--reserved:hover {
+  background-color: #2c7a7b;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.event-card {
+  background-color: rgba(44, 122, 123, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+
+  cursor: pointer;
+}
+
+.event-card--enabled {
+  background-color: rgba(44, 122, 123, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.event-card:hover {
+  background-color: #2c7a7b;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.event-card--full:hover {
+  background-color: rgba(44, 122, 123, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}

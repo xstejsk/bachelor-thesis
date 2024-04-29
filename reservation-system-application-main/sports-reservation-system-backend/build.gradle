@@ -1,0 +1,124 @@
+import groovy.io.FileType
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.1.2'
+	id 'io.spring.dependency-management' version '1.1.0'
+	id 'org.openapi.generator' version "6.4.0"
+//	id 'maven-publish'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+ext {
+	springBootVersion = '3.1.2'
+	mapStructVersion = '1.5.3.Final'
+	apacheCommonsLang3Version = '3.12.0'
+	springWebfluxVersion = '6.8.0'
+	keycloakAdminVersion = '21.1.1'
+	minioVersion = '8.5.2'
+	hypersistenceUtilsVersion = '3.4.1'
+
+	validationVersion = '2.0.1.Final'
+	springfoxVersion = '3.0.0'
+	javaxAnnotationApiVersion = '1.3.2'
+	swaggerAnnotationsVersion = '2.2.8'
+	threetenbpVersion = '1.6.5'
+	modelMapperVersion = '3.1.1'
+	apacheCommonsVersion = '1.10.0'
+}
+
+java {
+	sourceCompatibility = '17'
+}
+
+repositories {
+	mavenCentral()
+}
+
+def definitionFiles = []
+
+//iteration by file root folder and save into definitionFiles variable
+def definitionsDir = new File("$rootDir/src/main/resources/openapi/".toString())
+definitionsDir.eachFileRecurse(FileType.FILES) { file ->
+	if (file.getName().endsWith(".yaml"))
+		definitionFiles << file
+}
+
+definitionFiles.each {
+	def apiName = it.getName().replace(".yaml", "");
+	String taskName = "openApiGenerate_" + apiName.toString();
+	tasks.register(taskName, GenerateTask) {
+		generatorName = "spring"
+		inputSpec = "$rootDir/src/main/resources/openapi/".toString() + "${apiName}.yaml"
+		outputDir = "$buildDir/generated/openapi".toString()
+		apiPackage = "com.xstejsk.reservationapp.main.rest.api"
+		modelPackage = "com.xstejsk.reservationapp.main.rest.model"
+		configOptions = [
+				library                : "spring-boot",
+				dateLibrary            : "java8",
+				useSpringBoot3         : "true",
+				openApiNullable        : "false",
+				useTags                : "true",
+				annotationLibrary      : "none",
+				documentationProvider  : "none",
+				implicitHeaders        : "true",
+				interfaceOnly          : "true",
+				delegatePattern        : "false",
+				hideGenerationTimestamp: "true",
+				serializableModel      : "true",
+				singleContentTypes     : "true",
+				useBeanValidation      : "false",
+				performBeanValidation  : "false",
+		]
+	}
+	compileJava.dependsOn(taskName)
+}
+
+sourceSets {
+	main {
+		java.srcDirs += "$buildDir/generated/openapi/src/main/java"
+	}
+}
+
+dependencies {
+	implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+	implementation "org.springframework.boot:spring-boot-starter-validation:$springBootVersion"
+	implementation "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion"
+	implementation "org.mapstruct:mapstruct:$mapStructVersion"
+    implementation 'junit:junit:4.13.1'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	annotationProcessor "org.mapstruct:mapstruct-processor:$mapStructVersion"
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation "org.keycloak:keycloak-admin-client:$keycloakAdminVersion"
+	implementation "org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion"
+	runtimeOnly 'org.postgresql:postgresql'
+	implementation "io.hypersistence:hypersistence-utils-hibernate-62:$hypersistenceUtilsVersion"
+	implementation "javax.validation:validation-api:${validationVersion}"
+	implementation "io.springfox:springfox-core:${springfoxVersion}"
+	implementation "javax.annotation:javax.annotation-api:${javaxAnnotationApiVersion}"
+	implementation "io.swagger.core.v3:swagger-annotations:${swaggerAnnotationsVersion}"
+	implementation "org.apache.commons:commons-text:${apacheCommonsVersion}"
+
+
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt
+	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+	implementation 'org.springframework.boot:spring-boot-starter'
+	runtimeOnly 'com.h2database:h2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+}
+
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

@@ -1,0 +1,889 @@
+openapi: 3.0.0
+info:
+  title: Reservation system API
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/RADIMSTEJSKAL/ME2/1.0.0
+  - url: http://localhost:8080/api/v1
+    description: Local machine
+tags:
+  - name: calendars
+    description: Manage camera profiles and their settings
+  - name: users
+    description: Manage users and their roles
+  - name: auth
+    description: Authorize and authenticate users with JWT
+  - name: reservations
+    description: Manage
+  - name: events
+    description: Manage events
+  - name: locations
+    description: Manage locations
+paths:
+  /calendars:
+    get:
+      tags:
+        - calendars
+      summary: Get all calendars
+      operationId: getAllCalendars
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: size
+          in: query
+          schema:
+            type: integer
+          description: page size, default is 50
+        - name: fulltext
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarsPage'
+    post:
+      tags:
+        - calendars
+      summary: Create a new calendar
+      operationId: createCalendar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCalendarRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarDTO'
+        '400':
+          description: Bad request
+  /calendars/{calendarId}:
+    get:
+      tags:
+        - calendars
+      summary: Get a single calendar with events
+      operationId: getCalendarById
+      parameters:
+        - name: calendarId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: eventsFrom
+          in: query
+          schema:
+            type: string
+            format: date
+          description: filters events which start at or after before eventsFrom
+        - name: eventsTo
+          in: query
+          schema:
+            type: string
+            format: date
+          description: filters events which start before eventsTo
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarWithEventsDTO'
+    delete:
+      tags:
+        - calendars
+      summary: Delete calendar, possible only if it does not hold any future events
+      operationId: deleteCalendar
+      parameters:
+        - name: calendarId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+    patch:
+      tags:
+        - calendars
+      summary: Update calendar details
+      operationId: updateCalendar
+      parameters:
+        - name: calendarId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCalendarRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarDTO'
+        '400':
+          description: Bad request
+  /calendars/{calendarId}/events:
+    post:
+      tags:
+        - calendars
+      summary: Create a new event
+      operationId: createEvent
+      parameters:
+        - name: calendarId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEventRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventDTO'
+        '400':
+          description: Bad request
+        '409':
+          description: Event overlaps
+  /calendars/{calendarId}/events/{eventId}/reservations:
+    post:
+      tags:
+        - calendars
+      summary: Create reservation for event
+      operationId: createReservationForEvent
+      parameters:
+        - name: calendarId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationDTO'
+        '400':
+          description: Bad request
+        '409':
+          description: Duplicate reservation
+  /auth/token:
+    post:
+      tags:
+        - auth
+      summary: Get user access token
+      operationId: authenticate
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+  /users:
+    get:
+      tags:
+        - users
+      summary: get all users
+      operationId: getUsers
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: size
+          in: query
+          schema:
+            type: integer
+          description: page size, default is 50
+        - name: fulltext
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [USER, ADMIN]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersPage'
+    post:
+      tags:
+        - users
+      summary: create a user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUserDTO'
+        '400':
+          description: Bad request
+        '409':
+          description: Email taken
+  /users/password:
+    post:
+      tags:
+        - users
+      summary: reset forgotten password
+      operationId: resetForgottenPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '202':
+          description: Accepted
+    put:
+      tags:
+        - users
+      summary: confirm password reset
+      operationId: confirmPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationToken'
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad request
+  /users/{userId}/password:
+    put:
+      tags:
+        - users
+      summary: change user's password
+      operationId: changeUsersPassword
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUserDTO'
+        '400':
+          description: Bad request
+  /users/{userId}/role:
+    put:
+      tags:
+        - users
+      summary: change user's role
+      operationId: updateUserRole
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRoleRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUserDTO'
+        '400':
+          description: Bad request
+  /users/{userId}/balance:
+    put:
+      tags:
+        - users
+      summary: change user's balance
+      operationId: updateUserBalance
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserBalanceRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUserDTO'
+        '400':
+          description: Bad request
+  /users/{userId}/discount:
+    put:
+      tags:
+        - users
+      summary: update the user's discount entitlement
+      operationId: updateUsersDiscountEntitlement
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDiscountRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUserDTO'
+  /users/verification:
+    put:
+      tags:
+        - users
+      summary: verify user's account
+      operationId: verifyUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationToken'
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppUserDTO'
+        '400':
+          description: Bad request
+  /reservations:
+    get:
+      tags:
+        - reservations
+      summary: Get all reservations
+      operationId: getAllReservations
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+          description: filters reservations for events which start at or after from
+        - name: calendarId
+          in: query
+          schema:
+            type: string
+          description: id of a calendar
+        - name: ownerId
+          in: query
+          schema:
+            type: string
+          description: id of the owner
+        - name: eventId
+          in: query
+          schema:
+            type: string
+          description: id of the event
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: size
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationsPage'
+  /reservations/{reservationId}:
+    delete:
+      tags:
+        - reservations
+      summary: Delete a reservation
+      operationId: deleteReservation
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationDTO'
+        '400':
+          description: Bad request
+  /events:
+    get:
+      tags:
+        - events
+      summary: Get all events
+      operationId: getAllEvents
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+          description: filters events which start at or after from
+        - name: calendarId
+          in: query
+          schema:
+            type: string
+          description: id of a calendar
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: size
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsPage'
+  /events/{eventId}:
+    delete:
+      tags:
+        - events
+      summary: Delete an event
+      operationId: deleteEvent
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDTO'
+        '400':
+          description: Bad request
+    patch:
+      tags:
+        - events
+      summary: Update an event
+      operationId: updateEvent
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEventRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventDTO'
+        '400':
+          description: Bad request
+  /locations:
+    get:
+      tags:
+        - locations
+      summary: Get all locations
+      operationId: getAllLocations
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LocationDTO'
+components:
+  schemas:
+    UpdateDiscountRequest:
+      properties:
+        discountActive:
+          type: boolean
+    VerificationToken:
+      properties:
+        token:
+          type: string
+    LocationDTO:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    ResetPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+    ChangePasswordRequest:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+        newPassword:
+          type: string
+    CreateCalendarRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        locationId:
+          type: string
+        thumbnail:
+          type: string
+          format: byte
+    UpdateCalendarRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        locationId:
+          type: string
+        thumbnail:
+          type: string
+          format: byte
+    EventsPage:
+      type: object
+      properties:
+        number:
+          type: integer
+        size:
+          type: integer
+        totalPages:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventDTO'
+    ReservationsPage:
+      type: object
+      properties:
+        number:
+          type: integer
+        size:
+          type: integer
+        totalPages:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReservationDTO'
+    CalendarsPage:
+      type: object
+      properties:
+        number:
+          type: integer
+        size:
+          type: integer
+        totalPages:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarDTO'
+    UsersPage:
+      type: object
+      properties:
+        number:
+          type: integer
+        size:
+          type: integer
+        totalPages:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppUserDTO'
+    Recurrence:
+      type: object
+      properties:
+        repeatUntil:
+          type: string
+        daysOfWeek:
+          type: array
+          items:
+            type: integer
+    CreateEventRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        price:
+          type: integer
+        maximumCapacity:
+          type: integer
+        recurrence:
+          $ref: '#/components/schemas/Recurrence'
+    UpdateEventRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        updateSeries:
+          type: boolean
+    CreateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        password:
+          type: string
+        hasDailyDiscount:
+          type: boolean
+    UpdateUserBalanceRequest:
+      type: object
+      properties:
+        balance:
+          type: integer
+    UpdateUserRoleRequest:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [USER, ADMIN]
+    AuthenticationResponse:
+      type:
+        object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        user:
+          $ref: '#/components/schemas/AppUserDTO'
+    ReservationDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        discountApplied:
+          type: boolean
+        owner:
+          $ref: '#/components/schemas/AppUserDTO'
+        event:
+          $ref: '#/components/schemas/EventDTO'
+    AppUserDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        enabled:
+          type: boolean
+        locked:
+          type: boolean
+        hasDailyDiscount:
+          type: boolean
+        balance:
+          type: integer
+
+        role:
+          type: string
+          enum: [USER, ADMIN]
+    EventDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        maximumCapacity:
+          type: integer
+        price:
+          type: integer
+        discountPrice:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        spacesAvailable:
+          type: integer
+        recurrence:
+          $ref: '#/components/schemas/Recurrence'
+    CalendarDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        location:
+          $ref: '#/components/schemas/LocationDTO'
+        minTime:
+          type: string
+        maxTime:
+          type: string
+        thumbnail:
+          type: string
+          format: byte
+    CalendarWithEventsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        thumbnail:
+          type: string
+          format: byte
+        minTime:
+          type: string
+        maxTime:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventDTO'
+    AuthRequest:
+      type: object
+      properties:
+        grant_type:
+          type: string
+          enum:
+            - password
+            - refresh_token
+        username:
+          type: string
+        password:
+          type: string
+        refresh_token:
+          type: string

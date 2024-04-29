@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001" # change this to your frontend port, if you change this, you need to change the backend service as well
+    environment:
+      - BACKEND_URL=http://backend:8080/ # change this to your backend url, if you change this, you need to change the backend service as well
+      - DEBUG=false # change this to true if you want to see the debug logs
+  backend:
+    # image: "docker-spring-boot-postgres:latest"
+    container_name: backend
+    build:
+      context: ./sports-reservation-system-backend
+      dockerfile: Dockerfile
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/reservationsystem # change this to your postgres database name, if you change this, you need to change the db service as well
+      - SPRING_DATASOURCE_USERNAME=postgres # change this to your postgres username
+      - SPRING_DATASOURCE_PASSWORD=postgres  # change this to your postgres password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update # change this to update if you want to update the database
+      - SPRING_SQL_INIT_MODE=always # change this to always if you want to always initialize the database
+      - JWT_SECRET=secret # change this to your secret
+      - SMTP_HOST=smtp.gmail.com # change this to your smtp host
+      - SMTP_PORT=587 # change this to your smtp port
+      - SMTP_USERNAME=myjavatenniscourts@gmail.com # change this to your email
+      - SMTP_PASSWORD=qqvloapsezcxprht # change this to your password
+      - FRONTEND_URL=http://localhost:8001 # change this to your frontend url
+    ports:
+      - "8080:8080" # change this to your backend port, if you change this, you need to change the frontend service as well
+    depends_on:
+      - db
+    links:
+      - db
+  db:
+    image: "postgres:16.0-alpine3.18"
+    container_name: db
+    environment:
+      - POSTGRES_USER=postgres # change this to your postgres username
+      - POSTGRES_PASSWORD=postgres # change this to your postgres password
+      - POSTGRES_DB=reservationsystem # change this to your postgres database name
+    expose:
+      - 5432 # change this to your postgres port, make sure it is the same as the one in the db service
+    ports:
+      - "5432:5432" # change this to your postgres port
+    volumes:
+      - postgres-data:/var/lib/postgresql/data 
+
+volumes:
+  postgres-data:
